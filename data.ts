@@ -161,5 +161,21 @@ export const MOCK_OFFERS: Offer[] = [
     views: 31000,
     transcription: 'Proteja quem você ama do esquecimento. Cientistas descobrem nutriente que reverte o declínio cognitivo...',
     creativeImages: ['https://picsum.photos/seed/c14/200/200']
+  },
+  {
+    id: '11',
+    title: 'Protocolo Erguendo Gigantes',
+    niche: 'Aumento Peniano',
+    language: 'Português',
+    trafficSource: 'Facebook Ads',
+    productType: 'Low Ticket',
+    structure: 'VSL + Checkout',
+    vslUrl: 'https://www.youtube.com/embed/jNQXAC9IVRw',
+    facebookUrl: 'https://www.facebook.com/ads/library/',
+    pageUrl: 'https://google.com',
+    coverImage: 'https://images.unsplash.com/photo-1576091160550-2173bdd9962a?q=80&w=800&auto=format&fit=crop',
+    views: 15400,
+    transcription: 'A descoberta que está mudando a vida de milhares de homens. Um método natural e testado para restaurar a confiança...',
+    creativeImages: ['https://picsum.photos/seed/c20/200/200', 'https://picsum.photos/seed/c21/200/200']
   }
 ];
