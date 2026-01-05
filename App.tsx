@@ -202,7 +202,7 @@ const LandingPage = ({ onLogin }: { onLogin: () => void }) => (
         <p className="text-gray-600 mb-6 font-medium">Torne-se um espião do tráfego pago hoje.</p>
         <div className="text-5xl font-black mb-8">R$ 197<span className="text-xl text-gray-500 font-normal">/mês</span></div>
         <button 
-          onClick={onLogin}
+          onClick={() => window.open('https://pay.kiwify.com.br/lkS51Be', '_blank')}
           className="w-full py-5 bg-brand-dark text-brand-gold font-black text-xl rounded-2xl hover:scale-105 transition-transform shadow-xl"
         >
           QUERO ACESSO AGORA
@@ -227,6 +227,15 @@ const App: React.FC = () => {
     niche: 'Todos'
   });
 
+  const handleLogin = () => {
+    const password = window.prompt("Digite a senha de acesso:");
+    if (password === 'AGENTE007') {
+      setIsLoggedIn(true);
+    } else {
+      alert('Acesso negado. Adquira sua licença para entrar.');
+    }
+  };
+
   const toggleFavorite = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setFavorites(prev => 
@@ -244,8 +253,9 @@ const App: React.FC = () => {
     { name: 'Dom', value: 700 },
   ];
 
+  // Protection: if not logged in, always render LandingPage
   if (!isLoggedIn) {
-    return <LandingPage onLogin={() => setIsLoggedIn(true)} />;
+    return <LandingPage onLogin={handleLogin} />;
   }
 
   const renderContent = () => {
