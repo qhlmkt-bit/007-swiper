@@ -202,7 +202,7 @@ const LandingPage = ({ onLogin }: { onLogin: () => void }) => (
         <p className="text-gray-600 mb-6 font-medium">Torne-se um espião do tráfego pago hoje.</p>
         <div className="text-5xl font-black mb-8">R$ 197<span className="text-xl text-gray-500 font-normal">/mês</span></div>
         <button 
-          onClick={() => window.open('https://pay.kiwify.com.br/lkS51Be', '_blank')}
+          onClick={() => window.open('https://pay.kiwify.com.br/Bo6rspD', '_blank')}
           className="w-full py-5 bg-brand-dark text-brand-gold font-black text-xl rounded-2xl hover:scale-105 transition-transform shadow-xl"
         >
           QUERO ACESSO AGORA
