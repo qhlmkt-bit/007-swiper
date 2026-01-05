@@ -243,11 +243,11 @@ const LandingPage = ({
         <div className="absolute -top-10 -right-10 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
           <Eye size={160} />
         </div>
-        <h2 className="text-3xl font-black mb-2 uppercase tracking-tighter">Acesso VIP Vitalício</h2>
-        <p className="text-gray-600 mb-8 font-medium text-sm">Libere agora o banco de dados restrito dos maiores players.</p>
-        <div className="text-6xl font-black mb-10 tracking-tighter">R$ 197<span className="text-lg text-gray-400 font-bold">/único</span></div>
+        <h2 className="text-3xl font-black mb-2 uppercase tracking-tighter">Acesso Premium</h2>
+        <p className="text-gray-600 mb-8 font-medium text-sm">Libere agora o banco de dados restrito dos maiores players do mercado digital.</p>
+        <div className="text-6xl font-black mb-10 tracking-tighter">R$ 197<span className="text-lg text-gray-400 font-bold">/mês</span></div>
         <button 
-          onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
+          onClick={() => window.open('https://pay.kiwify.com.br/Bo6rspD', '_blank')} // NOVO LINK DE CHECKOUT AQUI
           className="w-full py-5 bg-brand-dark text-brand-gold font-black text-xl rounded-2xl hover:scale-105 transition-transform shadow-2xl uppercase tracking-tighter flex items-center justify-center gap-3"
         >
           <Unlock size={24} /> QUERO ACESSO AGORA
@@ -285,13 +285,13 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = () => {
-    const password = window.prompt("🕵️‍♂️ AUTENTICAÇÃO NECESSÁRIA\nDigite sua chave de acesso vitalício:");
+    const password = window.prompt("🕵️‍♂️ AUTENTICAÇÃO NECESSÁRIA\nDigite sua chave de acesso VIP:");
     if (password === 'AGENTE007') {
       setIsLoggedIn(true);
       // Ensure the banner disappears upon successful login
       setIsSuccess(false);
     } else if (password !== null) {
-      alert('ACESSO NEGADO ❌\nSua licença não foi encontrada ou a chave está incorreta. Adquira sua licença para entrar.');
+      alert('ACESSO NEGADO ❌\nSua assinatura não foi identificada ou a chave está incorreta. Adquira sua licença para entrar.');
     }
   };
 
