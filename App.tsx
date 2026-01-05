@@ -19,7 +19,10 @@ import {
   Monitor,
   Eye,
   CheckCircle,
-  BarChart2
+  BarChart2,
+  Lock,
+  Unlock,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -156,31 +159,42 @@ const OfferCard: React.FC<OfferCardProps> = ({
   </div>
 );
 
-const LandingPage = ({ onLogin }: { onLogin: () => void }) => (
+const LandingPage = ({ onLogin, showPasswordNotice }: { onLogin: () => void, showPasswordNotice: boolean }) => (
   <div className="min-h-screen bg-brand-dark flex flex-col items-center">
-    <nav className="w-full max-w-7xl px-6 py-6 flex justify-between items-center">
+    <nav className="w-full max-w-7xl px-6 py-6 flex justify-between items-center relative z-50">
       <div className="flex items-center space-x-2">
-        <div className="bg-brand-gold p-2 rounded-lg">
+        <div className="bg-brand-gold p-2 rounded-lg shadow-lg shadow-brand-gold/20">
           <Eye className="text-black" size={24} />
         </div>
         <span className="text-2xl font-extrabold tracking-tighter text-white">007 SWIPER</span>
       </div>
-      <button 
-        onClick={onLogin}
-        className="px-6 py-2 bg-brand-gold hover:bg-yellow-600 text-black font-bold rounded-full transition-all shadow-lg shadow-brand-gold/20"
-      >
-        Entrar na Plataforma
-      </button>
+      
+      <div className="flex flex-col items-end gap-2">
+        {showPasswordNotice && (
+          <div className="bg-brand-gold text-black px-4 py-2 rounded-xl text-[11px] font-black shadow-2xl animate-pulse flex items-center gap-2 max-w-xs border border-white/20">
+            <ShieldCheck size={14} />
+            <span>PAGAMENTO CONFIRMADO! 🕵️‍♂️ Chave: AGENTE007. Clique em entrar.</span>
+          </div>
+        )}
+        <button 
+          onClick={onLogin}
+          className="px-6 py-2 bg-brand-gold hover:bg-yellow-600 text-black font-bold rounded-full transition-all shadow-lg shadow-brand-gold/20 flex items-center gap-2 uppercase text-xs tracking-tighter"
+        >
+          <Lock size={14} /> Entrar na Plataforma
+        </button>
+      </div>
     </nav>
     
-    <main className="flex-1 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center mt-20 mb-32">
+    <main className="flex-1 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center mt-12 mb-32 relative">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-gold/5 via-transparent to-transparent -z-10 pointer-events-none"></div>
+      
       <div className="inline-block px-4 py-1.5 mb-6 rounded-full border border-brand-gold border-opacity-30 bg-brand-gold bg-opacity-5 text-brand-gold text-sm font-semibold animate-pulse">
         A Ferramenta Secreta dos Top Afiliados & Produtores
       </div>
       <h1 className="text-5xl md:text-7xl font-black text-white mb-8 leading-tight">
         Espione as Ofertas que estão <br/> <span className="text-brand-gold italic">Dominando o Mercado.</span>
       </h1>
-      <p className="text-xl text-gray-400 max-w-2xl mb-12">
+      <p className="text-xl text-gray-400 max-w-2xl mb-12 font-medium">
         Acesse os funis, criativos e VSLs que estão faturando alto agora mesmo. Pare de tentar adivinhar e comece a copiar o que já funciona.
       </p>
       
@@ -190,24 +204,30 @@ const LandingPage = ({ onLogin }: { onLogin: () => void }) => (
           { title: "Análise de Criativos", desc: "Os vídeos e imagens com maior CTR." },
           { title: "Transcrição com IA", desc: "Estude o script por trás das vendas." }
         ].map((feature, i) => (
-          <div key={i} className="bg-brand-card p-8 rounded-2xl border border-white border-opacity-5 hover:border-brand-gold/50 transition-colors">
+          <div key={i} className="bg-brand-card p-8 rounded-2xl border border-white border-opacity-5 hover:border-brand-gold/50 transition-colors shadow-xl">
             <h3 className="text-brand-gold text-xl font-bold mb-4">{feature.title}</h3>
-            <p className="text-gray-400">{feature.desc}</p>
+            <p className="text-gray-400 text-sm">{feature.desc}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white text-black p-10 rounded-3xl w-full max-w-md shadow-2xl shadow-brand-gold/10">
-        <h2 className="text-3xl font-black mb-2">Acesso VIP</h2>
-        <p className="text-gray-600 mb-6 font-medium">Torne-se um espião do tráfego pago hoje.</p>
-        <div className="text-5xl font-black mb-8">R$ 197<span className="text-xl text-gray-500 font-normal">/mês</span></div>
+      <div className="bg-white text-black p-10 rounded-[40px] w-full max-w-md shadow-2xl shadow-brand-gold/20 relative overflow-hidden group">
+        <div className="absolute -top-10 -right-10 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+          <Eye size={160} />
+        </div>
+        <h2 className="text-3xl font-black mb-2 uppercase tracking-tighter">Acesso VIP Vitalício</h2>
+        <p className="text-gray-600 mb-8 font-medium text-sm">Libere agora o banco de dados restrito dos maiores players.</p>
+        <div className="text-6xl font-black mb-10 tracking-tighter">R$ 197<span className="text-lg text-gray-400 font-bold">/único</span></div>
         <button 
           onClick={() => window.open('https://pay.kiwify.com.br/Bo6rspD', '_blank')}
-          className="w-full py-5 bg-brand-dark text-brand-gold font-black text-xl rounded-2xl hover:scale-105 transition-transform shadow-xl"
+          className="w-full py-5 bg-brand-dark text-brand-gold font-black text-xl rounded-2xl hover:scale-105 transition-transform shadow-2xl uppercase tracking-tighter flex items-center justify-center gap-3"
         >
-          QUERO ACESSO AGORA
+          <Unlock size={24} /> QUERO ACESSO AGORA
         </button>
-        <p className="mt-4 text-xs text-gray-400">Garantia de 7 dias ou seu dinheiro de volta.</p>
+        <div className="mt-6 flex items-center justify-center gap-4">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_Kiwify.png" alt="Kiwify Secure" className="h-4 grayscale opacity-50" />
+          <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Garantia Blindada de 7 dias</p>
+        </div>
       </div>
     </main>
   </div>
@@ -220,6 +240,7 @@ const App: React.FC = () => {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showPasswordNotice, setShowPasswordNotice] = useState(false);
   const [filters, setFilters] = useState({
     language: 'Todos',
     traffic: 'Todos',
@@ -227,12 +248,20 @@ const App: React.FC = () => {
     niche: 'Todos'
   });
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    // Detection logic: Check for Kiwify markers or manually added 'confirmed' param
+    if (params.get('confirmed') === 'true' || params.get('status') === 'success' || document.referrer.includes('kiwify.com.br')) {
+      setShowPasswordNotice(true);
+    }
+  }, []);
+
   const handleLogin = () => {
-    const password = window.prompt("Digite a senha de acesso:");
+    const password = window.prompt("🕵️‍♂️ AUTENTICAÇÃO NECESSÁRIA\nDigite sua chave de acesso vitalício:");
     if (password === 'AGENTE007') {
       setIsLoggedIn(true);
-    } else {
-      alert('Acesso negado. Adquira sua licença para entrar.');
+    } else if (password !== null) {
+      alert('ACESSO NEGADO ❌\nSua licença não foi encontrada ou a chave está incorreta. Adquira sua licença para entrar.');
     }
   };
 
@@ -253,9 +282,8 @@ const App: React.FC = () => {
     { name: 'Dom', value: 700 },
   ];
 
-  // Protection: if not logged in, always render LandingPage
   if (!isLoggedIn) {
-    return <LandingPage onLogin={handleLogin} />;
+    return <LandingPage onLogin={handleLogin} showPasswordNotice={showPasswordNotice} />;
   }
 
   const renderContent = () => {
