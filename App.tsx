@@ -23,7 +23,8 @@ import {
   Lock,
   Unlock,
   ShieldCheck,
-  Trophy
+  Trophy,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -160,15 +161,39 @@ const OfferCard: React.FC<OfferCardProps> = ({
   </div>
 );
 
-const LandingPage = ({ onLogin, isSuccess }: { onLogin: () => void, isSuccess: boolean }) => (
+const LandingPage = ({ 
+  onLogin, 
+  isSuccess, 
+  onCloseSuccess 
+}: { 
+  onLogin: () => void, 
+  isSuccess: boolean,
+  onCloseSuccess: () => void
+}) => (
   <div className="min-h-screen bg-brand-dark flex flex-col items-center">
     {/* Success Banner */}
     {isSuccess && (
-      <div className="w-full bg-brand-gold text-black py-4 px-6 text-center font-black animate-in fade-in slide-in-from-top-4 duration-500 flex items-center justify-center gap-3 border-b-4 border-black/10 shadow-[0_4px_30px_rgba(212,175,55,0.3)] sticky top-0 z-[60]">
-        <Trophy size={20} className="animate-bounce" />
-        <span className="text-sm md:text-base tracking-tight uppercase">
-          ACESSO LIBERADO! 🕵️‍♂️ Sua chave de acesso é: <span className="bg-black text-brand-gold px-2 py-0.5 rounded ml-1">AGENTE007</span>. Digite-a ao clicar em Entrar na Plataforma.
-        </span>
+      <div className="w-full bg-brand-gold text-black py-4 px-6 md:px-12 text-center font-black animate-in fade-in slide-in-from-top-4 duration-500 flex items-center justify-between gap-4 border-b-4 border-black/10 shadow-[0_4px_30px_rgba(212,175,55,0.4)] sticky top-0 z-[60]">
+        <div className="flex-1 flex items-center justify-center gap-3">
+          <Trophy size={24} className="animate-bounce shrink-0" />
+          <span className="text-xs md:text-sm lg:text-base tracking-tight uppercase leading-tight">
+            PAGAMENTO CONFIRMADO! 🕵️‍♂️ Sua chave de acesso permanente é: 
+            <span className="bg-black text-brand-gold px-3 py-1 rounded mx-2 inline-flex items-center gap-1 shadow-lg">
+              <Lock size={14} /> AGENTE007
+            </span> 
+            <span className="text-red-700 bg-red-700/10 px-2 py-0.5 rounded border border-red-700/20">
+              <AlertTriangle size={14} className="inline mr-1" />
+              ATENÇÃO: Salve esta senha agora ou tire um print desta tela para não perder seu acesso futuro!
+            </span>
+          </span>
+        </div>
+        <button 
+          onClick={onCloseSuccess}
+          className="p-1 hover:bg-black/10 rounded-full transition-colors shrink-0"
+          title="Fechar aviso"
+        >
+          <X size={24} />
+        </button>
       </div>
     )}
     
@@ -263,6 +288,8 @@ const App: React.FC = () => {
     const password = window.prompt("🕵️‍♂️ AUTENTICAÇÃO NECESSÁRIA\nDigite sua chave de acesso vitalício:");
     if (password === 'AGENTE007') {
       setIsLoggedIn(true);
+      // Ensure the banner disappears upon successful login
+      setIsSuccess(false);
     } else if (password !== null) {
       alert('ACESSO NEGADO ❌\nSua licença não foi encontrada ou a chave está incorreta. Adquira sua licença para entrar.');
     }
@@ -286,7 +313,13 @@ const App: React.FC = () => {
   ];
 
   if (!isLoggedIn) {
-    return <LandingPage onLogin={handleLogin} isSuccess={isSuccess} />;
+    return (
+      <LandingPage 
+        onLogin={handleLogin} 
+        isSuccess={isSuccess} 
+        onCloseSuccess={() => setIsSuccess(false)}
+      />
+    );
   }
 
   const renderContent = () => {
