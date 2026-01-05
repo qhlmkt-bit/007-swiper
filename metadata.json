@@ -1,0 +1,8 @@
+{
+  "name": "007 Swiper",
+  "description": "Premium offer analysis platform for digital marketers with a spy-themed dark interface.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
