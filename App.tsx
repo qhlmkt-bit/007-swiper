@@ -22,7 +22,8 @@ import {
   BarChart2,
   Lock,
   Unlock,
-  ShieldCheck
+  ShieldCheck,
+  Trophy
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -159,8 +160,18 @@ const OfferCard: React.FC<OfferCardProps> = ({
   </div>
 );
 
-const LandingPage = ({ onLogin, showPasswordNotice }: { onLogin: () => void, showPasswordNotice: boolean }) => (
+const LandingPage = ({ onLogin, isSuccess }: { onLogin: () => void, isSuccess: boolean }) => (
   <div className="min-h-screen bg-brand-dark flex flex-col items-center">
+    {/* Success Banner */}
+    {isSuccess && (
+      <div className="w-full bg-brand-gold text-black py-4 px-6 text-center font-black animate-in fade-in slide-in-from-top-4 duration-500 flex items-center justify-center gap-3 border-b-4 border-black/10 shadow-[0_4px_30px_rgba(212,175,55,0.3)] sticky top-0 z-[60]">
+        <Trophy size={20} className="animate-bounce" />
+        <span className="text-sm md:text-base tracking-tight uppercase">
+          ACESSO LIBERADO! 🕵️‍♂️ Sua chave de acesso é: <span className="bg-black text-brand-gold px-2 py-0.5 rounded ml-1">AGENTE007</span>. Digite-a ao clicar em Entrar na Plataforma.
+        </span>
+      </div>
+    )}
+    
     <nav className="w-full max-w-7xl px-6 py-6 flex justify-between items-center relative z-50">
       <div className="flex items-center space-x-2">
         <div className="bg-brand-gold p-2 rounded-lg shadow-lg shadow-brand-gold/20">
@@ -169,20 +180,12 @@ const LandingPage = ({ onLogin, showPasswordNotice }: { onLogin: () => void, sho
         <span className="text-2xl font-extrabold tracking-tighter text-white">007 SWIPER</span>
       </div>
       
-      <div className="flex flex-col items-end gap-2">
-        {showPasswordNotice && (
-          <div className="bg-brand-gold text-black px-4 py-2 rounded-xl text-[11px] font-black shadow-2xl animate-pulse flex items-center gap-2 max-w-xs border border-white/20">
-            <ShieldCheck size={14} />
-            <span>PAGAMENTO CONFIRMADO! 🕵️‍♂️ Chave: AGENTE007. Clique em entrar.</span>
-          </div>
-        )}
-        <button 
-          onClick={onLogin}
-          className="px-6 py-2 bg-brand-gold hover:bg-yellow-600 text-black font-bold rounded-full transition-all shadow-lg shadow-brand-gold/20 flex items-center gap-2 uppercase text-xs tracking-tighter"
-        >
-          <Lock size={14} /> Entrar na Plataforma
-        </button>
-      </div>
+      <button 
+        onClick={onLogin}
+        className="px-6 py-2 bg-brand-gold hover:bg-yellow-600 text-black font-bold rounded-full transition-all shadow-lg shadow-brand-gold/20 flex items-center gap-2 uppercase text-xs tracking-tighter"
+      >
+        <Lock size={14} /> Entrar na Plataforma
+      </button>
     </nav>
     
     <main className="flex-1 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center mt-12 mb-32 relative">
@@ -240,7 +243,7 @@ const App: React.FC = () => {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showPasswordNotice, setShowPasswordNotice] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [filters, setFilters] = useState({
     language: 'Todos',
     traffic: 'Todos',
@@ -249,10 +252,10 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
+    // Check for success parameter in URL
     const params = new URLSearchParams(window.location.search);
-    // Detection logic: Check for Kiwify markers or manually added 'confirmed' param
-    if (params.get('confirmed') === 'true' || params.get('status') === 'success' || document.referrer.includes('kiwify.com.br')) {
-      setShowPasswordNotice(true);
+    if (params.get('success') === 'true') {
+      setIsSuccess(true);
     }
   }, []);
 
@@ -283,7 +286,7 @@ const App: React.FC = () => {
   ];
 
   if (!isLoggedIn) {
-    return <LandingPage onLogin={handleLogin} showPasswordNotice={showPasswordNotice} />;
+    return <LandingPage onLogin={handleLogin} isSuccess={isSuccess} />;
   }
 
   const renderContent = () => {
