@@ -247,7 +247,7 @@ const LandingPage = ({
         <p className="text-gray-600 mb-8 font-medium text-sm">Libere agora o banco de dados restrito dos maiores players do mercado digital.</p>
         <div className="text-6xl font-black mb-10 tracking-tighter">R$ 197<span className="text-lg text-gray-400 font-bold">/mês</span></div>
         <button 
-          onClick={() => window.open('https://pay.kiwify.com.br/Bo6rspD', '_blank')} // NOVO LINK DE CHECKOUT AQUI
+          onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')} // NOVO LINK DE CHECKOUT AQUI
           className="w-full py-5 bg-brand-dark text-brand-gold font-black text-xl rounded-2xl hover:scale-105 transition-transform shadow-2xl uppercase tracking-tighter flex items-center justify-center gap-3"
         >
           <Unlock size={24} /> QUERO ACESSO AGORA
