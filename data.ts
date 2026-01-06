@@ -4,8 +4,8 @@ export const MOCK_OFFERS = [
     title: 'SSN Withdrawal - American Method',
     niche: 'Renda Extra',
     productType: 'Infoproduto',
-    description: 'Oferta de alta conversão focada em benefícios americanos.',
-    coverImage: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800',
+    description: 'Oferta focada em recuperação de taxas americanas.',
+    coverImage: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800',
     trend: 'Escalando',
     views: 125000,
     vslLinks: [
@@ -13,12 +13,9 @@ export const MOCK_OFFERS = [
       { label: 'VSL Variação B', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' }
     ],
     downloadUrl: '#',
-    transcription: 'Este é o script da VSL focado em retenção emocional e gatilhos de urgência...',
-    creativeImages: [
-      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400',
-      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=400'
-    ],
-    facebookUrl: 'https://adsarchive.com',
+    transcription: 'Script focado em autoridade e urgência financeira...',
+    creativeImages: ['https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400'],
+    facebookUrl: 'https://facebook.com/ads/library',
     pageUrl: 'https://google.com',
     language: 'Português',
     trafficSource: ['Facebook']
