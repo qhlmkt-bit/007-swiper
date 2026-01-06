@@ -84,6 +84,21 @@ export interface Offer {
   creativeImages: string[];
 }
 
+const NICHES: Niche[] = [
+  'Exercícios', 'Disfunção Erétil', 'Outros', 'Próstata', 
+  'Lei da Atração/Prosperidade', 'Emagrecimento', 'Rejuvenescimento', 
+  'Renda Extra', 'Infantil/Maternidade', 'Dores Articulares', 
+  'Sexualidade', 'Alzheimer', 'Pet', 'Neuropatia', 
+  'Evangélico/Cristianismo', 'Relacionamento', 'Desenvolvimento Pessoal', 
+  'Diabetes', 'Menopausa', 'Saúde Mental', 'Visão', 
+  'Aumento Peniano', 'Pressão Alta', 'Saúde Respiratória', 
+  'Calvície', 'Pack', 'Escrita', 'Idiomas', 'Prisão de Ventre', 
+  'Beleza', 'Fungos', 'Nutrição', 'Produtividade', 
+  'Refluxo/Gastrite', 'Moda', 'Edema', 'Varizes', 'Zumbido'
+];
+
+const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping'];
+
 /**
  * COMPONENTS
  */
@@ -237,6 +252,8 @@ const App: React.FC = () => {
   const [activeVslIndex, setActiveVslIndex] = useState(0);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedNiche, setSelectedNiche] = useState<string>('Todos');
+  const [selectedType, setSelectedType] = useState<string>('Todos');
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
@@ -261,6 +278,15 @@ const App: React.FC = () => {
     setFavorites(prev => 
       prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
     );
+  };
+
+  const filterOffers = (offers: Offer[]) => {
+    return offers.filter(o => {
+      const matchesSearch = o.title.toLowerCase().includes(searchQuery.toLowerCase()) || o.niche.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesNiche = selectedNiche === 'Todos' || o.niche === selectedNiche;
+      const matchesType = selectedType === 'Todos' || o.productType === selectedType;
+      return matchesSearch && matchesNiche && matchesType;
+    });
   };
 
   if (!isLoggedIn) {
@@ -348,6 +374,8 @@ const App: React.FC = () => {
       );
     }
 
+    const filteredOffers = filterOffers(MOCK_OFFERS);
+
     switch (currentPage) {
       case 'home':
         return (
@@ -355,7 +383,7 @@ const App: React.FC = () => {
             <div className="mb-12">
                 <h2 className="text-3xl font-black text-white uppercase italic mb-6">Mais Vistos</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {MOCK_OFFERS.slice(0, 4).map(offer => (
+                {filterOffers(MOCK_OFFERS.slice(0, 4)).map(offer => (
                     <OfferCard 
                     key={offer.id} 
                     offer={offer} 
@@ -369,7 +397,7 @@ const App: React.FC = () => {
             <div>
                 <h2 className="text-3xl font-black text-white uppercase italic mb-6">Vistos Recentemente</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {MOCK_OFFERS.slice(2, 6).map(offer => (
+                {filterOffers(MOCK_OFFERS.slice(1, 5)).map(offer => (
                     <OfferCard 
                     key={offer.id} 
                     offer={offer} 
@@ -383,14 +411,10 @@ const App: React.FC = () => {
           </div>
         );
       case 'offers':
-        const filtered = MOCK_OFFERS.filter(o => 
-          o.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          o.niche.toLowerCase().includes(searchQuery.toLowerCase())
-        );
         return (
           <div className="animate-in fade-in duration-700">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filtered.map(offer => (
+              {filteredOffers.map(offer => (
                 <OfferCard 
                   key={offer.id} 
                   offer={offer} 
@@ -399,11 +423,14 @@ const App: React.FC = () => {
                   onClick={() => setSelectedOffer(offer)}
                 />
               ))}
+              {filteredOffers.length === 0 && (
+                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhuma oferta encontrada para os filtros selecionados.</div>
+              )}
             </div>
           </div>
         );
       case 'favorites':
-        const favs = MOCK_OFFERS.filter(o => favorites.includes(o.id));
+        const favs = filterOffers(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
         return (
           <div className="animate-in fade-in duration-700">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -416,6 +443,9 @@ const App: React.FC = () => {
                   onClick={() => setSelectedOffer(offer)}
                 />
               ))}
+              {favs.length === 0 && (
+                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhum favorito encontrado.</div>
+              )}
             </div>
           </div>
         );
@@ -426,6 +456,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
+      {/* SIDEBAR */}
       <aside className="w-72 bg-brand-card border-r border-white/5 hidden lg:flex flex-col fixed h-screen z-[90]">
         <div className="p-10 h-full flex flex-col">
           <div className="flex items-center space-x-3 mb-16 px-2">
@@ -436,6 +467,7 @@ const App: React.FC = () => {
           </div>
           
           <nav className="space-y-2">
+            {/* UPPER SECTION */}
             <SidebarItem 
               icon={HomeIcon} 
               label="Home" 
@@ -455,6 +487,7 @@ const App: React.FC = () => {
               onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} 
             />
             
+            {/* LOWER SECTION */}
             <div className="pt-8 pb-4">
               <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Análise</p>
               <SidebarItem 
@@ -490,17 +523,47 @@ const App: React.FC = () => {
         </div>
       </aside>
 
+      {/* MAIN CONTENT AREA */}
       <main className="flex-1 lg:ml-72 relative">
         <header className="h-28 flex items-center justify-between px-10 bg-brand-dark/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5">
-          <div className="flex-1 flex items-center bg-brand-card px-6 py-4 rounded-[24px] border border-white/5 shadow-inner max-w-xl">
-             <Search className="text-gray-500 mr-4" size={20} />
-             <input 
-                type="text" 
-                placeholder="Busca rápida..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:text-gray-700" 
-             />
+          <div className="flex-1 flex items-center gap-4">
+            {/* SEARCH + FILTERS BAR */}
+            <div className="flex-1 flex items-center bg-brand-card px-6 py-4 rounded-[24px] border border-white/5 shadow-inner max-w-2xl">
+              <Search className="text-gray-500 mr-4" size={20} />
+              <input 
+                  type="text" 
+                  placeholder="Pesquisar banco de dados..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:text-gray-700" 
+              />
+            </div>
+
+            {/* NICHE FILTER */}
+            <div className="hidden xl:flex items-center gap-2">
+               <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest whitespace-nowrap">Nicho:</label>
+               <select 
+                  value={selectedNiche}
+                  onChange={(e) => setSelectedNiche(e.target.value)}
+                  className="bg-brand-card border border-white/5 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-tighter text-white outline-none hover:border-brand-gold transition-all cursor-pointer"
+               >
+                  <option value="Todos">Todos</option>
+                  {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+               </select>
+            </div>
+
+            {/* TYPE FILTER */}
+            <div className="hidden xl:flex items-center gap-2">
+               <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest whitespace-nowrap">Tipo:</label>
+               <select 
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="bg-brand-card border border-white/5 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-tighter text-white outline-none hover:border-brand-gold transition-all cursor-pointer"
+               >
+                  <option value="Todos">Todos</option>
+                  {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+               </select>
+            </div>
           </div>
           
           <div className="flex items-center gap-6 ml-10">
