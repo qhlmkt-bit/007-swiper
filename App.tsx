@@ -34,7 +34,8 @@ import {
   Menu,
   Filter,
   Library,
-  Loader2
+  Loader2,
+  Info
 } from 'lucide-react';
 
 /** 
@@ -58,7 +59,7 @@ export interface Offer {
   language: string;
   trafficSource: string;
   productType: ProductType;
-  structure: string;
+  description: string;
   vslLinks: VslLink[];
   downloadUrl: string;
   trend: Trend;
@@ -138,7 +139,7 @@ const OfferCard: React.FC<{
         <button 
           onClick={onToggleFavorite}
           className={`p-2.5 rounded-xl backdrop-blur-xl transition-all duration-300 ${
-            isFavorite ? 'bg-brand-gold text-black scale-110' : 'bg-black/40 text-white hover:bg-brand-gold hover:text-black'
+            isFavorite ? 'bg-brand-gold text-black scale-110' : 'bg-brand-gold/20 text-white hover:bg-brand-gold hover:text-black'
           }`}
         >
           <Star size={18} fill={isFavorite ? "currentColor" : "none"} />
@@ -154,7 +155,7 @@ const OfferCard: React.FC<{
       <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-brand-gold transition-colors italic">{offer.title}</h3>
       <div className="flex items-center justify-between border-t border-white/5 pt-4">
         <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-          <Monitor size={14} className="text-brand-gold" /> {offer.trafficSource}
+          <Monitor size={14} className="text-brand-gold" /> {offer.productType}
         </div>
         <div className="flex items-center text-gray-500 text-xs font-black italic">
           <Eye size={14} className="mr-1 text-brand-gold" />
@@ -300,34 +301,39 @@ const App: React.FC = () => {
         const response = await fetch(CSV_URL);
         const text = await response.text();
         
-        // Simple CSV Parser handling quoted strings
+        // CSV Parsing Logic: Skip 1st line, use 2nd as header, data starts from 3rd.
         const lines = text.split(/\r?\n/).filter(l => l.trim());
-        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        if (lines.length < 2) throw new Error("Planilha sem dados suficientes");
+
+        const headers = lines[1].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
         
-        const parsedData: Offer[] = lines.slice(1).map((line, idx) => {
+        const parsedData: Offer[] = lines.slice(2).map((line, idx) => {
           const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
           const row: any = {};
           headers.forEach((header, i) => {
             row[header] = values[i] || '';
           });
 
+          // Mapping logic based on spreadsheet columns provided
           return {
             id: row.id || idx.toString(),
             title: row.title || 'Sem Título',
             niche: row.niche || 'Geral',
-            language: row.language || 'Português',
-            trafficSource: row.trafficSource || 'Facebook Ads',
             productType: row.productType || 'Infoproduto',
-            structure: row.structure || 'VSL',
+            description: row.description || '',
+            coverImage: row.coverImage || '',
+            trend: row.trend || 'Estável',
+            views: parseInt(row.views) || 0,
             vslLinks: [{ label: 'VSL Principal', url: row.vslEmbedUrl || '' }],
             downloadUrl: row.vslDownloadUrl || '#',
-            trend: row.trend || 'Estável',
-            facebookUrl: row.facebookUrl || '#',
-            pageUrl: row.pageUrl || '#',
-            coverImage: row.coverImage || '',
-            views: parseInt(row.views) || 0,
             transcriptionUrl: row.transcriptionUrl || '#',
             creativeImages: row.creativeImages ? row.creativeImages.split(',').map((s: string) => s.trim()) : [],
+            pageUrl: row.pageUrl || '#',
+            facebookUrl: row.facebookUrl || '#',
+            // Defaults for missing UI elements in this specific mapping
+            language: 'Português',
+            trafficSource: row.productType || 'Facebook Ads',
+            structure: 'VSL'
           };
         });
 
@@ -387,16 +393,14 @@ const App: React.FC = () => {
       const matchesSearch = o.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesNiche = selectedNiche === 'Todos' || o.niche === selectedNiche;
       const matchesType = selectedType === 'Todos' || o.productType === selectedType;
-      const matchesTraffic = selectedTraffic === 'Todos' || o.trafficSource === selectedTraffic;
-      const matchesLanguage = selectedLanguage === 'Todos' || o.language === selectedLanguage;
-      return matchesSearch && matchesNiche && matchesType && matchesTraffic && matchesLanguage;
+      return matchesSearch && matchesNiche && matchesType;
     });
   };
 
   // UNIQUE NICHES FOR FILTER
   const availableNiches = ['Todos', ...Array.from(new Set(offers.map(o => o.niche)))];
 
-  // CONDITIONAL FILTERS DISPLAY LOGIC
+  // CONDITIONAL FILTERS DISPLAY LOGIC - OFERTAS, VSL, CRIATIVOS, PÁGINAS e BIBLIOTECA DE ANÚNCIOS
   const showFilters = ['offers', 'vsl', 'creatives', 'pages', 'ads_library'].includes(currentPage) && !selectedOffer;
 
   const renderContent = () => {
@@ -467,7 +471,7 @@ const App: React.FC = () => {
                         allowFullScreen
                       ></iframe>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-700 font-black uppercase italic text-xs">Iframe de vídeo indisponível</div>
+                      <div className="w-full h-full flex items-center justify-center text-gray-700 font-black uppercase italic text-xs">Player indisponível</div>
                     )}
                   </div>
                 </div>
@@ -482,16 +486,16 @@ const App: React.FC = () => {
                   <div className="grid grid-cols-1 gap-4 md:gap-6">
                     {[
                       { icon: Tag, label: 'Nicho', value: selectedOffer.niche },
-                      { icon: Lock, label: 'Tipo de Produto', value: selectedOffer.productType },
-                      { icon: Globe, label: 'Idioma', value: selectedOffer.language },
-                      { icon: Monitor, label: 'Rede de Tráfego', value: selectedOffer.trafficSource },
+                      { icon: Lock, label: 'Tipo', value: selectedOffer.productType },
+                      { icon: Info, label: 'Briefing', value: selectedOffer.description || 'Descrição confidencial' },
+                      { icon: Monitor, label: 'Tráfego', value: selectedOffer.productType },
                     ].map((item, idx) => (
                       <div key={idx} className="flex items-center justify-between p-4 bg-brand-hover rounded-2xl border border-white/5">
                         <div className="flex items-center gap-3">
-                          <item.icon className="text-brand-gold w-5 h-5" />
+                          <item.icon className="text-brand-gold w-5 h-5 shrink-0" />
                           <span className="text-gray-500 text-[10px] font-black uppercase">{item.label}</span>
                         </div>
-                        <span className="text-white text-sm md:text-base font-black uppercase italic tracking-tight">{item.value}</span>
+                        <span className="text-white text-sm font-black uppercase italic tracking-tight text-right line-clamp-1">{item.value}</span>
                       </div>
                     ))}
                   </div>
@@ -513,6 +517,7 @@ const App: React.FC = () => {
                      </div>
                    </div>
                  ))}
+                 {selectedOffer.creativeImages.length === 0 && <p className="text-gray-600 font-black text-xs uppercase italic col-span-full">Nenhum criativo disponível.</p>}
                </div>
             </div>
 
@@ -641,7 +646,7 @@ const App: React.FC = () => {
                     </div>
                     <div className="p-4 bg-brand-hover">
                         <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-1"><Monitor size={12} className="text-brand-gold" /> {offer.trafficSource}</p>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-1"><Monitor size={12} className="text-brand-gold" /> {offer.productType}</p>
                     </div>
                 </div>
               ))}
@@ -713,7 +718,7 @@ const App: React.FC = () => {
                     </div>
                     <div className="space-y-3">
                         <a href={offer.facebookUrl} target="_blank" rel="noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
-                            <Facebook size={14} /> FACEBOOK ADS <ExternalLink size={12} />
+                            <Facebook size={14} /> BIBLIOTECA DE ANÚNCIOS <ExternalLink size={12} />
                         </a>
                     </div>
                 </div>
@@ -844,20 +849,6 @@ const App: React.FC = () => {
                   <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                     <option value="Todos">Todos</option>
                     {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
-                  <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Rede de Tráfego</label>
-                  <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
-                    <option value="Todos">Todas</option>
-                    {TRAFFIC_SOURCES.map(ts => <option key={ts} value={ts}>{ts}</option>)}
-                  </select>
-                </div>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
-                  <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
-                  <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
-                    <option value="Todos">Todos</option>
-                    {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
               </div>
