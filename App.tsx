@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Home as HomeIcon, 
@@ -26,13 +25,16 @@ import {
   TrendingUp,
   ShieldCheck,
   CheckCircle,
-  Play
+  Play,
+  Facebook,
+  Youtube,
+  Smartphone
 } from 'lucide-react';
 import { MOCK_OFFERS } from './data';
 import { Offer, Niche, ProductType, Trend, VslLink } from './types';
 
 /** 
- * CONSTANTS FOR FILTERS
+ * TYPES AND CONSTANTS
  */
 const NICHES: Niche[] = [
   'Exercícios', 'Disfunção Erétil', 'Outros', 'Próstata', 
@@ -64,7 +66,7 @@ const SidebarItem: React.FC<{
 }> = ({ icon: Icon, label, active, onClick, variant = 'default' }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-200 ${
+    className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 ${
       active 
         ? 'bg-brand-gold text-black font-black shadow-lg shadow-brand-gold/20' 
         : variant === 'danger' 
@@ -73,7 +75,7 @@ const SidebarItem: React.FC<{
     }`}
   >
     <Icon size={20} />
-    <span className="text-sm uppercase tracking-tighter">{label}</span>
+    <span className="text-sm uppercase tracking-tighter font-bold">{label}</span>
   </button>
 );
 
@@ -122,7 +124,7 @@ const OfferCard: React.FC<{
       </div>
     </div>
     <div className="p-5">
-      <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-brand-gold transition-colors">{offer.title}</h3>
+      <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-brand-gold transition-colors italic">{offer.title}</h3>
       <div className="flex items-center justify-between border-t border-white/5 pt-4">
         <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-widest">
           <Monitor size={14} className="text-brand-gold" /> {offer.trafficSource}
@@ -157,30 +159,68 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
     
     <nav className="w-full max-w-7xl px-8 py-8 flex justify-between items-center relative z-50">
       <div className="flex items-center space-x-3">
-        <div className="bg-brand-gold p-2.5 rounded-2xl rotate-3">
+        <div className="bg-brand-gold p-2.5 rounded-2xl rotate-3 shadow-xl shadow-brand-gold/20">
           <Eye className="text-black" size={28} />
         </div>
         <span className="text-3xl font-black tracking-tighter text-white uppercase italic">007 Swiper</span>
       </div>
       <button 
         onClick={onLogin}
-        className="px-8 py-3 bg-brand-gold hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl shadow-brand-gold/30 flex items-center gap-2 uppercase text-xs tracking-tighter"
+        className="px-8 py-3 bg-brand-gold hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl shadow-brand-gold/30 flex items-center gap-2 uppercase text-xs tracking-tighter transform hover:scale-105"
       >
-        <Lock size={16} /> Entrar
+        <Lock size={16} /> Entrar na Plataforma
       </button>
     </nav>
     
-    <main className="flex-1 w-full max-w-7xl px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-gold/10 via-transparent to-transparent -z-10 pointer-events-none opacity-50"></div>
+    <main className="flex-1 w-full max-w-7xl px-8 flex flex-col items-center justify-center text-center mt-8 mb-32 relative">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-gold/10 via-transparent to-transparent -z-10 pointer-events-none opacity-40"></div>
       
-      <div className="inline-block px-5 py-2 mb-8 rounded-full border border-brand-gold/30 bg-brand-gold/5 text-brand-gold text-xs font-black uppercase tracking-[0.2em]">
-        Inteligência Digital Secreta
+      <div className="inline-block px-5 py-2 mb-8 rounded-full border border-brand-gold/30 bg-brand-gold/5 text-brand-gold text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
+        Inteligência Digital de Elite
       </div>
-      <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase italic">
-        Espione as Ofertas que <br/> <span className="text-brand-gold">Dominam o Jogo.</span>
+      <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase italic max-w-5xl">
+        Pare de tentar adivinhar o que vende. <br/> <span className="text-brand-gold">Acesse o arsenal secreto.</span>
       </h1>
+      <p className="text-gray-400 text-lg md:text-xl font-medium max-w-2xl mb-12">
+        Acesse os maiores players do mercado digital. Desconstrua ofertas milionárias em segundos.
+      </p>
+
+      {/* PROVA DE VALOR */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-20">
+        {[
+          { icon: Zap, title: 'Espionagem em Tempo Real', desc: 'Veja o que está escalando agora antes de todo mundo.' },
+          { icon: Download, title: 'Redução de Custo', desc: 'Baixe VSLs e Transcrições prontas e economize milhares em produção.' },
+          { icon: ShieldCheck, title: 'Análise de Tráfego', desc: 'Descubra quais redes estão trazendo lucro real para cada oferta.' }
+        ].map((item, i) => (
+          <div key={i} className="bg-brand-card p-8 rounded-[40px] border border-white/5 hover:border-brand-gold/30 transition-all text-left group">
+            <div className="w-14 h-14 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-gold group-hover:text-black transition-colors shadow-lg">
+              <item.icon size={28} />
+            </div>
+            <h3 className="text-white font-black uppercase text-xl mb-3 tracking-tight italic">{item.title}</h3>
+            <p className="text-gray-500 font-medium leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* AUTORIDADE BANNER */}
+      <div className="w-full bg-brand-card/50 py-10 px-8 rounded-[50px] border border-white/5 mb-20 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="text-left">
+          <p className="text-brand-gold font-black uppercase text-3xl tracking-tighter italic">Monitorando +10.000</p>
+          <p className="text-white font-bold uppercase text-sm tracking-widest opacity-60">Anúncios ativos diariamente</p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-10 opacity-40 grayscale hover:grayscale-0 transition-all">
+          <Facebook size={32} />
+          <Youtube size={32} />
+          <Smartphone size={32} />
+          <Monitor size={32} />
+        </div>
+      </div>
       
-      <div className="bg-white text-black p-12 rounded-[50px] w-full max-w-lg shadow-2xl relative overflow-hidden group border-b-[10px] border-brand-gold mt-12">
+      {/* CHECKOUT CARD */}
+      <div className="bg-white text-black p-12 rounded-[50px] w-full max-w-lg shadow-2xl relative overflow-hidden group border-b-[10px] border-brand-gold">
+        <div className="absolute -top-10 -right-10 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+          <Eye size={200} />
+        </div>
         <h2 className="text-4xl font-black mb-2 uppercase tracking-tighter italic text-brand-gold">ACESSO PREMIUM</h2>
         <p className="text-gray-600 mb-10 font-bold text-sm tracking-tight italic">O arsenal definitivo para o mercado digital profissional.</p>
         <div className="text-7xl font-black mb-12 tracking-tighter flex items-end justify-center text-black">
@@ -262,15 +302,13 @@ const App: React.FC = () => {
     });
   };
 
-  if (!isLoggedIn) {
-    return <LandingPage onLogin={handleLogin} isSuccess={isSuccess} onCloseSuccess={() => setIsSuccess(false)} />;
-  }
+  // Determine if filters should be shown
+  const showFilters = ['offers', 'vsl', 'creatives', 'pages'].includes(currentPage) && !selectedOffer;
 
   const renderContent = () => {
     if (selectedOffer) {
       return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {/* TOPO: TRÊS BOTÕES ALINHADOS */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <button 
               onClick={() => { setSelectedOffer(null); setActiveVslIndex(0); }}
@@ -299,9 +337,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
-            {/* MEIO: LAYOUT DE DUAS COLUNAS (ESPIONAGEM) */}
             <div className="flex flex-col lg:flex-row gap-8 items-start">
-              {/* MEIO (ESQUERDA 60%) */}
               <div className="w-full lg:w-[60%] space-y-6">
                 <div className="bg-brand-card p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden">
                   <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6">
@@ -331,7 +367,6 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* MEIO (DIREITA 40%) */}
               <div className="w-full lg:w-[40%] space-y-4">
                 <div className="bg-brand-card p-8 rounded-[32px] border border-white/5 shadow-2xl h-full">
                   <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic">
@@ -357,7 +392,6 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* BASE: CRIATIVOS ESPIONADOS */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
                  <ImageIcon className="text-brand-gold w-6 h-6" /> CRIATIVOS ESPIONADOS
@@ -374,18 +408,12 @@ const App: React.FC = () => {
                </div>
             </div>
 
-            {/* BASE: PÁGINAS DE VENDA */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
                  <Layout className="text-brand-gold w-6 h-6" /> PÁGINAS DE VENDA
                </h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <a 
-                   href={selectedOffer.pageUrl} 
-                   target="_blank" 
-                   rel="noreferrer"
-                   className="p-6 bg-brand-card rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group"
-                 >
+                 <a href={selectedOffer.pageUrl} target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
                       <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
                         <Monitor size={20} />
@@ -397,13 +425,7 @@ const App: React.FC = () => {
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
                  </a>
-
-                 <a 
-                   href="#" 
-                   target="_blank" 
-                   rel="noreferrer"
-                   className="p-6 bg-brand-card rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group"
-                 >
+                 <a href="#" target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
                       <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
                         <MousePointer2 size={20} />
@@ -431,8 +453,7 @@ const App: React.FC = () => {
         const favoritesHome = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
 
         return (
-          <div className="animate-in fade-in duration-700 space-y-16">
-            {/* OPERAÇÕES EM ESCALA */}
+          <div className="animate-in fade-in duration-700 space-y-20">
             <div>
                 <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
                   <Zap className="text-brand-gold" fill="currentColor" /> OPERAÇÕES EM ESCALA
@@ -450,7 +471,6 @@ const App: React.FC = () => {
                 </div>
             </div>
 
-            {/* VISTOS RECENTEMENTE */}
             <div>
                 <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
                   <Monitor className="text-brand-gold" /> VISTOS RECENTEMENTE
@@ -469,7 +489,6 @@ const App: React.FC = () => {
                 </div>
             </div>
 
-            {/* SEUS FAVORITOS */}
             <div>
                 <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
                   <Star className="text-brand-gold" fill="currentColor" /> SEUS FAVORITOS
@@ -604,7 +623,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
-      {/* SIDEBAR REORGANIZADA */}
+      {/* SIDEBAR */}
       <aside className="w-72 bg-brand-card border-r border-white/5 hidden lg:flex flex-col fixed h-screen z-[90]">
         <div className="p-10 h-full flex flex-col">
           <div className="flex items-center space-x-3 mb-16 px-2">
@@ -615,62 +634,21 @@ const App: React.FC = () => {
           </div>
           
           <nav className="space-y-2">
-            <SidebarItem 
-              icon={HomeIcon} 
-              label="Home" 
-              active={currentPage === 'home' && !selectedOffer} 
-              onClick={() => { setCurrentPage('home'); setSelectedOffer(null); }} 
-            />
-            <SidebarItem 
-              icon={Star} 
-              label="Favoritos" 
-              active={currentPage === 'favorites'} 
-              onClick={() => { setCurrentPage('favorites'); setSelectedOffer(null); }} 
-            />
-            <SidebarItem 
-              icon={Settings} 
-              label="Configurações" 
-              active={currentPage === 'settings'} 
-              onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} 
-            />
+            <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => { setCurrentPage('home'); setSelectedOffer(null); }} />
+            <SidebarItem icon={Star} label="Favoritos" active={currentPage === 'favorites'} onClick={() => { setCurrentPage('favorites'); setSelectedOffer(null); }} />
+            <SidebarItem icon={Settings} label="Configurações" active={currentPage === 'settings'} onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} />
             
             <div className="pt-8 pb-4">
-              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Inteligência Modular</p>
-              <SidebarItem 
-                icon={Tag} 
-                label="OFERTAS" 
-                active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} 
-                onClick={() => { setCurrentPage('offers'); setSelectedOffer(null); }} 
-              />
-              <SidebarItem 
-                icon={Video} 
-                label="VSL" 
-                active={currentPage === 'vsl'} 
-                onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); }} 
-              />
-              <SidebarItem 
-                icon={Palette} 
-                label="CRIATIVOS" 
-                active={currentPage === 'creatives'} 
-                onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); }} 
-              />
-              <SidebarItem 
-                icon={FileText} 
-                label="PÁGINAS" 
-                active={currentPage === 'pages'} 
-                onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); }} 
-              />
+              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Módulos Espiões</p>
+              <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} onClick={() => { setCurrentPage('offers'); setSelectedOffer(null); }} />
+              <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); }} />
+              <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); }} />
+              <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); }} />
             </div>
           </nav>
 
           <div className="mt-auto">
-            <SidebarItem 
-              icon={LogOut} 
-              label="Sair" 
-              active={false}
-              onClick={() => setIsLoggedIn(false)} 
-              variant="danger"
-            />
+            <SidebarItem icon={LogOut} label="Sair" active={false} onClick={() => setIsLoggedIn(false)} variant="danger" />
           </div>
         </div>
       </aside>
@@ -683,7 +661,7 @@ const App: React.FC = () => {
                <Search className="text-gray-500 mr-4" size={18} />
                <input 
                   type="text" 
-                  placeholder="Pesquisar inteligência..." 
+                  placeholder="Pesquisar inteligência secreta..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:text-gray-700" 
@@ -692,36 +670,37 @@ const App: React.FC = () => {
             <div className="flex items-center gap-4 bg-brand-card p-2 pr-6 rounded-[24px] border border-white/5 shadow-2xl ml-6">
                 <div className="w-10 h-10 bg-brand-gold rounded-xl flex items-center justify-center font-black text-black text-lg shadow-lg">007</div>
                 <div className="hidden sm:block">
-                  <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Secreto</p>
+                  <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p>
                 </div>
             </div>
           </div>
 
-          {!selectedOffer && (
+          {/* CONDITIONAL FILTERS DISPLAY */}
+          {showFilters && (
             <div className="flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase text-gray-600 px-1">Nicho</label>
+                <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Filtrar por Nicho</label>
                 <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                   <option value="Todos">Todos</option>
                   {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase text-gray-600 px-1">Tipo de Produto</label>
+                <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tipo de Produto</label>
                 <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                   <option value="Todos">Todos</option>
                   {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase text-gray-600 px-1">Rede de Tráfego</label>
+                <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Rede de Tráfego</label>
                 <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                   <option value="Todos">Todas</option>
                   {TRAFFIC_SOURCES.map(ts => <option key={ts} value={ts}>{ts}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase text-gray-600 px-1">Idioma</label>
+                <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
                 <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                   <option value="Todos">Todos</option>
                   {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
