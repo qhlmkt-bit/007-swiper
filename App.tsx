@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   Home as HomeIcon, 
@@ -24,54 +25,15 @@ import {
   MousePointer2,
   TrendingUp,
   ShieldCheck,
-  CheckCircle
+  CheckCircle,
+  Play
 } from 'lucide-react';
 import { MOCK_OFFERS } from './data';
+import { Offer, Niche, ProductType, Trend, VslLink } from './types';
 
 /** 
- * TYPES DEFINITIONS - STABILITY FOR VERCEL
+ * CONSTANTS FOR FILTERS
  */
-export type ProductType = 'Infoproduto' | 'Low Ticket' | 'Nutracêutico' | 'Dropshipping' | 'E-book' | string;
-
-export type Niche = 
-  | 'Exercícios' | 'Disfunção Erétil' | 'Outros' | 'Próstata' 
-  | 'Lei da Atração/Prosperidade' | 'Emagrecimento' | 'Rejuvenescimento' 
-  | 'Renda Extra' | 'Infantil/Maternidade' | 'Dores Articulares' 
-  | 'Sexualidade' | 'Alzheimer' | 'Pet' | 'Neuropatia' 
-  | 'Evangélico/Cristianismo' | 'Relacionamento' | 'Desenvolvimento Pessoal' 
-  | 'Diabetes' | 'Menopausa' | 'Saúde Mental' | 'Visão' 
-  | 'Aumento Peniano' | 'Pressão Alta' | 'Saúde Respiratória' 
-  | 'Calvície' | 'Pack' | 'Escrita' | 'Idiomas' | 'Prisão de Ventre' 
-  | 'Beleza' | 'Fungos' | 'Nutrição' | 'Produtividade' 
-  | 'Refluxo/Gastrite' | 'Moda' | 'Edema' | 'Varizes' | 'Zumbido' | string;
-
-export type Trend = 'Em Alta' | 'Escalando' | 'Estável';
-
-export interface VslLink {
-  label: string;
-  url: string;
-}
-
-export interface Offer {
-  id: string;
-  title: string;
-  niche: Niche;
-  language: string;
-  trafficSource: string;
-  productType: ProductType;
-  structure: string;
-  vslLinks: VslLink[];
-  downloadUrl: string;
-  trend: Trend;
-  facebookUrl: string;
-  pageUrl: string;
-  coverImage: string;
-  views: number;
-  transcription: string;
-  creativeImages: string[];
-  isFavorite?: boolean;
-}
-
 const NICHES: Niche[] = [
   'Exercícios', 'Disfunção Erétil', 'Outros', 'Próstata', 
   'Lei da Atração/Prosperidade', 'Emagrecimento', 'Rejuvenescimento', 
@@ -90,7 +52,7 @@ const TRAFFIC_SOURCES = ['Facebook Ads', 'YouTube Ads', 'TikTok Ads', 'Google Ad
 const LANGUAGES = ['Português', 'Inglês', 'Espanhol'];
 
 /**
- * COMPONENTS
+ * UI COMPONENTS
  */
 
 const SidebarItem: React.FC<{
@@ -241,6 +203,7 @@ const App: React.FC = () => {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [activeVslIndex, setActiveVslIndex] = useState(0);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
   const [selectedNiche, setSelectedNiche] = useState<string>('Todos');
@@ -257,6 +220,9 @@ const App: React.FC = () => {
     }
     const savedFavs = localStorage.getItem('007_favs');
     if (savedFavs) setFavorites(JSON.parse(savedFavs));
+
+    const savedViewed = localStorage.getItem('007_viewed');
+    if (savedViewed) setRecentlyViewed(JSON.parse(savedViewed));
   }, []);
 
   const handleLogin = () => {
@@ -276,6 +242,13 @@ const App: React.FC = () => {
       : [...favorites, id];
     setFavorites(newFavs);
     localStorage.setItem('007_favs', JSON.stringify(newFavs));
+  };
+
+  const trackView = (offer: Offer) => {
+    const newViewed = [offer.id, ...recentlyViewed.filter(id => id !== offer.id)].slice(0, 8);
+    setRecentlyViewed(newViewed);
+    localStorage.setItem('007_viewed', JSON.stringify(newViewed));
+    setSelectedOffer(offer);
   };
 
   const applyEliteFilters = (offers: Offer[]) => {
@@ -453,92 +426,70 @@ const App: React.FC = () => {
 
     switch (currentPage) {
       case 'home':
-        const scalingOffers = applyEliteFilters(MOCK_OFFERS.filter(o => o.trend === 'Escalando'));
-        const intelligenceOffers = applyEliteFilters([...MOCK_OFFERS].reverse().slice(0, 4));
-        const archiveOffers = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
+        const scalingHome = applyEliteFilters(MOCK_OFFERS.filter(o => o.trend === 'Escalando'));
+        const recentlyHome = applyEliteFilters(MOCK_OFFERS.filter(o => recentlyViewed.includes(o.id)));
+        const favoritesHome = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
 
         return (
           <div className="animate-in fade-in duration-700 space-y-16">
-            {/* Operações em Escala */}
+            {/* OPERAÇÕES EM ESCALA */}
             <div>
                 <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                  <Zap className="text-brand-gold" fill="currentColor" /> Operações em Escala
+                  <Zap className="text-brand-gold" fill="currentColor" /> OPERAÇÕES EM ESCALA
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {scalingOffers.map(offer => (
+                {scalingHome.map(offer => (
                     <OfferCard 
                     key={offer.id} 
                     offer={offer} 
                     isFavorite={favorites.includes(offer.id)}
                     onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                    onClick={() => setSelectedOffer(offer)}
+                    onClick={() => trackView(offer)}
                     />
                 ))}
-                {scalingOffers.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs px-2">Nenhuma operação em escala identificada.</p>}
                 </div>
             </div>
 
-            {/* Monitor de Inteligência (24h) */}
+            {/* VISTOS RECENTEMENTE */}
             <div>
                 <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                  <Monitor className="text-brand-gold" /> Monitor de Inteligência (24h)
+                  <Monitor className="text-brand-gold" /> VISTOS RECENTEMENTE
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {intelligenceOffers.map(offer => (
+                {recentlyHome.map(offer => (
                     <OfferCard 
                     key={offer.id} 
                     offer={offer} 
                     isFavorite={favorites.includes(offer.id)}
                     onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                    onClick={() => setSelectedOffer(offer)}
+                    onClick={() => trackView(offer)}
                     />
                 ))}
+                {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic px-2">Nenhuma atividade recente registrada.</p>}
                 </div>
             </div>
 
-            {/* Seu Arquivo Secreto */}
+            {/* SEUS FAVORITOS */}
             <div>
                 <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                  <Star className="text-brand-gold" fill="currentColor" /> Seu Arquivo Secreto
+                  <Star className="text-brand-gold" fill="currentColor" /> SEUS FAVORITOS
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {archiveOffers.map(offer => (
+                {favoritesHome.map(offer => (
                     <OfferCard 
                     key={offer.id} 
                     offer={offer} 
                     isFavorite={true}
                     onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                    onClick={() => setSelectedOffer(offer)}
+                    onClick={() => trackView(offer)}
                     />
                 ))}
-                {archiveOffers.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs px-2 italic">Seu arquivo secreto está vazio. Favorite ofertas para espionagem contínua.</p>}
+                {favoritesHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic px-2">Favoritos vazios. Marque ofertas para acesso rápido.</p>}
                 </div>
             </div>
           </div>
         );
-      case 'favorites':
-        const favOffers = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
-        return (
-          <div className="animate-in fade-in duration-700">
-            <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-              <Star className="text-brand-gold" fill="currentColor" /> Favoritos
-            </h2>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {favOffers.map(offer => (
-                <OfferCard 
-                  key={offer.id} 
-                  offer={offer} 
-                  isFavorite={true}
-                  onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                  onClick={() => setSelectedOffer(offer)}
-                />
-              ))}
-              {favOffers.length === 0 && (
-                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Sua base de favoritos está vazia.</div>
-              )}
-            </div>
-          </div>
-        );
+
       case 'offers':
         return (
           <div className="animate-in fade-in duration-700">
@@ -549,15 +500,103 @@ const App: React.FC = () => {
                   offer={offer} 
                   isFavorite={favorites.includes(offer.id)}
                   onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                  onClick={() => setSelectedOffer(offer)}
+                  onClick={() => trackView(offer)}
                 />
               ))}
-              {filtered.length === 0 && (
-                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhuma oferta correspondente encontrada.</div>
-              )}
             </div>
           </div>
         );
+
+      case 'vsl':
+        return (
+          <div className="animate-in fade-in duration-700">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {filtered.map(offer => (
+                <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
+                    <div className="relative aspect-video">
+                        <img src={offer.coverImage} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-14 h-14 bg-brand-gold text-black rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
+                                <Play fill="currentColor" size={24} />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-4 bg-brand-hover">
+                        <p className="text-white font-black uppercase text-sm italic mb-1">{offer.title}</p>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-1"><Monitor size={12} className="text-brand-gold" /> {offer.trafficSource}</p>
+                    </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'creatives':
+        const allCreatives = filtered.flatMap(o => o.creativeImages.map(img => ({ img, offer: o })));
+        return (
+          <div className="animate-in fade-in duration-700">
+             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+              {allCreatives.map((item, i) => (
+                <div key={i} onClick={() => trackView(item.offer)} className="aspect-square bg-brand-card rounded-xl overflow-hidden border border-white/5 group relative cursor-pointer">
+                    <img src={item.img} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" alt="" />
+                    <div className="absolute inset-x-0 bottom-0 bg-black/80 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="text-[9px] font-black text-white uppercase truncate">{item.offer.title}</p>
+                    </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'pages':
+        return (
+          <div className="animate-in fade-in duration-700">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map(offer => (
+                <div key={offer.id} className="bg-brand-card p-6 rounded-[32px] border border-white/5 hover:border-brand-gold/50 transition-all group">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-brand-hover rounded-xl flex items-center justify-center group-hover:bg-brand-gold group-hover:text-black transition-all">
+                                <Layout size={20} />
+                            </div>
+                            <p className="text-white font-black uppercase text-base italic">{offer.title}</p>
+                        </div>
+                        <button onClick={(e) => toggleFavorite(offer.id, e)} className="text-gray-600 hover:text-brand-gold transition-colors">
+                            <Star size={18} fill={favorites.includes(offer.id) ? "currentColor" : "none"} />
+                        </button>
+                    </div>
+                    <div className="space-y-3">
+                        <a href={offer.pageUrl} target="_blank" rel="noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
+                            <Monitor size={14} /> SALES PAGE <ExternalLink size={12} />
+                        </a>
+                        <a href="#" target="_blank" rel="noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
+                            <MousePointer2 size={14} /> CHECKOUT <ExternalLink size={12} />
+                        </a>
+                    </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'favorites':
+        const favList = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
+        return (
+          <div className="animate-in fade-in duration-700">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {favList.map(offer => (
+                <OfferCard 
+                  key={offer.id} 
+                  offer={offer} 
+                  isFavorite={true}
+                  onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
+                  onClick={() => trackView(offer)}
+                />
+              ))}
+            </div>
+          </div>
+        );
+
       default:
         return <div className="text-center py-20 text-gray-500 font-black uppercase italic">Módulo VIP em desenvolvimento...</div>;
     }
@@ -565,7 +604,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
-      {/* SIDEBAR ORIGINAL */}
+      {/* SIDEBAR REORGANIZADA */}
       <aside className="w-72 bg-brand-card border-r border-white/5 hidden lg:flex flex-col fixed h-screen z-[90]">
         <div className="p-10 h-full flex flex-col">
           <div className="flex items-center space-x-3 mb-16 px-2">
@@ -596,22 +635,28 @@ const App: React.FC = () => {
             />
             
             <div className="pt-8 pb-4">
-              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Inteligência</p>
+              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Inteligência Modular</p>
               <SidebarItem 
                 icon={Tag} 
-                label="Ofertas" 
+                label="OFERTAS" 
                 active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} 
                 onClick={() => { setCurrentPage('offers'); setSelectedOffer(null); }} 
               />
               <SidebarItem 
+                icon={Video} 
+                label="VSL" 
+                active={currentPage === 'vsl'} 
+                onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); }} 
+              />
+              <SidebarItem 
                 icon={Palette} 
-                label="Criativos" 
+                label="CRIATIVOS" 
                 active={currentPage === 'creatives'} 
                 onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); }} 
               />
               <SidebarItem 
                 icon={FileText} 
-                label="Páginas" 
+                label="PÁGINAS" 
                 active={currentPage === 'pages'} 
                 onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); }} 
               />
@@ -638,7 +683,7 @@ const App: React.FC = () => {
                <Search className="text-gray-500 mr-4" size={18} />
                <input 
                   type="text" 
-                  placeholder="Pesquisar banco de dados..." 
+                  placeholder="Pesquisar inteligência..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:text-gray-700" 
@@ -647,37 +692,37 @@ const App: React.FC = () => {
             <div className="flex items-center gap-4 bg-brand-card p-2 pr-6 rounded-[24px] border border-white/5 shadow-2xl ml-6">
                 <div className="w-10 h-10 bg-brand-gold rounded-xl flex items-center justify-center font-black text-black text-lg shadow-lg">007</div>
                 <div className="hidden sm:block">
-                  <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente VIP</p>
+                  <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Secreto</p>
                 </div>
             </div>
           </div>
 
           {!selectedOffer && (
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-gray-600 px-1">Nicho</label>
-                <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
+                <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                   <option value="Todos">Todos</option>
                   {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-gray-600 px-1">Tipo de Produto</label>
-                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
+                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                   <option value="Todos">Todos</option>
                   {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-gray-600 px-1">Rede de Tráfego</label>
-                <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
+                <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                   <option value="Todos">Todas</option>
                   {TRAFFIC_SOURCES.map(ts => <option key={ts} value={ts}>{ts}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[9px] font-black uppercase text-gray-600 px-1">Idioma</label>
-                <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
+                <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                   <option value="Todos">Todos</option>
                   {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
