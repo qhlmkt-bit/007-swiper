@@ -28,13 +28,58 @@ import {
   Play,
   Facebook,
   Youtube,
-  Smartphone
+  Smartphone,
+  Clock,
+  Target
 } from 'lucide-react';
 import { MOCK_OFFERS } from './data';
-import { Offer, Niche, ProductType, Trend, VslLink } from './types';
 
 /** 
- * TYPES AND CONSTANTS
+ * TYPE DEFINITIONS - STABILITY FOR DEPLOY
+ */
+export type ProductType = 'Infoproduto' | 'Low Ticket' | 'Nutracêutico' | 'Dropshipping' | 'E-book' | string;
+
+export type Niche = 
+  | 'Exercícios' | 'Disfunção Erétil' | 'Outros' | 'Próstata' 
+  | 'Lei da Atração/Prosperidade' | 'Emagrecimento' | 'Rejuvenescimento' 
+  | 'Renda Extra' | 'Infantil/Maternidade' | 'Dores Articulares' 
+  | 'Sexualidade' | 'Alzheimer' | 'Pet' | 'Neuropatia' 
+  | 'Evangélico/Cristianismo' | 'Relacionamento' | 'Desenvolvimento Pessoal' 
+  | 'Diabetes' | 'Menopausa' | 'Saúde Mental' | 'Visão' 
+  | 'Aumento Peniano' | 'Pressão Alta' | 'Saúde Respiratória' 
+  | 'Calvície' | 'Pack' | 'Escrita' | 'Idiomas' | 'Prisão de Ventre' 
+  | 'Beleza' | 'Fungos' | 'Nutrição' | 'Produtividade' 
+  | 'Refluxo/Gastrite' | 'Moda' | 'Edema' | 'Varizes' | 'Zumbido' | string;
+
+export type Trend = 'Em Alta' | 'Escalando' | 'Estável';
+
+export interface VslLink {
+  label: string;
+  url: string;
+}
+
+export interface Offer {
+  id: string;
+  title: string;
+  niche: Niche;
+  language: string;
+  trafficSource: string;
+  productType: ProductType;
+  structure: string;
+  vslLinks: VslLink[];
+  downloadUrl: string;
+  trend: Trend;
+  facebookUrl: string;
+  pageUrl: string;
+  coverImage: string;
+  views: number;
+  transcription: string;
+  creativeImages: string[];
+  isFavorite?: boolean;
+}
+
+/** 
+ * CONSTANTS 
  */
 const NICHES: Niche[] = [
   'Exercícios', 'Disfunção Erétil', 'Outros', 'Próstata', 
@@ -75,7 +120,7 @@ const SidebarItem: React.FC<{
     }`}
   >
     <Icon size={20} />
-    <span className="text-sm uppercase tracking-tighter font-bold">{label}</span>
+    <span className="text-sm uppercase tracking-tighter font-black">{label}</span>
   </button>
 );
 
@@ -138,6 +183,9 @@ const OfferCard: React.FC<{
   </div>
 );
 
+/**
+ * LANDING PAGE COMPONENT
+ */
 const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
   <div className="min-h-screen bg-brand-dark flex flex-col items-center">
     {isSuccess && (
@@ -168,76 +216,70 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         onClick={onLogin}
         className="px-8 py-3 bg-brand-gold hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl shadow-brand-gold/30 flex items-center gap-2 uppercase text-xs tracking-tighter transform hover:scale-105"
       >
-        <Lock size={16} /> Entrar na Plataforma
+        <Lock size={16} /> Entrar
       </button>
     </nav>
     
     <main className="flex-1 w-full max-w-7xl px-8 flex flex-col items-center justify-center text-center mt-8 mb-32 relative">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-gold/10 via-transparent to-transparent -z-10 pointer-events-none opacity-40"></div>
       
-      <div className="inline-block px-5 py-2 mb-8 rounded-full border border-brand-gold/30 bg-brand-gold/5 text-brand-gold text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
+      <div className="inline-block px-5 py-2 mb-8 rounded-full border border-brand-gold/30 bg-brand-gold/5 text-brand-gold text-[10px] font-black uppercase tracking-[0.2em]">
         Inteligência Digital de Elite
       </div>
-      <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase italic max-w-5xl">
-        Pare de tentar adivinhar o que vende. <br/> <span className="text-brand-gold">Acesse o arsenal secreto.</span>
+      
+      <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase italic max-w-6xl">
+        ESPIONE AS OFERTAS QUE <br/> <span className="text-brand-gold">DOMINAM O JOGO.</span>
       </h1>
-      <p className="text-gray-400 text-lg md:text-xl font-medium max-w-2xl mb-12">
-        Acesse os maiores players do mercado digital. Desconstrua ofertas milionárias em segundos.
+      <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-4xl mb-16 italic">
+        Acesse a base de dados dos maiores players do mercado e copie as estratégias que já estão faturando alto.
       </p>
 
-      {/* PROVA DE VALOR */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-20">
-        {[
-          { icon: Zap, title: 'Espionagem em Tempo Real', desc: 'Veja o que está escalando agora antes de todo mundo.' },
-          { icon: Download, title: 'Redução de Custo', desc: 'Baixe VSLs e Transcrições prontas e economize milhares em produção.' },
-          { icon: ShieldCheck, title: 'Análise de Tráfego', desc: 'Descubra quais redes estão trazendo lucro real para cada oferta.' }
-        ].map((item, i) => (
-          <div key={i} className="bg-brand-card p-8 rounded-[40px] border border-white/5 hover:border-brand-gold/30 transition-all text-left group">
-            <div className="w-14 h-14 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-gold group-hover:text-black transition-colors shadow-lg">
-              <item.icon size={28} />
-            </div>
-            <h3 className="text-white font-black uppercase text-xl mb-3 tracking-tight italic">{item.title}</h3>
-            <p className="text-gray-500 font-medium leading-relaxed">{item.desc}</p>
+      {/* SEÇÃO DE BENEFÍCIOS RÁPIDOS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mb-24">
+        <div className="bg-brand-card p-10 rounded-[40px] border border-white/5 text-left group">
+          <div className="w-16 h-16 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg">
+            <Download size={32} />
           </div>
-        ))}
-      </div>
-
-      {/* AUTORIDADE BANNER */}
-      <div className="w-full bg-brand-card/50 py-10 px-8 rounded-[50px] border border-white/5 mb-20 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="text-left">
-          <p className="text-brand-gold font-black uppercase text-3xl tracking-tighter italic">Monitorando +10.000</p>
-          <p className="text-white font-bold uppercase text-sm tracking-widest opacity-60">Anúncios ativos diariamente</p>
+          <h3 className="text-white font-black uppercase text-2xl mb-4 tracking-tight italic">Downloads Instantâneos</h3>
+          <p className="text-gray-500 font-medium text-lg leading-relaxed">
+            Economize milhares de reais em produção. Tenha acesso direto a VSLs, transcrições e criativos validados.
+          </p>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-10 opacity-40 grayscale hover:grayscale-0 transition-all">
-          <Facebook size={32} />
-          <Youtube size={32} />
-          <Smartphone size={32} />
-          <Monitor size={32} />
+
+        <div className="bg-brand-card p-10 rounded-[40px] border border-white/5 text-left group">
+          <div className="w-16 h-16 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg">
+            <Target size={32} />
+          </div>
+          <h3 className="text-white font-black uppercase text-2xl mb-4 tracking-tight italic">Precisão Milimétrica</h3>
+          <p className="text-gray-500 font-medium text-lg leading-relaxed">
+            Descubra as fontes de tráfego reais e as estruturas de vendas que estão escalando no Facebook, TikTok e YouTube.
+          </p>
         </div>
       </div>
       
       {/* CHECKOUT CARD */}
-      <div className="bg-white text-black p-12 rounded-[50px] w-full max-w-lg shadow-2xl relative overflow-hidden group border-b-[10px] border-brand-gold">
-        <div className="absolute -top-10 -right-10 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-          <Eye size={200} />
-        </div>
-        <h2 className="text-4xl font-black mb-2 uppercase tracking-tighter italic text-brand-gold">ACESSO PREMIUM</h2>
-        <p className="text-gray-600 mb-10 font-bold text-sm tracking-tight italic">O arsenal definitivo para o mercado digital profissional.</p>
-        <div className="text-7xl font-black mb-12 tracking-tighter flex items-end justify-center text-black">
-          R$ 197<span className="text-xl text-gray-400 font-black mb-2 ml-1">/mês</span>
+      <div className="bg-white text-black p-14 rounded-[60px] w-full max-w-xl shadow-2xl relative overflow-hidden group border-b-[12px] border-brand-gold">
+        <h2 className="text-5xl font-black mb-4 uppercase tracking-tighter italic text-[#D4AF37]">ACESSO PREMIUM</h2>
+        <p className="text-gray-600 mb-12 font-bold text-lg tracking-tight italic">O arsenal definitivo para o mercado digital profissional.</p>
+        <div className="text-8xl font-black mb-14 tracking-tighter flex items-end justify-center text-black">
+          R$ 197<span className="text-2xl text-gray-400 font-black mb-3 ml-2">/mês</span>
         </div>
         <button 
           onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
-          className="w-full py-6 bg-brand-dark text-brand-gold font-black text-2xl rounded-3xl hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter flex items-center justify-center gap-3 border-2 border-transparent hover:border-brand-gold"
+          className="w-full py-8 bg-brand-dark text-brand-gold font-black text-3xl rounded-[32px] hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter flex items-center justify-center gap-4"
         >
-          <Zap size={28} fill="currentColor" /> QUERO ACESSO AGORA
+          <Zap size={32} fill="currentColor" /> QUERO ACESSO AGORA
         </button>
       </div>
     </main>
   </div>
 );
 
+/**
+ * MAIN APP
+ */
 const App: React.FC = () => {
+  // CRITICAL: Force login state false at start
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
@@ -266,7 +308,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = () => {
-    const password = window.prompt("🕵️‍♂️ ACESSO VIP\nDigite sua chave de acesso VIP:");
+    const password = window.prompt("🕵️‍♂️ ACESSO RESTRITO\nDigite a senha de agente VIP:");
     if (password === 'AGENTE007') {
       setIsLoggedIn(true);
       setIsSuccess(false);
@@ -302,7 +344,7 @@ const App: React.FC = () => {
     });
   };
 
-  // Determine if filters should be shown
+  // CONDITIONAL FILTERS DISPLAY LOGIC
   const showFilters = ['offers', 'vsl', 'creatives', 'pages'].includes(currentPage) && !selectedOffer;
 
   const renderContent = () => {
@@ -338,6 +380,7 @@ const App: React.FC = () => {
 
           <div className="space-y-12">
             <div className="flex flex-col lg:flex-row gap-8 items-start">
+              {/* VSL PLAYER */}
               <div className="w-full lg:w-[60%] space-y-6">
                 <div className="bg-brand-card p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden">
                   <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6">
@@ -367,6 +410,7 @@ const App: React.FC = () => {
                 </div>
               </div>
 
+              {/* OPERATION INFO */}
               <div className="w-full lg:w-[40%] space-y-4">
                 <div className="bg-brand-card p-8 rounded-[32px] border border-white/5 shadow-2xl h-full">
                   <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic">
@@ -392,6 +436,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
+            {/* CREATIVES */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
                  <ImageIcon className="text-brand-gold w-6 h-6" /> CRIATIVOS ESPIONADOS
@@ -408,6 +453,7 @@ const App: React.FC = () => {
                </div>
             </div>
 
+            {/* SALES PAGES */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
                  <Layout className="text-brand-gold w-6 h-6" /> PÁGINAS DE VENDA
@@ -450,7 +496,6 @@ const App: React.FC = () => {
       case 'home':
         const scalingHome = applyEliteFilters(MOCK_OFFERS.filter(o => o.trend === 'Escalando'));
         const recentlyHome = applyEliteFilters(MOCK_OFFERS.filter(o => recentlyViewed.includes(o.id)));
-        const favoritesHome = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
 
         return (
           <div className="animate-in fade-in duration-700 space-y-20">
@@ -486,24 +531,6 @@ const App: React.FC = () => {
                     />
                 ))}
                 {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic px-2">Nenhuma atividade recente registrada.</p>}
-                </div>
-            </div>
-
-            <div>
-                <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                  <Star className="text-brand-gold" fill="currentColor" /> SEUS FAVORITOS
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {favoritesHome.map(offer => (
-                    <OfferCard 
-                    key={offer.id} 
-                    offer={offer} 
-                    isFavorite={true}
-                    onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                    onClick={() => trackView(offer)}
-                    />
-                ))}
-                {favoritesHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic px-2">Favoritos vazios. Marque ofertas para acesso rápido.</p>}
                 </div>
             </div>
           </div>
@@ -613,13 +640,19 @@ const App: React.FC = () => {
                 />
               ))}
             </div>
+            {favList.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center">Nenhum favorito encontrado.</p>}
           </div>
         );
 
       default:
-        return <div className="text-center py-20 text-gray-500 font-black uppercase italic">Módulo VIP em desenvolvimento...</div>;
+        return <div className="text-center py-20 text-gray-500 font-black uppercase italic">Em desenvolvimento...</div>;
     }
   };
+
+  // RESTORATION: Landing Page Lock
+  if (!isLoggedIn) {
+    return <LandingPage onLogin={handleLogin} isSuccess={isSuccess} onCloseSuccess={() => setIsSuccess(false)} />;
+  }
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
@@ -635,11 +668,11 @@ const App: React.FC = () => {
           
           <nav className="space-y-2">
             <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => { setCurrentPage('home'); setSelectedOffer(null); }} />
-            <SidebarItem icon={Star} label="Favoritos" active={currentPage === 'favorites'} onClick={() => { setCurrentPage('favorites'); setSelectedOffer(null); }} />
+            <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => { setCurrentPage('favorites'); setSelectedOffer(null); }} />
             <SidebarItem icon={Settings} label="Configurações" active={currentPage === 'settings'} onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} />
             
             <div className="pt-8 pb-4">
-              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Módulos Espiões</p>
+              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
               <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} onClick={() => { setCurrentPage('offers'); setSelectedOffer(null); }} />
               <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); }} />
               <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); }} />
@@ -653,7 +686,7 @@ const App: React.FC = () => {
         </div>
       </aside>
 
-      {/* MAIN */}
+      {/* MAIN CONTENT AREA */}
       <main className="flex-1 lg:ml-72 relative">
         <header className="h-auto py-8 flex flex-col px-10 bg-brand-dark/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-6">
           <div className="flex items-center justify-between">
@@ -675,11 +708,11 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* CONDITIONAL FILTERS DISPLAY */}
+          {/* CONDITIONAL FILTERS DISPLAY: ONLY ON MODULAR TABS */}
           {showFilters && (
             <div className="flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Filtrar por Nicho</label>
+                <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Nicho</label>
                 <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                   <option value="Todos">Todos</option>
                   {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
