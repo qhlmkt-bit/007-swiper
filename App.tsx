@@ -39,8 +39,18 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
+type ProductType = 'Infoproduto' | 'Low Ticket' | 'Nutracêutico' | 'Dropshipping';
+type Niche = string;
+
+interface Offer {
+  id: string; title: string; niche: string; productType: string; 
+  description: string; coverImage: string; trend: string; views: number; 
+  vslLinks: { label: string; url: string }[]; downloadUrl: string;
+  transcription: string; creativeImages: string[]; 
+  facebookUrl: string; pageUrl: string; language: string; trafficSource: string[];
+}
 import { MOCK_OFFERS } from './data';
-import { Offer, Niche, ProductType } from './types';
+
 
 const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping'];
 
