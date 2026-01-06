@@ -24,7 +24,11 @@ import {
   Unlock,
   ShieldCheck,
   Trophy,
-  AlertTriangle
+  AlertTriangle,
+  Download,
+  Video,
+  ArrowUpRight,
+  Zap
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -38,7 +42,6 @@ import {
 import { MOCK_OFFERS } from './data';
 import { Offer, Niche, ProductType } from './types';
 
-// Lists based on requested categories
 const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping'];
 
 const NICHES: Niche[] = [
@@ -54,7 +57,6 @@ const NICHES: Niche[] = [
   'Refluxo/Gastrite', 'Moda', 'Edema', 'Varizes', 'Zumbido'
 ];
 
-// Components
 interface SidebarItemProps {
   icon: any;
   label: string;
@@ -122,6 +124,20 @@ const OfferCard: React.FC<OfferCardProps> = ({
         alt={offer.title} 
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
       />
+      
+      <div className="absolute top-2 left-2 flex flex-col gap-1">
+        {offer.trend === 'Escalando' && (
+          <div className="px-2 py-1 bg-green-600 text-white text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-lg">
+            <Zap size={10} /> Escalando
+          </div>
+        )}
+        {offer.trend === 'Em Alta' && (
+          <div className="px-2 py-1 bg-brand-gold text-black text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-lg">
+            <TrendingUp size={10} /> Em Alta
+          </div>
+        )}
+      </div>
+
       <div className="absolute top-2 right-2 flex space-x-2">
         <button 
           onClick={onToggleFavorite}
@@ -132,6 +148,7 @@ const OfferCard: React.FC<OfferCardProps> = ({
           <Star size={16} fill={isFavorite ? "currentColor" : "none"} />
         </button>
       </div>
+      
       <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
         <div className="px-2 py-0.5 bg-brand-gold text-black text-[9px] font-black rounded uppercase shadow-lg">
           {offer.niche}
@@ -146,10 +163,7 @@ const OfferCard: React.FC<OfferCardProps> = ({
       <div className="flex items-center justify-between mt-auto">
         <div className="flex space-x-1">
           <div className="p-1.5 bg-brand-hover text-gray-400 rounded flex items-center gap-1 text-[10px] uppercase font-bold transition-colors">
-            <Monitor size={12} /> FB
-          </div>
-          <div className="p-1.5 bg-brand-hover text-gray-400 rounded flex items-center gap-1 text-[10px] uppercase font-bold transition-colors">
-            <Play size={12} /> VSL
+            <Video size={12} /> VSL {offer.vslLinks.length > 1 ? `x${offer.vslLinks.length}` : ''}
           </div>
         </div>
         <div className="flex items-center text-gray-500 text-xs">
@@ -171,7 +185,6 @@ const LandingPage = ({
   onCloseSuccess: () => void
 }) => (
   <div className="min-h-screen bg-brand-dark flex flex-col items-center">
-    {/* Success Banner */}
     {isSuccess && (
       <div className="w-full bg-brand-gold text-black py-4 px-6 md:px-12 text-center font-black animate-in fade-in slide-in-from-top-4 duration-500 flex items-center justify-between gap-4 border-b-4 border-black/10 shadow-[0_4px_30px_rgba(212,175,55,0.4)] sticky top-0 z-[60]">
         <div className="flex-1 flex items-center justify-center gap-3">
@@ -247,7 +260,7 @@ const LandingPage = ({
         <p className="text-gray-600 mb-8 font-medium text-sm">Libere agora o banco de dados restrito dos maiores players do mercado digital.</p>
         <div className="text-6xl font-black mb-10 tracking-tighter">R$ 197<span className="text-lg text-gray-400 font-bold">/mês</span></div>
         <button 
-          onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')} // NOVO LINK DE CHECKOUT AQUI
+          onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
           className="w-full py-5 bg-brand-dark text-brand-gold font-black text-xl rounded-2xl hover:scale-105 transition-transform shadow-2xl uppercase tracking-tighter flex items-center justify-center gap-3"
         >
           <Unlock size={24} /> QUERO ACESSO AGORA
@@ -261,11 +274,11 @@ const LandingPage = ({
   </div>
 );
 
-// Main Application Logic
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
+  const [activeVslIndex, setActiveVslIndex] = useState(0);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -277,7 +290,6 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    // Check for success parameter in URL
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       setIsSuccess(true);
@@ -288,10 +300,9 @@ const App: React.FC = () => {
     const password = window.prompt("🕵️‍♂️ AUTENTICAÇÃO NECESSÁRIA\nDigite sua chave de acesso VIP:");
     if (password === 'AGENTE007') {
       setIsLoggedIn(true);
-      // Ensure the banner disappears upon successful login
       setIsSuccess(false);
     } else if (password !== null) {
-      alert('ACESSO NEGADO ❌\nSua assinatura não foi identificada ou a chave está incorreta. Adquira sua licença para entrar.');
+      alert('ACESSO NEGADO ❌\nSua assinatura não foi identificada ou a chave está incorreta.');
     }
   };
 
@@ -326,52 +337,103 @@ const App: React.FC = () => {
     if (selectedOffer) {
       return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <button 
-            onClick={() => setSelectedOffer(null)}
-            className="mb-6 flex items-center text-gray-400 hover:text-brand-gold transition-colors font-bold uppercase text-xs tracking-widest"
-          >
-            <ChevronRight className="rotate-180 mr-2" size={16} /> Voltar para lista
-          </button>
+          <div className="flex items-center justify-between mb-8">
+            <button 
+              onClick={() => { setSelectedOffer(null); setActiveVslIndex(0); }}
+              className="flex items-center text-gray-400 hover:text-brand-gold transition-colors font-bold uppercase text-xs tracking-widest"
+            >
+              <ChevronRight className="rotate-180 mr-2" size={16} /> Voltar para lista
+            </button>
+            
+            <div className="flex gap-2">
+              <a 
+                href={selectedOffer.downloadUrl}
+                className="flex items-center gap-2 px-6 py-2 bg-brand-hover hover:bg-zinc-800 text-white rounded-xl font-bold text-xs uppercase tracking-widest border border-white/5 hover:border-brand-gold/30 transition-all"
+              >
+                <Download size={16} /> Baixar VSL
+              </a>
+              <button 
+                onClick={(e) => toggleFavorite(selectedOffer.id, e)}
+                className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${
+                  favorites.includes(selectedOffer.id) 
+                  ? 'bg-brand-gold text-black' 
+                  : 'bg-brand-hover text-white border border-white/5'
+                }`}
+              >
+                <Star size={16} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> 
+                {favorites.includes(selectedOffer.id) ? 'Remover' : 'Arquivar'}
+              </button>
+            </div>
+          </div>
 
-          <div className="flex flex-wrap gap-2 mb-8">
-            <span className="px-4 py-1.5 bg-brand-card rounded-lg text-brand-gold text-[10px] font-black border border-brand-gold border-opacity-20 uppercase tracking-widest shadow-lg">{selectedOffer.productType}</span>
-            <span className="px-4 py-1.5 bg-brand-card rounded-lg text-brand-gold text-[10px] font-black border border-brand-gold border-opacity-20 uppercase tracking-widest shadow-lg">{selectedOffer.structure}</span>
-            <span className="px-4 py-1.5 bg-brand-card rounded-lg text-brand-gold text-[10px] font-black border border-brand-gold border-opacity-20 uppercase tracking-widest shadow-lg">{selectedOffer.language}</span>
+          <div className="flex flex-wrap items-center gap-2 mb-8">
+            <h1 className="text-3xl font-black mr-4">{selectedOffer.title}</h1>
             <span className="px-4 py-1.5 bg-brand-gold text-black text-[10px] font-black rounded-lg uppercase tracking-widest shadow-lg">{selectedOffer.niche}</span>
-            <span className="px-4 py-1.5 bg-brand-card rounded-lg text-brand-gold text-[10px] font-black border border-brand-gold border-opacity-20 uppercase tracking-widest shadow-lg">{selectedOffer.trafficSource}</span>
+            <span className="px-4 py-1.5 bg-brand-card rounded-lg text-brand-gold text-[10px] font-black border border-brand-gold border-opacity-20 uppercase tracking-widest shadow-lg">{selectedOffer.productType}</span>
+            {selectedOffer.trend === 'Escalando' && (
+              <span className="px-4 py-1.5 bg-green-600 text-white text-[10px] font-black rounded-lg uppercase tracking-widest flex items-center gap-1 shadow-lg animate-pulse">
+                <Zap size={12} /> Escalando
+              </span>
+            )}
+            {selectedOffer.trend === 'Em Alta' && (
+              <span className="px-4 py-1.5 bg-brand-gold text-black text-[10px] font-black rounded-lg uppercase tracking-widest flex items-center gap-1 shadow-lg animate-pulse">
+                <TrendingUp size={12} /> Em Alta
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
-              <div className="aspect-video bg-brand-card rounded-3xl overflow-hidden border border-white border-opacity-5 shadow-2xl">
-                <iframe 
-                  className="w-full h-full"
-                  src={selectedOffer.vslUrl}
-                  title="VSL Player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                ></iframe>
+              {/* VSL Section with Tabs */}
+              <div className="bg-brand-card rounded-3xl overflow-hidden border border-white border-opacity-5 shadow-2xl">
+                <div className="flex border-b border-white/5 bg-brand-hover/50">
+                  {selectedOffer.vslLinks.map((link, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveVslIndex(idx)}
+                      className={`px-8 py-4 text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                        activeVslIndex === idx 
+                        ? 'bg-brand-card text-brand-gold border-b-2 border-brand-gold' 
+                        : 'text-gray-500 hover:text-white'
+                      }`}
+                    >
+                      <Play size={14} fill={activeVslIndex === idx ? "currentColor" : "none"} /> {link.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="aspect-video">
+                  <iframe 
+                    className="w-full h-full"
+                    src={selectedOffer.vslLinks[activeVslIndex].url}
+                    title="VSL Player"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  ></iframe>
+                </div>
               </div>
               
               <div className="bg-brand-card p-8 rounded-3xl border border-white border-opacity-5 shadow-xl">
-                <h3 className="text-xl font-black mb-6 flex items-center gap-2 text-white">
-                  <FileText className="text-brand-gold" size={20} /> Transcrição do Script
-                </h3>
-                <div className="prose prose-invert max-w-none text-gray-400 leading-relaxed font-medium">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-black flex items-center gap-2 text-white">
+                    <FileText className="text-brand-gold" size={20} /> Transcrição do Script
+                  </h3>
+                  <button className="text-[10px] font-black text-brand-gold hover:underline uppercase tracking-widest">Copiar Tudo</button>
+                </div>
+                <div className="prose prose-invert max-w-none text-gray-400 leading-relaxed font-medium bg-brand-hover/30 p-6 rounded-2xl border border-white/5">
                   {selectedOffer.transcription}
                 </div>
               </div>
 
               <div className="bg-brand-card p-8 rounded-3xl border border-white border-opacity-5 shadow-xl">
                 <h3 className="text-xl font-black mb-6 flex items-center gap-2 text-white">
-                  <Palette className="text-brand-gold" size={20} /> Criativos de Alta Performance
+                  <Palette className="text-brand-gold" size={20} /> Criativos Espionados
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {selectedOffer.creativeImages.map((img, i) => (
                     <div key={i} className="aspect-square rounded-xl overflow-hidden group cursor-pointer relative border border-white border-opacity-5">
                       <img src={img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Creative" />
-                      <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                         <button className="bg-brand-gold p-3 rounded-xl text-black shadow-xl transform scale-75 group-hover:scale-100 transition-transform"><Search size={20} /></button>
                       </div>
                     </div>
@@ -383,9 +445,9 @@ const App: React.FC = () => {
             <div className="space-y-8">
               <div className="bg-brand-card p-8 rounded-3xl border border-white border-opacity-5 shadow-xl">
                 <h3 className="text-xl font-black mb-6 flex items-center gap-2 text-white">
-                  <BarChart2 className="text-brand-gold" size={20} /> Análise de Tráfego
+                  <BarChart2 className="text-brand-gold" size={20} /> Inteligência de Tráfego
                 </h3>
-                <div className="h-64 w-full">
+                <div className="h-48 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
                       <defs>
@@ -406,37 +468,37 @@ const App: React.FC = () => {
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-6 space-y-4">
-                  <div className="flex justify-between items-center text-xs uppercase tracking-widest">
-                    <span className="text-gray-400 font-bold">Escala Estimada</span>
-                    <span className="text-green-500 font-black">MUITO ALTA</span>
+                  <div className="flex justify-between items-center text-[10px] uppercase tracking-widest">
+                    <span className="text-gray-400 font-bold">Volume de Buscas</span>
+                    <span className="text-white font-black">{(selectedOffer.views / 10).toLocaleString()} / DIA</span>
                   </div>
-                  <div className="flex justify-between items-center text-xs uppercase tracking-widest">
-                    <span className="text-gray-400 font-bold">CTR Médio</span>
-                    <span className="text-white font-black">3.2%</span>
+                  <div className="flex justify-between items-center text-[10px] uppercase tracking-widest">
+                    <span className="text-gray-400 font-bold">Escalabilidade</span>
+                    <span className="text-green-500 font-black">ALTA DISPONIBILIDADE</span>
                   </div>
-                  <div className="flex justify-between items-center text-xs uppercase tracking-widest">
-                    <span className="text-gray-400 font-bold">CPV Médio</span>
-                    <span className="text-white font-black">R$ 0,12</span>
+                  <div className="flex justify-between items-center text-[10px] uppercase tracking-widest">
+                    <span className="text-gray-400 font-bold">Frequência de Anúncios</span>
+                    <span className="text-white font-black">CRÍTICA</span>
                   </div>
                 </div>
               </div>
 
               <div className="bg-brand-card p-8 rounded-3xl border border-white border-opacity-5 shadow-xl">
-                <h3 className="text-xl font-black mb-6 text-white">Links Rápidos</h3>
-                <div className="space-y-3">
-                  <a href={selectedOffer.facebookUrl} className="flex items-center justify-between w-full p-4 bg-brand-hover rounded-2xl text-gray-300 hover:text-white hover:bg-zinc-800 transition-all border border-transparent hover:border-brand-gold/30">
+                <h3 className="text-xl font-black mb-6 text-white uppercase tracking-tighter">Intercepção Direta</h3>
+                <div className="space-y-4">
+                  <a href={selectedOffer.facebookUrl} className="flex items-center justify-between w-full p-4 bg-brand-hover rounded-2xl text-gray-300 hover:text-white hover:bg-zinc-800 transition-all border border-white/5 hover:border-brand-gold/30">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg"><Monitor size={20} /></div>
-                      <span className="font-black text-sm uppercase tracking-tighter">Biblioteca FB</span>
+                      <span className="font-black text-xs uppercase tracking-tighter">Spy Library</span>
                     </div>
-                    <ChevronRight size={18} />
+                    <ArrowUpRight size={18} />
                   </a>
-                  <a href={selectedOffer.pageUrl} className="flex items-center justify-between w-full p-4 bg-brand-hover rounded-2xl text-gray-300 hover:text-white hover:bg-zinc-800 transition-all border border-transparent hover:border-brand-gold/30">
+                  <a href={selectedOffer.pageUrl} className="flex items-center justify-between w-full p-4 bg-brand-hover rounded-2xl text-gray-300 hover:text-white hover:bg-zinc-800 transition-all border border-white/5 hover:border-brand-gold/30">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-brand-gold rounded-xl flex items-center justify-center text-black shadow-lg"><ExternalLink size={20} /></div>
-                      <span className="font-black text-sm uppercase tracking-tighter">Página de Vendas</span>
+                      <span className="font-black text-xs uppercase tracking-tighter">Sales Page</span>
                     </div>
-                    <ChevronRight size={18} />
+                    <ArrowUpRight size={18} />
                   </a>
                 </div>
               </div>
@@ -450,7 +512,7 @@ const App: React.FC = () => {
       case 'home':
         return (
           <div className="animate-in fade-in duration-500">
-            <Section title="Mais Vistos" icon={TrendingUp}>
+            <Section title="Spy Trends" icon={TrendingUp}>
               {MOCK_OFFERS.slice(0, 4).map(offer => (
                 <OfferCard 
                   key={offer.id} 
@@ -462,7 +524,7 @@ const App: React.FC = () => {
               ))}
             </Section>
             
-            <Section title="Vistos Recentemente" icon={Clock}>
+            <Section title="Recém Interceptados" icon={Clock}>
               {MOCK_OFFERS.slice(4, 8).map(offer => (
                 <OfferCard 
                   key={offer.id} 
@@ -473,20 +535,6 @@ const App: React.FC = () => {
                 />
               ))}
             </Section>
-
-            {favorites.length > 0 && (
-              <Section title="Favoritos" icon={Star}>
-                {MOCK_OFFERS.filter(o => favorites.includes(o.id)).map(offer => (
-                  <OfferCard 
-                    key={offer.id} 
-                    offer={offer} 
-                    isFavorite={true}
-                    onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                    onClick={() => setSelectedOffer(offer)}
-                  />
-                ))}
-              </Section>
-            )}
           </div>
         );
       case 'offers':
@@ -503,16 +551,15 @@ const App: React.FC = () => {
 
         return (
           <div className="animate-in fade-in duration-500">
-            {/* Massive Filters Section */}
-            <div className="bg-brand-card p-6 md:p-8 rounded-[32px] border border-white border-opacity-5 mb-10 shadow-2xl">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6">
-                <div className="relative col-span-1 sm:col-span-2 lg:col-span-2">
-                  <label className="text-[10px] font-black uppercase text-brand-gold tracking-widest px-2 block mb-1.5">Busca</label>
+            <div className="bg-brand-card p-8 rounded-[32px] border border-white border-opacity-5 mb-10 shadow-2xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+                <div className="relative col-span-2">
+                  <label className="text-[10px] font-black uppercase text-brand-gold tracking-widest px-2 block mb-1.5">Interceptar Operação</label>
                   <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                     <input 
                       type="text" 
-                      placeholder="Buscar por nome ou palavra-chave..." 
+                      placeholder="Nome, nicho ou palavra-chave..." 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-12 pr-4 py-3 bg-brand-hover rounded-2xl text-sm border-2 border-transparent focus:border-brand-gold outline-none transition-all placeholder:text-gray-600 font-bold"
@@ -520,20 +567,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase text-brand-gold tracking-widest px-2 block">Idioma</label>
-                  <select 
-                    value={filters.language}
-                    onChange={(e) => setFilters(f => ({ ...f, language: e.target.value }))}
-                    className="w-full bg-brand-hover border-2 border-transparent hover:border-brand-gold/30 px-4 py-3 rounded-2xl text-sm outline-none cursor-pointer transition-all font-bold appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%23D4AF37%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-[length:16px] bg-[right_1rem_center] bg-no-repeat"
-                  >
-                    <option value="Todos">Todos</option>
-                    <option value="Português">Português</option>
-                    <option value="Inglês">Inglês</option>
-                    <option value="Espanhol">Espanhol</option>
-                  </select>
-                </div>
-                
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase text-brand-gold tracking-widest px-2 block">Nicho</label>
                   <select 
@@ -557,22 +590,6 @@ const App: React.FC = () => {
                     {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase text-brand-gold tracking-widest px-2 block">Tráfego</label>
-                  <select 
-                    value={filters.traffic}
-                    onChange={(e) => setFilters(f => ({ ...f, traffic: e.target.value }))}
-                    className="w-full bg-brand-hover border-2 border-transparent hover:border-brand-gold/30 px-4 py-3 rounded-2xl text-sm outline-none cursor-pointer transition-all font-bold appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%23D4AF37%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-[length:16px] bg-[right_1rem_center] bg-no-repeat"
-                  >
-                    <option value="Todos">Todas</option>
-                    <option value="Facebook Ads">Facebook</option>
-                    <option value="Google Ads">Google</option>
-                    <option value="YouTube Ads">YouTube</option>
-                    <option value="TikTok Ads">TikTok</option>
-                    <option value="Native Ads">Native</option>
-                  </select>
-                </div>
               </div>
             </div>
 
@@ -586,20 +603,6 @@ const App: React.FC = () => {
                   onClick={() => setSelectedOffer(offer)}
                 />
               ))}
-              {filtered.length === 0 && (
-                <div className="col-span-full py-32 text-center">
-                  <div className="inline-block p-6 bg-brand-card rounded-full mb-6 border border-white border-opacity-5">
-                    <Search size={40} className="text-gray-700" />
-                  </div>
-                  <p className="text-gray-500 text-xl font-black uppercase tracking-tighter">Nenhuma oferta encontrada.</p>
-                  <button 
-                    onClick={() => setFilters({ language: 'Todos', traffic: 'Todos', type: 'Todos', niche: 'Todos' })}
-                    className="mt-6 text-brand-gold font-bold hover:underline"
-                  >
-                    Limpar todos os filtros
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         );
@@ -607,8 +610,8 @@ const App: React.FC = () => {
         const favoriteOffers = MOCK_OFFERS.filter(o => favorites.includes(o.id));
         return (
           <div className="animate-in fade-in duration-500">
-            <h2 className="text-3xl font-black mb-10 flex items-center gap-4">
-              <Star className="text-brand-gold fill-brand-gold" size={32} /> Favoritos
+            <h2 className="text-3xl font-black mb-10 flex items-center gap-4 uppercase tracking-tighter">
+              <Star className="text-brand-gold fill-brand-gold" size={32} /> Arquivo Secreto
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {favoriteOffers.map(offer => (
@@ -620,55 +623,6 @@ const App: React.FC = () => {
                   onClick={() => setSelectedOffer(offer)}
                 />
               ))}
-              {favoriteOffers.length === 0 && (
-                <div className="col-span-full py-32 text-center flex flex-col items-center">
-                  <div className="p-8 bg-brand-card rounded-full border border-white border-opacity-5 mb-8">
-                    <Star size={64} className="text-gray-800" />
-                  </div>
-                  <p className="text-gray-500 text-2xl font-black uppercase tracking-tighter mb-4">Seu cofre está vazio.</p>
-                  <p className="text-gray-600 max-w-sm mb-10 font-medium text-sm">Favorite ofertas para acessá-las rapidamente.</p>
-                  <button 
-                    onClick={() => setCurrentPage('offers')}
-                    className="px-10 py-4 bg-brand-gold text-black font-black rounded-2xl hover:scale-105 transition-transform shadow-xl shadow-brand-gold/20"
-                  >
-                    EXPLORAR OFERTAS
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      case 'settings':
-        return (
-          <div className="max-w-2xl animate-in fade-in duration-500">
-            <h2 className="text-3xl font-black mb-8">Configurações</h2>
-            <div className="bg-brand-card p-10 rounded-[32px] border border-white border-opacity-5 space-y-8 shadow-2xl">
-              <div className="flex items-center gap-6 mb-10">
-                <div className="w-24 h-24 bg-brand-gold rounded-3xl flex items-center justify-center font-black text-4xl text-black shadow-2xl shadow-brand-gold/30">
-                  007
-                </div>
-                <div>
-                  <h4 className="text-2xl font-black text-white">Agente Secreto</h4>
-                  <p className="text-gray-500 font-bold text-sm">Nível de Acesso: VIP</p>
-                </div>
-              </div>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-[10px] font-black uppercase text-brand-gold tracking-widest mb-2 px-1">Nome de Exibição</label>
-                  <input type="text" defaultValue="Agente 007" className="w-full px-6 py-4 bg-brand-hover rounded-2xl border-2 border-transparent focus:border-brand-gold outline-none font-bold transition-all" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black uppercase text-brand-gold tracking-widest mb-2 px-1">Email</label>
-                  <input type="email" defaultValue="agente@007swiper.com" className="w-full px-6 py-4 bg-brand-hover rounded-2xl border-2 border-transparent focus:border-brand-gold outline-none font-bold transition-all" />
-                </div>
-              </div>
-
-              <div className="pt-8 border-t border-white border-opacity-5 flex gap-4">
-                <button className="flex-1 py-4 bg-brand-gold text-black font-black rounded-2xl hover:bg-yellow-600 transition-all shadow-lg shadow-brand-gold/10">
-                  SALVAR ALTERAÇÕES
-                </button>
-              </div>
             </div>
           </div>
         );
@@ -692,21 +646,15 @@ const App: React.FC = () => {
           <div className="space-y-1">
             <SidebarItem 
               icon={HomeIcon} 
-              label="Home" 
+              label="Inteligência" 
               active={currentPage === 'home' && !selectedOffer} 
               onClick={() => { setCurrentPage('home'); setSelectedOffer(null); }} 
             />
             <SidebarItem 
               icon={Star} 
-              label="Favoritos" 
+              label="Arquivo Secreto" 
               active={currentPage === 'favorites'} 
               onClick={() => { setCurrentPage('favorites'); setSelectedOffer(null); }} 
-            />
-            <SidebarItem 
-              icon={Settings} 
-              label="Configurações" 
-              active={currentPage === 'settings'} 
-              onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} 
             />
           </div>
 
@@ -715,31 +663,19 @@ const App: React.FC = () => {
           <div className="space-y-1">
             <SidebarItem 
               icon={Tag} 
-              label="Ofertas" 
+              label="Operações" 
               active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} 
               onClick={() => { setCurrentPage('offers'); setSelectedOffer(null); }} 
-            />
-            <SidebarItem 
-              icon={Palette} 
-              label="Criativos" 
-              active={currentPage === 'creatives'} 
-              onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); }} 
-            />
-            <SidebarItem 
-              icon={FileText} 
-              label="Páginas" 
-              active={currentPage === 'pages'} 
-              onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); }} 
             />
           </div>
 
           <div className="mt-auto">
             <button 
               onClick={() => setIsLoggedIn(false)}
-              className="w-full flex items-center justify-center space-x-3 px-4 py-4 rounded-2xl text-red-500 hover:bg-red-500 hover:bg-opacity-10 transition-all font-black uppercase text-xs tracking-widest border border-transparent hover:border-red-500/20"
+              className="w-full flex items-center justify-center space-x-3 px-4 py-4 rounded-2xl text-red-500 hover:bg-red-500 hover:bg-opacity-10 transition-all font-black uppercase text-[10px] tracking-widest border border-transparent hover:border-red-500/20"
             >
               <LogOut size={18} />
-              <span>Sair</span>
+              <span>Encerrar Sessão</span>
             </button>
           </div>
         </div>
@@ -747,30 +683,22 @@ const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 lg:ml-72 relative">
-        {/* Header/Nav for Mobile and Top Bar */}
-        <header className="h-24 flex items-center justify-between px-10 bg-brand-dark/80 backdrop-blur-md sticky top-0 z-40">
+        <header className="h-24 flex items-center justify-between px-10 bg-brand-dark/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5">
           <div className="flex items-center">
-            <h1 className="text-3xl font-black text-white tracking-tighter uppercase">
-              {selectedOffer ? 'Operação' : (currentPage === 'home' ? 'Home' : (currentPage === 'offers' ? 'Ofertas' : currentPage))}
+            <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic">
+              {selectedOffer ? 'Operação em Curso' : 'Quartel General'}
             </h1>
           </div>
           
-          <div className="flex items-center space-x-8">
-            <div className="hidden sm:flex items-center bg-brand-card px-5 py-3 rounded-2xl border border-white border-opacity-5 shadow-inner">
-              <Search className="text-gray-500 mr-3" size={18} />
-              <input type="text" placeholder="Intercepte dados..." className="bg-transparent border-none outline-none text-sm w-48 font-bold placeholder:text-gray-700" />
-            </div>
-            <div className="flex items-center space-x-4 cursor-pointer group p-1 pr-4 bg-brand-card rounded-2xl border border-white border-opacity-5 hover:border-brand-gold/30 transition-all shadow-xl">
-              <div className="w-12 h-12 bg-brand-gold rounded-xl flex items-center justify-center font-black text-black border-2 border-transparent group-hover:border-white transition-all shadow-lg">007</div>
-              <div className="hidden md:block">
-                <p className="font-black text-xs uppercase tracking-tighter text-white">Agente 007</p>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">VIP</p>
-              </div>
+          <div className="flex items-center space-x-4 cursor-pointer group p-1 pr-4 bg-brand-card rounded-2xl border border-white border-opacity-5 hover:border-brand-gold/30 transition-all shadow-xl">
+            <div className="w-12 h-12 bg-brand-gold rounded-xl flex items-center justify-center font-black text-black border-2 border-transparent group-hover:border-white transition-all shadow-lg">007</div>
+            <div className="hidden md:block">
+              <p className="font-black text-xs uppercase tracking-tighter text-white">Agente 007</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Acesso VIP</p>
             </div>
           </div>
         </header>
 
-        {/* Content Scroll Area */}
         <div className="p-10 max-w-[1600px] mx-auto">
           {renderContent()}
         </div>
