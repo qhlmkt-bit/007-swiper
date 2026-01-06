@@ -42,9 +42,7 @@ import {
  * TYPE DEFINITIONS
  */
 export type ProductType = 'Infoproduto' | 'Low Ticket' | 'Nutracêutico' | 'Dropshipping' | 'E-book' | string;
-
 export type Niche = string;
-
 export type Trend = 'Em Alta' | 'Escalando' | 'Estável' | string;
 
 export interface VslLink {
@@ -57,7 +55,7 @@ export interface Offer {
   title: string;
   niche: Niche;
   language: string;
-  trafficSource: string;
+  trafficSource: string[]; // Treated as an array for modular icon display
   productType: ProductType;
   description: string;
   vslLinks: VslLink[];
@@ -78,8 +76,6 @@ export interface Offer {
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 
 const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping', 'E-book'];
-const TRAFFIC_SOURCES = ['Facebook Ads', 'YouTube Ads', 'TikTok Ads', 'Google Ads', 'Taboola', 'Instagram Ads', 'Native Ads'];
-const LANGUAGES = ['Português', 'Inglês', 'Espanhol'];
 
 /**
  * UI COMPONENTS
@@ -106,6 +102,15 @@ const SidebarItem: React.FC<{
     <span className="text-sm uppercase tracking-tighter font-black">{label}</span>
   </button>
 );
+
+const TrafficIcon: React.FC<{ source: string }> = ({ source }) => {
+  const normalized = source.toLowerCase();
+  if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />;
+  if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />;
+  if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />;
+  if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />;
+  return <Target size={14} className="text-brand-gold" />;
+};
 
 const OfferCard: React.FC<{
   offer: Offer;
@@ -154,8 +159,13 @@ const OfferCard: React.FC<{
     <div className="p-5">
       <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-brand-gold transition-colors italic">{offer.title}</h3>
       <div className="flex items-center justify-between border-t border-white/5 pt-4">
-        <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-          <Monitor size={14} className="text-brand-gold" /> {offer.productType}
+        <div className="flex flex-wrap items-center gap-2">
+          {offer.trafficSource.slice(0, 2).map((source, idx) => (
+            <div key={idx} className="flex items-center gap-1.5 text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+              <TrafficIcon source={source} />
+            </div>
+          ))}
+          <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{offer.productType}</span>
         </div>
         <div className="flex items-center text-gray-500 text-xs font-black italic">
           <Eye size={14} className="mr-1 text-brand-gold" />
@@ -301,9 +311,9 @@ const App: React.FC = () => {
         const response = await fetch(CSV_URL);
         const text = await response.text();
         
-        // CSV Parsing Logic: Skip 1st line, use 2nd as header, data starts from 3rd.
+        // CSV Parsing Logic: Skip row 1, headers on row 2, data from row 3.
         const lines = text.split(/\r?\n/).filter(l => l.trim());
-        if (lines.length < 2) throw new Error("Planilha sem dados suficientes");
+        if (lines.length < 2) throw new Error("Database file is missing expected headers.");
 
         const headers = lines[1].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
         
@@ -314,7 +324,7 @@ const App: React.FC = () => {
             row[header] = values[i] || '';
           });
 
-          // Mapping logic based on spreadsheet columns provided
+          // Mapping logic: columns O (language) and P (trafficSource)
           return {
             id: row.id || idx.toString(),
             title: row.title || 'Sem Título',
@@ -330,9 +340,8 @@ const App: React.FC = () => {
             creativeImages: row.creativeImages ? row.creativeImages.split(',').map((s: string) => s.trim()) : [],
             pageUrl: row.pageUrl || '#',
             facebookUrl: row.facebookUrl || '#',
-            // Defaults for missing UI elements in this specific mapping
-            language: 'Português',
-            trafficSource: row.productType || 'Facebook Ads',
+            language: row.language || 'Português',
+            trafficSource: row.trafficSource ? row.trafficSource.split(',').map((s: string) => s.trim()) : ['Facebook Ads'],
             structure: 'VSL'
           };
         });
@@ -393,14 +402,18 @@ const App: React.FC = () => {
       const matchesSearch = o.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesNiche = selectedNiche === 'Todos' || o.niche === selectedNiche;
       const matchesType = selectedType === 'Todos' || o.productType === selectedType;
-      return matchesSearch && matchesNiche && matchesType;
+      const matchesLanguage = selectedLanguage === 'Todos' || o.language === selectedLanguage;
+      const matchesTraffic = selectedTraffic === 'Todos' || o.trafficSource.some(ts => ts === selectedTraffic);
+      return matchesSearch && matchesNiche && matchesType && matchesLanguage && matchesTraffic;
     });
   };
 
-  // UNIQUE NICHES FOR FILTER
+  // UNIQUE FILTERS
   const availableNiches = ['Todos', ...Array.from(new Set(offers.map(o => o.niche)))];
+  const availableLanguages = ['Todos', ...Array.from(new Set(offers.map(o => o.language)))];
+  const availableTrafficSources = ['Todos', ...Array.from(new Set(offers.flatMap(o => o.trafficSource)))];
 
-  // CONDITIONAL FILTERS DISPLAY LOGIC - OFERTAS, VSL, CRIATIVOS, PÁGINAS e BIBLIOTECA DE ANÚNCIOS
+  // CONDITIONAL FILTERS DISPLAY LOGIC - RESTORED FILTERS FOR MODULAR PAGES
   const showFilters = ['offers', 'vsl', 'creatives', 'pages', 'ads_library'].includes(currentPage) && !selectedOffer;
 
   const renderContent = () => {
@@ -487,8 +500,9 @@ const App: React.FC = () => {
                     {[
                       { icon: Tag, label: 'Nicho', value: selectedOffer.niche },
                       { icon: Lock, label: 'Tipo', value: selectedOffer.productType },
-                      { icon: Info, label: 'Briefing', value: selectedOffer.description || 'Descrição confidencial' },
-                      { icon: Monitor, label: 'Tráfego', value: selectedOffer.productType },
+                      { icon: Info, label: 'Briefing', value: selectedOffer.description || 'Briefing confidencial' },
+                      { icon: Globe, label: 'Idioma', value: selectedOffer.language },
+                      { icon: Target, label: 'Fontes', value: selectedOffer.trafficSource.join(', ') },
                     ].map((item, idx) => (
                       <div key={idx} className="flex items-center justify-between p-4 bg-brand-hover rounded-2xl border border-white/5">
                         <div className="flex items-center gap-3">
@@ -646,7 +660,10 @@ const App: React.FC = () => {
                     </div>
                     <div className="p-4 bg-brand-hover">
                         <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-1"><Monitor size={12} className="text-brand-gold" /> {offer.productType}</p>
+                        <div className="flex items-center gap-2">
+                           {offer.trafficSource.slice(0, 2).map((s, i) => <TrafficIcon key={i} source={s} />)}
+                           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{offer.productType}</p>
+                        </div>
                     </div>
                 </div>
               ))}
@@ -849,6 +866,18 @@ const App: React.FC = () => {
                   <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                     <option value="Todos">Todos</option>
                     {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
+                  <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tráfego</label>
+                  <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                    {availableTrafficSources.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
+                  <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
+                  <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                    {availableLanguages.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
               </div>
