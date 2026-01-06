@@ -1,47 +1,26 @@
-export const offers = [
+export const MOCK_OFFERS = [
   {
     id: '1',
-    title: 'Protocolo Zero Barriga',
-    niche: 'Saúde & Bem-estar',
-    description: 'VSL de alta conversão utilizando mecanismo único de "água morna pela manhã". Checkout médio de R$ 97,00.',
-    vslLink: 'https://exemplo.com/vsl-saude',
-    funnelType: 'Direto para VSL',
-    status: 'Faturando Alto'
-  },
-  {
-    id: '2',
-    title: 'Código da Sedução Alpha',
-    niche: 'Relacionamentos',
-    description: 'Página de vendas focada em gatilhos mentais biológicos. Ticket de R$ 147,00 com Order Bump de R$ 47,00.',
-    vslLink: 'https://exemplo.com/vsl-relacionamento',
-    funnelType: 'Advertorial + VSL',
-    status: 'Escalando'
-  },
-  {
-    id: '3',
-    title: 'Método Renda Turbo IA',
-    niche: 'Dinheiro / Renda Extra',
-    description: 'Oferta de ganhos diários usando Inteligência Artificial. Funnel validado com tráfego direto.',
-    vslLink: 'https://exemplo.com/vsl-money',
-    funnelType: 'Direto para Checkout',
-    status: 'Novo Hit'
-  },
-  {
-    id: '4',
-    title: 'Manual do Cabelo Perfeito',
-    niche: 'Beleza & Estética',
-    description: 'Nicho Black de estética capilar. VSL agressiva com prova social forte e bônus exclusivo.',
-    vslLink: 'https://exemplo.com/vsl-beleza',
-    funnelType: 'VSL com Delay no Botão',
-    status: 'Faturando Alto'
-  },
-  {
-    id: '5',
-    title: 'Chave do Desejo Feminino',
-    niche: 'Sexualidade / Adulto',
-    description: 'Produto de nicho adulto com alta taxa de aprovação em anúncios e CTR acima de 3%.',
-    vslLink: 'https://exemplo.com/vsl-adulto',
-    funnelType: 'Quiz + VSL',
-    status: 'Faturando Alto'
+    title: 'SSN Withdrawal - American Method',
+    niche: 'Renda Extra',
+    productType: 'Infoproduto',
+    description: 'Oferta de alta conversão focada em benefícios americanos.',
+    coverImage: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800',
+    trend: 'Escalando',
+    views: 125000,
+    vslLinks: [
+      { label: 'VSL Principal', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+      { label: 'VSL Variação B', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' }
+    ],
+    downloadUrl: '#',
+    transcription: 'Este é o script da VSL focado em retenção emocional e gatilhos de urgência...',
+    creativeImages: [
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400',
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=400'
+    ],
+    facebookUrl: 'https://adsarchive.com',
+    pageUrl: 'https://google.com',
+    language: 'Português',
+    trafficSource: ['Facebook']
   }
 ];
