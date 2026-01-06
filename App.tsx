@@ -33,28 +33,18 @@ import {
   Target,
   Menu,
   Filter,
-  Library
+  Library,
+  Loader2
 } from 'lucide-react';
-import { MOCK_OFFERS } from './data';
 
 /** 
- * TYPE DEFINITIONS - STABILITY FOR DEPLOY
+ * TYPE DEFINITIONS
  */
 export type ProductType = 'Infoproduto' | 'Low Ticket' | 'Nutracêutico' | 'Dropshipping' | 'E-book' | string;
 
-export type Niche = 
-  | 'Exercícios' | 'Disfunção Erétil' | 'Outros' | 'Próstata' 
-  | 'Lei da Atração/Prosperidade' | 'Emagrecimento' | 'Rejuvenescimento' 
-  | 'Renda Extra' | 'Infantil/Maternidade' | 'Dores Articulares' 
-  | 'Sexualidade' | 'Alzheimer' | 'Pet' | 'Neuropatia' 
-  | 'Evangélico/Cristianismo' | 'Relacionamento' | 'Desenvolvimento Pessoal' 
-  | 'Diabetes' | 'Menopausa' | 'Saúde Mental' | 'Visão' 
-  | 'Aumento Peniano' | 'Pressão Alta' | 'Saúde Respiratória' 
-  | 'Calvície' | 'Pack' | 'Escrita' | 'Idiomas' | 'Prisão de Ventre' 
-  | 'Beleza' | 'Fungos' | 'Nutrição' | 'Produtividade' 
-  | 'Refluxo/Gastrite' | 'Moda' | 'Edema' | 'Varizes' | 'Zumbido' | string;
+export type Niche = string;
 
-export type Trend = 'Em Alta' | 'Escalando' | 'Estável';
+export type Trend = 'Em Alta' | 'Escalando' | 'Estável' | string;
 
 export interface VslLink {
   label: string;
@@ -76,7 +66,7 @@ export interface Offer {
   pageUrl: string;
   coverImage: string;
   views: number;
-  transcription: string;
+  transcriptionUrl: string;
   creativeImages: string[];
   isFavorite?: boolean;
 }
@@ -84,18 +74,7 @@ export interface Offer {
 /** 
  * CONSTANTS 
  */
-const NICHES: Niche[] = [
-  'Exercícios', 'Disfunção Erétil', 'Outros', 'Próstata', 
-  'Lei da Atração/Prosperidade', 'Emagrecimento', 'Rejuvenescimento', 
-  'Renda Extra', 'Infantil/Maternidade', 'Dores Articulares', 
-  'Sexualidade', 'Alzheimer', 'Pet', 'Neuropatia', 
-  'Evangélico/Cristianismo', 'Relacionamento', 'Desenvolvimento Pessoal', 
-  'Diabetes', 'Menopausa', 'Saúde Mental', 'Visão', 
-  'Aumento Peniano', 'Pressão Alta', 'Saúde Respiratória', 
-  'Calvície', 'Pack', 'Escrita', 'Idiomas', 'Prisão de Ventre', 
-  'Beleza', 'Fungos', 'Nutrição', 'Produtividade', 
-  'Refluxo/Gastrite', 'Moda', 'Edema', 'Varizes', 'Zumbido'
-];
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 
 const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping', 'E-book'];
 const TRAFFIC_SOURCES = ['Facebook Ads', 'YouTube Ads', 'TikTok Ads', 'Google Ads', 'Taboola', 'Instagram Ads', 'Native Ads'];
@@ -139,7 +118,7 @@ const OfferCard: React.FC<{
   >
     <div className="relative aspect-video overflow-hidden">
       <img 
-        src={offer.coverImage} 
+        src={offer.coverImage || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} 
         alt={offer.title} 
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
       />
@@ -179,7 +158,7 @@ const OfferCard: React.FC<{
         </div>
         <div className="flex items-center text-gray-500 text-xs font-black italic">
           <Eye size={14} className="mr-1 text-brand-gold" />
-          {(offer.views / 1000).toFixed(1)}K
+          {offer.views > 1000 ? `${(offer.views / 1000).toFixed(1)}K` : offer.views}
         </div>
       </div>
     </div>
@@ -293,16 +272,16 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
  * MAIN APP
  */
 const App: React.FC = () => {
-  // CRITICAL: Force login state false at start
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [activeVslIndex, setActiveVslIndex] = useState(0);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Mobile UI States
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
@@ -313,7 +292,55 @@ const App: React.FC = () => {
 
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Fetch Data from Google Sheets
   useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(CSV_URL);
+        const text = await response.text();
+        
+        // Simple CSV Parser handling quoted strings
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        
+        const parsedData: Offer[] = lines.slice(1).map((line, idx) => {
+          const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
+          const row: any = {};
+          headers.forEach((header, i) => {
+            row[header] = values[i] || '';
+          });
+
+          return {
+            id: row.id || idx.toString(),
+            title: row.title || 'Sem Título',
+            niche: row.niche || 'Geral',
+            language: row.language || 'Português',
+            trafficSource: row.trafficSource || 'Facebook Ads',
+            productType: row.productType || 'Infoproduto',
+            structure: row.structure || 'VSL',
+            vslLinks: [{ label: 'VSL Principal', url: row.vslEmbedUrl || '' }],
+            downloadUrl: row.vslDownloadUrl || '#',
+            trend: row.trend || 'Estável',
+            facebookUrl: row.facebookUrl || '#',
+            pageUrl: row.pageUrl || '#',
+            coverImage: row.coverImage || '',
+            views: parseInt(row.views) || 0,
+            transcriptionUrl: row.transcriptionUrl || '#',
+            creativeImages: row.creativeImages ? row.creativeImages.split(',').map((s: string) => s.trim()) : [],
+          };
+        });
+
+        setOffers(parsedData);
+      } catch (error) {
+        console.error('Error fetching intelligence database:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOffers();
+
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       setIsSuccess(true);
@@ -325,7 +352,6 @@ const App: React.FC = () => {
     if (savedViewed) setRecentlyViewed(JSON.parse(savedViewed));
   }, []);
 
-  // Close mobile menu on page change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [currentPage, selectedOffer]);
@@ -356,8 +382,8 @@ const App: React.FC = () => {
     setSelectedOffer(offer);
   };
 
-  const applyEliteFilters = (offers: Offer[]) => {
-    return offers.filter(o => {
+  const applyEliteFilters = (offersList: Offer[]) => {
+    return offersList.filter(o => {
       const matchesSearch = o.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesNiche = selectedNiche === 'Todos' || o.niche === selectedNiche;
       const matchesType = selectedType === 'Todos' || o.productType === selectedType;
@@ -367,10 +393,22 @@ const App: React.FC = () => {
     });
   };
 
-  // CONDITIONAL FILTERS DISPLAY LOGIC - Updated with ads_library
+  // UNIQUE NICHES FOR FILTER
+  const availableNiches = ['Todos', ...Array.from(new Set(offers.map(o => o.niche)))];
+
+  // CONDITIONAL FILTERS DISPLAY LOGIC
   const showFilters = ['offers', 'vsl', 'creatives', 'pages', 'ads_library'].includes(currentPage) && !selectedOffer;
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-40 gap-4 animate-pulse">
+          <Loader2 className="text-brand-gold animate-spin" size={48} />
+          <p className="text-brand-gold font-black uppercase text-xs tracking-widest italic">Sincronizando Banco de Dados...</p>
+        </div>
+      );
+    }
+
     if (selectedOffer) {
       return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -386,12 +424,12 @@ const App: React.FC = () => {
             </button>
             
             <div className="flex flex-wrap items-center gap-3">
-              <a href={selectedOffer.downloadUrl} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+              <a href={selectedOffer.downloadUrl} target="_blank" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
                 <Download size={16} /> BAIXAR VSL
               </a>
-              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg">
+              <a href={selectedOffer.transcriptionUrl} target="_blank" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg">
                 <FileText size={16} /> BAIXAR TRANSCRIÇÃO
-              </button>
+              </a>
               <button 
                 onClick={() => toggleFavorite(selectedOffer.id)}
                 className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-brand-gold text-black border-brand-gold' : 'bg-brand-hover text-white border-white/5'}`}
@@ -412,23 +450,25 @@ const App: React.FC = () => {
                         key={idx}
                         onClick={() => setActiveVslIndex(idx)}
                         className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${
-                          activeVslIndex === idx 
-                          ? 'bg-brand-gold text-black' 
-                          : 'text-gray-500 hover:text-white'
+                          activeVslIndex === idx ? 'bg-brand-gold text-black' : 'text-gray-500 hover:text-white'
                         }`}
                       >
-                        <Video size={12} /> {selectedOffer.vslLinks.length > 1 ? `VSL ${idx + 1}` : 'VSL'}
+                        <Video size={12} /> {link.label}
                       </button>
                     ))}
                   </div>
                   <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5">
-                    <iframe 
-                      className="w-full h-full"
-                      src={selectedOffer.vslLinks[activeVslIndex].url}
-                      title="VSL Player"
-                      frameBorder="0"
-                      allowFullScreen
-                    ></iframe>
+                    {selectedOffer.vslLinks[activeVslIndex]?.url ? (
+                      <iframe 
+                        className="w-full h-full"
+                        src={selectedOffer.vslLinks[activeVslIndex].url}
+                        title="VSL Player"
+                        frameBorder="0"
+                        allowFullScreen
+                      ></iframe>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-700 font-black uppercase italic text-xs">Iframe de vídeo indisponível</div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -476,7 +516,7 @@ const App: React.FC = () => {
                </div>
             </div>
 
-            {/* SALES PAGES */}
+            {/* PAGES */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
                  <Layout className="text-brand-gold w-6 h-6" /> PÁGINA OFICIAL
@@ -494,22 +534,10 @@ const App: React.FC = () => {
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
                  </a>
-                 <a href="#" target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
-                   <div className="flex items-center gap-4">
-                      <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
-                        <MousePointer2 size={20} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p>
-                        <p className="text-white font-black uppercase text-base md:text-lg italic">Página de Checkout</p>
-                      </div>
-                   </div>
-                   <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
-                 </a>
                </div>
             </div>
 
-            {/* ADS LIBRARY - MODULAR INTELLIGENCE */}
+            {/* ADS LIBRARY */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
                  <Library className="text-brand-gold w-6 h-6" /> BIBLIOTECA DE ANÚNCIOS
@@ -534,12 +562,12 @@ const App: React.FC = () => {
       );
     }
 
-    const filtered = applyEliteFilters(MOCK_OFFERS);
+    const filtered = applyEliteFilters(offers);
 
     switch (currentPage) {
       case 'home':
-        const scalingHome = applyEliteFilters(MOCK_OFFERS.filter(o => o.trend === 'Escalando'));
-        const recentlyHome = applyEliteFilters(MOCK_OFFERS.filter(o => recentlyViewed.includes(o.id)));
+        const scalingHome = offers.filter(o => o.trend === 'Escalando').slice(0, 4);
+        const recentlyHome = offers.filter(o => recentlyViewed.includes(o.id));
 
         return (
           <div className="animate-in fade-in duration-700 space-y-16 md:space-y-20">
@@ -657,10 +685,7 @@ const App: React.FC = () => {
                     </div>
                     <div className="space-y-3">
                         <a href={offer.pageUrl} target="_blank" rel="noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
-                            <Monitor size={14} /> SALES PAGE <ExternalLink size={12} />
-                        </a>
-                        <a href="#" target="_blank" rel="noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
-                            <MousePointer2 size={14} /> CHECKOUT <ExternalLink size={12} />
+                            <Monitor size={14} /> PÁGINA OFICIAL <ExternalLink size={12} />
                         </a>
                     </div>
                 </div>
@@ -698,11 +723,12 @@ const App: React.FC = () => {
         );
 
       case 'favorites':
-        const favList = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
+        const favList = offers.filter(o => favorites.includes(o.id));
+        const filteredFavs = applyEliteFilters(favList);
         return (
           <div className="animate-in fade-in duration-700">
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {favList.map(offer => (
+              {filteredFavs.map(offer => (
                 <OfferCard 
                   key={offer.id} 
                   offer={offer} 
@@ -712,7 +738,7 @@ const App: React.FC = () => {
                 />
               ))}
             </div>
-            {favList.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center">Nenhum favorito encontrado.</p>}
+            {filteredFavs.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center">Nenhum favorito encontrado.</p>}
           </div>
         );
 
@@ -721,7 +747,6 @@ const App: React.FC = () => {
     }
   };
 
-  // RESTORATION: Landing Page Lock
   if (!isLoggedIn) {
     return <LandingPage onLogin={handleLogin} isSuccess={isSuccess} onCloseSuccess={() => setIsSuccess(false)} />;
   }
@@ -758,7 +783,6 @@ const App: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
-      {/* MOBILE SIDEBAR OVERLAY */}
       {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300"
@@ -766,16 +790,13 @@ const App: React.FC = () => {
         />
       )}
       
-      {/* SIDEBAR (DESKTOP & MOBILE) */}
       <aside className={`w-72 bg-brand-card border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <SidebarContent />
       </aside>
 
-      {/* MAIN CONTENT AREA */}
       <main className="flex-1 lg:ml-72 relative w-full">
         <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-brand-dark/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4 md:gap-6">
           <div className="flex items-center justify-between gap-4">
-            {/* MOBILE HAMBURGER */}
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
               className="lg:hidden p-2 bg-brand-card border border-white/5 rounded-xl text-brand-gold hover:bg-brand-hover transition-colors"
@@ -802,10 +823,8 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* CONDITIONAL FILTERS DISPLAY */}
           {showFilters && (
             <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-              {/* MOBILE FILTER TOGGLE */}
               <button 
                 onClick={() => setIsFiltersOpen(!isFiltersOpen)}
                 className="lg:hidden w-full flex items-center justify-center gap-2 py-3 bg-brand-card border border-brand-gold/20 rounded-xl text-brand-gold font-black uppercase text-[10px] tracking-widest hover:bg-brand-hover transition-all"
@@ -817,8 +836,7 @@ const App: React.FC = () => {
                 <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
                   <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Nicho</label>
                   <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
-                    <option value="Todos">Todos</option>
-                    {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+                    {availableNiches.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </div>
                 <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
