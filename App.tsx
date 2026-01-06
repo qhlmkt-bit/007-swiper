@@ -28,7 +28,9 @@ import {
   Download,
   Video,
   ArrowUpRight,
-  Zap
+  Zap,
+  Globe,
+  Radio
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -42,9 +44,9 @@ import {
 import { MOCK_OFFERS } from './data';
 
 /** 
- * TYPES DEFINITIONS 
+ * TYPES DEFINITIONS - STABILITY FOR VERCEL
  */
-export type ProductType = 'Infoproduto' | 'Low Ticket' | 'Nutracêutico' | 'Dropshipping' | string;
+export type ProductType = 'Infoproduto' | 'Low Ticket' | 'Nutracêutico' | 'Dropshipping' | 'E-book' | string;
 
 export type Niche = 
   | 'Exercícios' | 'Disfunção Erétil' | 'Outros' | 'Próstata' 
@@ -97,7 +99,9 @@ const NICHES: Niche[] = [
   'Refluxo/Gastrite', 'Moda', 'Edema', 'Varizes', 'Zumbido'
 ];
 
-const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping'];
+const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping', 'E-book'];
+const TRAFFIC_SOURCES = ['Facebook Ads', 'YouTube Ads', 'TikTok Ads', 'Google Ads', 'Taboola', 'Instagram Ads', 'Native Ads'];
+const LANGUAGES = ['Português', 'Inglês', 'Espanhol'];
 
 /**
  * COMPONENTS
@@ -108,13 +112,16 @@ const SidebarItem: React.FC<{
   label: string;
   active: boolean;
   onClick: () => void;
-}> = ({ icon: Icon, label, active, onClick }) => (
+  variant?: 'default' | 'danger';
+}> = ({ icon: Icon, label, active, onClick, variant = 'default' }) => (
   <button
     onClick={onClick}
     className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-200 ${
       active 
         ? 'bg-brand-gold text-black font-black shadow-lg shadow-brand-gold/20' 
-        : 'text-gray-400 hover:bg-brand-hover hover:text-white'
+        : variant === 'danger' 
+          ? 'text-red-500 hover:bg-red-500/10' 
+          : 'text-gray-400 hover:bg-brand-hover hover:text-white'
     }`}
   >
     <Icon size={20} />
@@ -157,7 +164,7 @@ const OfferCard: React.FC<{
             isFavorite ? 'bg-brand-gold text-black scale-110' : 'bg-black/40 text-white hover:bg-brand-gold hover:text-black'
           }`}
         >
-          <Star size={16} fill={isFavorite ? "currentColor" : "none"} />
+          <Star size={18} fill={isFavorite ? "currentColor" : "none"} />
         </button>
       </div>
       <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
@@ -170,7 +177,7 @@ const OfferCard: React.FC<{
       <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-brand-gold transition-colors">{offer.title}</h3>
       <div className="flex items-center justify-between border-t border-white/5 pt-4">
         <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-          <Video size={14} className="text-brand-gold" /> {offer.vslLinks.length} VSL
+          <Monitor size={14} className="text-brand-gold" /> {offer.trafficSource}
         </div>
         <div className="flex items-center text-gray-500 text-xs font-black italic">
           <Eye size={14} className="mr-1 text-brand-gold" />
@@ -188,7 +195,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         <div className="flex-1 flex items-center justify-center gap-3">
           <Trophy size={24} className="animate-bounce shrink-0" />
           <span className="text-xs md:text-sm lg:text-base tracking-tight uppercase leading-tight">
-            PAGAMENTO CONFIRMADO! 🕵️‍♂️ Sua chave de acesso permanente é: 
+            PAGAMENTO CONFIRMADO! 🕵️‍♂️ Sua chave secreta é: 
             <span className="bg-black text-brand-gold px-3 py-1 rounded mx-2 inline-flex items-center gap-1 shadow-lg border border-white/10">
               <Lock size={14} /> AGENTE007
             </span> 
@@ -252,8 +259,13 @@ const App: React.FC = () => {
   const [activeVslIndex, setActiveVslIndex] = useState(0);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Advanced Filter States
   const [selectedNiche, setSelectedNiche] = useState<string>('Todos');
   const [selectedType, setSelectedType] = useState<string>('Todos');
+  const [selectedTraffic, setSelectedTraffic] = useState<string>('Todos');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('Todos');
+
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
@@ -261,31 +273,38 @@ const App: React.FC = () => {
     if (params.get('success') === 'true') {
       setIsSuccess(true);
     }
+    // Load favorites from local storage
+    const savedFavs = localStorage.getItem('007_favs');
+    if (savedFavs) setFavorites(JSON.parse(savedFavs));
   }, []);
 
   const handleLogin = () => {
-    const password = window.prompt("🕵️‍♂️ AUTENTICAÇÃO NECESSÁRIA\nDigite sua chave de acesso VIP:");
+    const password = window.prompt("🕵️‍♂️ QUARTEL GENERAL\nIdentifique-se com sua chave de acesso VIP:");
     if (password === 'AGENTE007') {
       setIsLoggedIn(true);
       setIsSuccess(false);
     } else if (password !== null) {
-      alert('ACESSO NEGADO ❌\nSua assinatura não foi identificada ou a chave está incorreta.');
+      alert('ACESSO NEGADO ❌\nSua licença não foi validada.');
     }
   };
 
   const toggleFavorite = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setFavorites(prev => 
-      prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
-    );
+    const newFavs = favorites.includes(id) 
+      ? favorites.filter(f => f !== id) 
+      : [...favorites, id];
+    setFavorites(newFavs);
+    localStorage.setItem('007_favs', JSON.stringify(newFavs));
   };
 
-  const filterOffers = (offers: Offer[]) => {
+  const applyEliteFilters = (offers: Offer[]) => {
     return offers.filter(o => {
       const matchesSearch = o.title.toLowerCase().includes(searchQuery.toLowerCase()) || o.niche.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesNiche = selectedNiche === 'Todos' || o.niche === selectedNiche;
       const matchesType = selectedType === 'Todos' || o.productType === selectedType;
-      return matchesSearch && matchesNiche && matchesType;
+      const matchesTraffic = selectedTraffic === 'Todos' || o.trafficSource === selectedTraffic;
+      const matchesLanguage = selectedLanguage === 'Todos' || o.language === selectedLanguage;
+      return matchesSearch && matchesNiche && matchesType && matchesTraffic && matchesLanguage;
     });
   };
 
@@ -311,8 +330,11 @@ const App: React.FC = () => {
               <a href={selectedOffer.downloadUrl} className="flex items-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
                 <Download size={18} /> Baixar VSL
               </a>
-              <button onClick={() => setSelectedOffer(null)} className="flex items-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:border-brand-gold transition-all border border-white/5 shadow-lg">
-                <FileText size={18} /> Ver Transcrição
+              <button 
+                onClick={(e) => toggleFavorite(selectedOffer.id, e)}
+                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-brand-gold text-black' : 'bg-brand-hover text-white border-white/5'}`}
+              >
+                <Star size={18} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'Arquivado' : 'Arquivar'}
               </button>
             </div>
           </div>
@@ -353,12 +375,12 @@ const App: React.FC = () => {
                         <h3 className="text-brand-gold font-black uppercase text-xs mb-4">Informações</h3>
                         <div className="space-y-4">
                             <div className="flex justify-between"><span className="text-gray-500 text-xs font-bold uppercase">Nicho</span><span className="text-white text-xs font-black uppercase">{selectedOffer.niche}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500 text-xs font-bold uppercase">Tipo</span><span className="text-white text-xs font-black uppercase">{selectedOffer.productType}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500 text-xs font-bold uppercase">Tráfego</span><span className="text-white text-xs font-black uppercase">{selectedOffer.trafficSource}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500 text-xs font-bold uppercase">Rede</span><span className="text-white text-xs font-black uppercase">{selectedOffer.trafficSource}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500 text-xs font-bold uppercase">Idioma</span><span className="text-white text-xs font-black uppercase">{selectedOffer.language}</span></div>
                         </div>
                     </div>
                     <div className="bg-brand-hover p-6 rounded-[32px] border border-white/5 shadow-xl">
-                        <h3 className="text-brand-gold font-black uppercase text-xs mb-4">Análise Tática</h3>
+                        <h3 className="text-brand-gold font-black uppercase text-xs mb-4">Volume Histórico</h3>
                         <div className="h-24">
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={[{v:10},{v:25},{v:15},{v:40},{v:30}]}>
@@ -374,16 +396,16 @@ const App: React.FC = () => {
       );
     }
 
-    const filteredOffers = filterOffers(MOCK_OFFERS);
+    const filteredOffers = applyEliteFilters(MOCK_OFFERS);
 
     switch (currentPage) {
       case 'home':
         return (
           <div className="animate-in fade-in duration-700">
             <div className="mb-12">
-                <h2 className="text-3xl font-black text-white uppercase italic mb-6">Mais Vistos</h2>
+                <h2 className="text-3xl font-black text-white uppercase italic mb-6">Em Destaque</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {filterOffers(MOCK_OFFERS.slice(0, 4)).map(offer => (
+                {applyEliteFilters(MOCK_OFFERS.slice(0, 4)).map(offer => (
                     <OfferCard 
                     key={offer.id} 
                     offer={offer} 
@@ -395,9 +417,9 @@ const App: React.FC = () => {
                 </div>
             </div>
             <div>
-                <h2 className="text-3xl font-black text-white uppercase italic mb-6">Vistos Recentemente</h2>
+                <h2 className="text-3xl font-black text-white uppercase italic mb-6">Adicionados Recentemente</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {filterOffers(MOCK_OFFERS.slice(1, 5)).map(offer => (
+                {applyEliteFilters(MOCK_OFFERS.slice(1, 5)).map(offer => (
                     <OfferCard 
                     key={offer.id} 
                     offer={offer} 
@@ -424,17 +446,20 @@ const App: React.FC = () => {
                 />
               ))}
               {filteredOffers.length === 0 && (
-                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhuma oferta encontrada para os filtros selecionados.</div>
+                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Sua busca não retornou resultados.</div>
               )}
             </div>
           </div>
         );
       case 'favorites':
-        const favs = filterOffers(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
+        const favOffers = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
         return (
           <div className="animate-in fade-in duration-700">
+            <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
+              <Star className="text-brand-gold" fill="#D4AF37" /> Arquivo Secreto
+            </h2>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {favs.map(offer => (
+              {favOffers.map(offer => (
                 <OfferCard 
                   key={offer.id} 
                   offer={offer} 
@@ -443,20 +468,20 @@ const App: React.FC = () => {
                   onClick={() => setSelectedOffer(offer)}
                 />
               ))}
-              {favs.length === 0 && (
-                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhum favorito encontrado.</div>
+              {favOffers.length === 0 && (
+                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhuma oferta no arquivo secreto.</div>
               )}
             </div>
           </div>
         );
       default:
-        return <div className="text-center py-20 text-gray-500 font-black uppercase italic">Em Breve...</div>;
+        return <div className="text-center py-20 text-gray-500 font-black uppercase italic">Recurso disponível em breve para Agentes VIP.</div>;
     }
   };
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
-      {/* SIDEBAR */}
+      {/* SIDEBAR ORGANIZADA */}
       <aside className="w-72 bg-brand-card border-r border-white/5 hidden lg:flex flex-col fixed h-screen z-[90]">
         <div className="p-10 h-full flex flex-col">
           <div className="flex items-center space-x-3 mb-16 px-2">
@@ -467,7 +492,7 @@ const App: React.FC = () => {
           </div>
           
           <nav className="space-y-2">
-            {/* UPPER SECTION */}
+            {/* SUPERIOR SECTION */}
             <SidebarItem 
               icon={HomeIcon} 
               label="Home" 
@@ -476,7 +501,7 @@ const App: React.FC = () => {
             />
             <SidebarItem 
               icon={Star} 
-              label="Favoritos" 
+              label="Arquivo Secreto" 
               active={currentPage === 'favorites'} 
               onClick={() => { setCurrentPage('favorites'); setSelectedOffer(null); }} 
             />
@@ -487,9 +512,9 @@ const App: React.FC = () => {
               onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} 
             />
             
-            {/* LOWER SECTION */}
+            {/* INFERIOR SECTION */}
             <div className="pt-8 pb-4">
-              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Análise</p>
+              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Inteligência</p>
               <SidebarItem 
                 icon={Tag} 
                 label="Ofertas" 
@@ -512,68 +537,77 @@ const App: React.FC = () => {
           </nav>
 
           <div className="mt-auto">
-            <button 
-              onClick={() => setIsLoggedIn(false)}
-              className="w-full flex items-center justify-center space-x-3 px-6 py-5 rounded-[20px] text-red-500 hover:bg-red-500/10 transition-all font-black uppercase text-[10px] tracking-widest border border-transparent hover:border-red-500/20"
-            >
-              <LogOut size={18} />
-              <span>Sair</span>
-            </button>
+            <SidebarItem 
+              icon={LogOut} 
+              label="Sair" 
+              active={false}
+              onClick={() => setIsLoggedIn(false)} 
+              variant="danger"
+            />
           </div>
         </div>
       </aside>
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 lg:ml-72 relative">
-        <header className="h-28 flex items-center justify-between px-10 bg-brand-dark/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5">
-          <div className="flex-1 flex items-center gap-4">
-            {/* SEARCH + FILTERS BAR */}
-            <div className="flex-1 flex items-center bg-brand-card px-6 py-4 rounded-[24px] border border-white/5 shadow-inner max-w-2xl">
-              <Search className="text-gray-500 mr-4" size={20} />
-              <input 
+        <header className="h-auto py-8 flex flex-col px-10 bg-brand-dark/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-6">
+          <div className="flex items-center justify-between">
+            <div className="flex-1 flex items-center bg-brand-card px-6 py-3 rounded-[24px] border border-white/5 shadow-inner max-w-xl">
+               <Search className="text-gray-500 mr-4" size={18} />
+               <input 
                   type="text" 
                   placeholder="Pesquisar banco de dados..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:text-gray-700" 
-              />
+               />
             </div>
-
-            {/* NICHE FILTER */}
-            <div className="hidden xl:flex items-center gap-2">
-               <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest whitespace-nowrap">Nicho:</label>
-               <select 
-                  value={selectedNiche}
-                  onChange={(e) => setSelectedNiche(e.target.value)}
-                  className="bg-brand-card border border-white/5 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-tighter text-white outline-none hover:border-brand-gold transition-all cursor-pointer"
-               >
-                  <option value="Todos">Todos</option>
-                  {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
-               </select>
-            </div>
-
-            {/* TYPE FILTER */}
-            <div className="hidden xl:flex items-center gap-2">
-               <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest whitespace-nowrap">Tipo:</label>
-               <select 
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="bg-brand-card border border-white/5 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-tighter text-white outline-none hover:border-brand-gold transition-all cursor-pointer"
-               >
-                  <option value="Todos">Todos</option>
-                  {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-               </select>
+            <div className="flex items-center gap-4 bg-brand-card p-2 pr-6 rounded-[24px] border border-white/5 shadow-2xl ml-6">
+                <div className="w-10 h-10 bg-brand-gold rounded-xl flex items-center justify-center font-black text-black text-lg shadow-lg">007</div>
+                <div className="hidden sm:block">
+                  <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Secreto</p>
+                  <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">VIP</p>
+                </div>
             </div>
           </div>
-          
-          <div className="flex items-center gap-6 ml-10">
-            <div className="flex items-center gap-4 bg-brand-card p-2 pr-6 rounded-[24px] border border-white/5 shadow-2xl">
-              <div className="w-12 h-12 bg-brand-gold rounded-2xl flex items-center justify-center font-black text-black text-xl shadow-lg border-2 border-white/10">007</div>
-              <div className="hidden sm:block">
-                <p className="font-black text-xs uppercase tracking-tighter text-white">Agente Secreto</p>
-                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">VIP</p>
-              </div>
-            </div>
+
+          {/* ELITE FILTERS BAR */}
+          <div className="flex flex-wrap items-center gap-4">
+             {/* NICHE */}
+             <div className="flex flex-col gap-1.5">
+               <label className="text-[9px] font-black uppercase text-gray-600 px-1">Nicho</label>
+               <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold transition-all cursor-pointer">
+                  <option value="Todos">Todos os Nichos</option>
+                  {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+               </select>
+             </div>
+
+             {/* PRODUCT TYPE */}
+             <div className="flex flex-col gap-1.5">
+               <label className="text-[9px] font-black uppercase text-gray-600 px-1">Tipo de Produto</label>
+               <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold transition-all cursor-pointer">
+                  <option value="Todos">Todos os Tipos</option>
+                  {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+               </select>
+             </div>
+
+             {/* TRAFFIC SOURCE */}
+             <div className="flex flex-col gap-1.5">
+               <label className="text-[9px] font-black uppercase text-gray-600 px-1">Rede de Tráfego</label>
+               <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold transition-all cursor-pointer">
+                  <option value="Todos">Todas as Redes</option>
+                  {TRAFFIC_SOURCES.map(ts => <option key={ts} value={ts}>{ts}</option>)}
+               </select>
+             </div>
+
+             {/* LANGUAGE */}
+             <div className="flex flex-col gap-1.5">
+               <label className="text-[9px] font-black uppercase text-gray-600 px-1">Idioma</label>
+               <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold transition-all cursor-pointer">
+                  <option value="Todos">Todos os Idiomas</option>
+                  {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+               </select>
+             </div>
           </div>
         </header>
 
