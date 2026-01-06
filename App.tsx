@@ -10,7 +10,7 @@ import {
   LogOut,
   ChevronRight,
   Monitor,
-  Eye,
+  Eye, 
   Lock,
   Trophy,
   Download,
@@ -32,7 +32,8 @@ import {
   Clock,
   Target,
   Menu,
-  Filter
+  Filter,
+  Library
 } from 'lucide-react';
 import { MOCK_OFFERS } from './data';
 
@@ -366,8 +367,8 @@ const App: React.FC = () => {
     });
   };
 
-  // CONDITIONAL FILTERS DISPLAY LOGIC
-  const showFilters = ['offers', 'vsl', 'creatives', 'pages'].includes(currentPage) && !selectedOffer;
+  // CONDITIONAL FILTERS DISPLAY LOGIC - Updated with ads_library
+  const showFilters = ['offers', 'vsl', 'creatives', 'pages', 'ads_library'].includes(currentPage) && !selectedOffer;
 
   const renderContent = () => {
     if (selectedOffer) {
@@ -488,7 +489,7 @@ const App: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p>
-                        <p className="text-white font-black uppercase text-base md:text-lg italic">Sales Page Oficial</p>
+                        <p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p>
                       </div>
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
@@ -647,6 +648,34 @@ const App: React.FC = () => {
           </div>
         );
 
+      case 'ads_library':
+        return (
+          <div className="animate-in fade-in duration-700">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map(offer => (
+                <div key={offer.id} className="bg-brand-card p-6 rounded-[24px] md:rounded-[32px] border border-white/5 hover:border-brand-gold/50 transition-all group">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-brand-hover rounded-xl flex items-center justify-center group-hover:bg-brand-gold group-hover:text-black transition-all">
+                                <Library size={20} />
+                            </div>
+                            <p className="text-white font-black uppercase text-sm md:text-base italic truncate max-w-[150px] md:max-w-none">{offer.title}</p>
+                        </div>
+                        <button onClick={(e) => toggleFavorite(offer.id, e)} className="text-gray-600 hover:text-brand-gold transition-colors">
+                            <Star size={18} fill={favorites.includes(offer.id) ? "currentColor" : "none"} />
+                        </button>
+                    </div>
+                    <div className="space-y-3">
+                        <a href={offer.facebookUrl} target="_blank" rel="noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
+                            <Facebook size={14} /> FACEBOOK ADS <ExternalLink size={12} />
+                        </a>
+                    </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
       case 'favorites':
         const favList = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
         return (
@@ -680,6 +709,7 @@ const App: React.FC = () => {
     <div className="p-10 h-full flex flex-col">
       <div className="flex items-center space-x-3 mb-16 px-2">
         <div className="bg-brand-gold p-2 rounded-xl shadow-xl shadow-brand-gold/10">
+          {/* Fix: changed <eye /> to <Eye /> (imported from lucide-react) */}
           <Eye className="text-black" size={24} />
         </div>
         <span className="text-2xl font-black tracking-tighter text-white uppercase italic">007 Swiper</span>
@@ -696,6 +726,7 @@ const App: React.FC = () => {
           <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); }} />
           <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); }} />
           <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); }} />
+          <SidebarItem icon={Library} label="BIBLIOTECA DE ANÚNCIOS" active={currentPage === 'ads_library'} onClick={() => { setCurrentPage('ads_library'); setSelectedOffer(null); }} />
         </div>
       </nav>
 
