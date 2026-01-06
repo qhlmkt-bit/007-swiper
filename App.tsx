@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Home as HomeIcon, 
@@ -10,37 +9,23 @@ import {
   Search, 
   LogOut,
   ChevronRight,
-  TrendingUp,
-  Clock,
-  ExternalLink,
-  Play,
   Monitor,
   Eye,
-  CheckCircle,
-  BarChart2,
   Lock,
-  Unlock,
-  ShieldCheck,
   Trophy,
-  AlertTriangle,
   Download,
   Video,
-  ArrowUpRight,
   Zap,
   Globe,
-  Radio,
-  // Added X import to fix line 203 error
-  X
+  X,
+  ExternalLink,
+  ImageIcon,
+  Layout,
+  MousePointer2,
+  TrendingUp,
+  ShieldCheck,
+  CheckCircle
 } from 'lucide-react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
-} from 'recharts';
 import { MOCK_OFFERS } from './data';
 
 /** 
@@ -84,7 +69,7 @@ export interface Offer {
   views: number;
   transcription: string;
   creativeImages: string[];
-  isFavorite?: boolean; // Added for stability as requested
+  isFavorite?: boolean;
 }
 
 const NICHES: Niche[] = [
@@ -154,7 +139,7 @@ const OfferCard: React.FC<{
         )}
         {offer.trend === 'Em Alta' && (
           <div className="px-2.5 py-1 bg-brand-gold text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
-            <TrendingUp size={10} /> Em Alta
+            <TrendingUp size={12} className="w-3 h-3" /> Em Alta
           </div>
         )}
       </div>
@@ -168,7 +153,7 @@ const OfferCard: React.FC<{
           <Star size={18} fill={isFavorite ? "currentColor" : "none"} />
         </button>
       </div>
-      <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
+      <div className="absolute bottom-3 left-3">
         <div className="px-2 py-0.5 bg-brand-gold text-black text-[9px] font-black rounded uppercase shadow-lg">
           {offer.niche}
         </div>
@@ -194,15 +179,15 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
     {isSuccess && (
       <div className="w-full bg-brand-gold text-black py-4 px-6 md:px-12 text-center font-black animate-in fade-in slide-in-from-top-4 duration-500 flex items-center justify-between gap-4 border-b-4 border-black/10 shadow-[0_4px_30px_rgba(212,175,55,0.4)] sticky top-0 z-[100]">
         <div className="flex-1 flex items-center justify-center gap-3">
-          <Trophy size={24} className="animate-bounce shrink-0" />
+          <Trophy size={24} className="shrink-0" />
           <span className="text-xs md:text-sm lg:text-base tracking-tight uppercase leading-tight">
-            PAGAMENTO CONFIRMADO! 🕵️‍♂️ Sua chave secreta é: 
-            <span className="bg-black text-brand-gold px-3 py-1 rounded mx-2 inline-flex items-center gap-1 shadow-lg border border-white/10">
+            PAGAMENTO CONFIRMADO! 🕵️‍♂️ SUA CHAVE: 
+            <span className="bg-black text-brand-gold px-3 py-1 rounded mx-2 inline-flex items-center gap-1 shadow-lg">
               <Lock size={14} /> AGENTE007
             </span> 
           </span>
         </div>
-        <button onClick={onCloseSuccess} className="p-1 hover:bg-black/10 rounded-full transition-colors shrink-0">
+        <button onClick={onCloseSuccess} className="p-1 hover:bg-black/10 rounded-full transition-colors">
           <X size={24} />
         </button>
       </div>
@@ -210,35 +195,32 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
     
     <nav className="w-full max-w-7xl px-8 py-8 flex justify-between items-center relative z-50">
       <div className="flex items-center space-x-3">
-        <div className="bg-brand-gold p-2.5 rounded-2xl shadow-xl shadow-brand-gold/20 rotate-3">
+        <div className="bg-brand-gold p-2.5 rounded-2xl rotate-3">
           <Eye className="text-black" size={28} />
         </div>
-        <span className="text-3xl font-black tracking-tighter text-white">007 SWIPER</span>
+        <span className="text-3xl font-black tracking-tighter text-white uppercase italic">007 Swiper</span>
       </div>
       <button 
         onClick={onLogin}
-        className="px-8 py-3 bg-brand-gold hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl shadow-brand-gold/30 flex items-center gap-2 uppercase text-xs tracking-tighter transform hover:scale-105"
+        className="px-8 py-3 bg-brand-gold hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl shadow-brand-gold/30 flex items-center gap-2 uppercase text-xs tracking-tighter"
       >
-        <Lock size={16} /> Entrar na Plataforma
+        <Lock size={16} /> Entrar
       </button>
     </nav>
     
     <main className="flex-1 w-full max-w-7xl px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-gold/10 via-transparent to-transparent -z-10 pointer-events-none opacity-50"></div>
       
-      <div className="inline-block px-5 py-2 mb-8 rounded-full border border-brand-gold/30 bg-brand-gold/5 text-brand-gold text-xs font-black uppercase tracking-[0.2em] animate-pulse">
-        Relatório Secreto de Inteligência Digital
+      <div className="inline-block px-5 py-2 mb-8 rounded-full border border-brand-gold/30 bg-brand-gold/5 text-brand-gold text-xs font-black uppercase tracking-[0.2em]">
+        Inteligência Digital Secreta
       </div>
-      <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-[0.9] tracking-tighter">
-        Espione as Ofertas que <br/> <span className="text-brand-gold italic">Dominam o Jogo.</span>
+      <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-[0.9] tracking-tighter uppercase italic">
+        Espione as Ofertas que <br/> <span className="text-brand-gold">Dominam o Jogo.</span>
       </h1>
       
       <div className="bg-white text-black p-12 rounded-[50px] w-full max-w-lg shadow-2xl relative overflow-hidden group border-b-[10px] border-brand-gold mt-12">
-        <div className="absolute -top-10 -right-10 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-          <Eye size={200} />
-        </div>
         <h2 className="text-4xl font-black mb-2 uppercase tracking-tighter italic text-brand-gold">ACESSO PREMIUM</h2>
-        <p className="text-gray-600 mb-10 font-bold text-sm tracking-tight italic">O arsenal definitivo para quem joga no nível profissional.</p>
+        <p className="text-gray-600 mb-10 font-bold text-sm tracking-tight italic">O arsenal definitivo para o mercado digital profissional.</p>
         <div className="text-7xl font-black mb-12 tracking-tighter flex items-end justify-center text-black">
           R$ 197<span className="text-xl text-gray-400 font-black mb-2 ml-1">/mês</span>
         </div>
@@ -261,7 +243,6 @@ const App: React.FC = () => {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Advanced Filter States
   const [selectedNiche, setSelectedNiche] = useState<string>('Todos');
   const [selectedType, setSelectedType] = useState<string>('Todos');
   const [selectedTraffic, setSelectedTraffic] = useState<string>('Todos');
@@ -279,17 +260,17 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = () => {
-    const password = window.prompt("🕵️‍♂️ IDENTIFICAÇÃO BIOMÉTRICA\nDigite sua chave de acesso VIP:");
+    const password = window.prompt("🕵️‍♂️ ACESSO VIP\nDigite sua chave de acesso VIP:");
     if (password === 'AGENTE007') {
       setIsLoggedIn(true);
       setIsSuccess(false);
     } else if (password !== null) {
-      alert('ACESSO NEGADO ❌\nAssinatura não identificada.');
+      alert('ACESSO NEGADO ❌');
     }
   };
 
-  const toggleFavorite = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const toggleFavorite = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     const newFavs = favorites.includes(id) 
       ? favorites.filter(f => f !== id) 
       : [...favorites, id];
@@ -316,71 +297,153 @@ const App: React.FC = () => {
     if (selectedOffer) {
       return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* TOPO: TRÊS BOTÕES ALINHADOS */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <button 
               onClick={() => { setSelectedOffer(null); setActiveVslIndex(0); }}
-              className="flex items-center text-gray-500 hover:text-brand-gold transition-all font-black uppercase text-xs tracking-[0.2em] group"
+              className="flex items-center text-gray-500 hover:text-brand-gold transition-all font-black uppercase text-xs tracking-widest group"
             >
               <div className="bg-brand-hover p-2 rounded-lg mr-3 group-hover:bg-brand-gold group-hover:text-black transition-all">
                 <ChevronRight className="rotate-180" size={16} />
               </div>
               Voltar para Base
             </button>
-            <div className="flex flex-wrap gap-3">
-              <a href={selectedOffer.downloadUrl} className="flex items-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
-                <Download size={18} /> Baixar VSL
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <a href={selectedOffer.downloadUrl} className="flex items-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+                <Download size={16} /> BAIXAR VSL
               </a>
+              <button className="flex items-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg">
+                <FileText size={16} /> BAIXAR TRANSCRIÇÃO
+              </button>
               <button 
-                onClick={(e) => toggleFavorite(selectedOffer.id, e)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-brand-gold text-black' : 'bg-brand-hover text-white border-white/5'}`}
+                onClick={() => toggleFavorite(selectedOffer.id)}
+                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-brand-gold text-black border-brand-gold' : 'bg-brand-hover text-white border-white/5'}`}
               >
-                <Star size={18} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'Favoritado' : 'Favoritar'}
+                <Star size={16} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'FAVORITADO' : 'FAVORITAR'}
               </button>
             </div>
           </div>
 
-          <div className="bg-brand-card p-6 lg:p-10 rounded-[40px] border border-white/5 shadow-3xl">
-             <div className="flex flex-col lg:flex-row gap-10">
-                <div className="flex-1 space-y-10">
-                    <h1 className="text-4xl font-black text-white uppercase italic">{selectedOffer.title}</h1>
-                    <div className="bg-brand-hover rounded-[32px] overflow-hidden border border-white/5 shadow-2xl">
-                      <div className="flex bg-black/40 p-2 gap-2 overflow-x-auto">
-                        {selectedOffer.vslLinks.map((link, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setActiveVslIndex(idx)}
-                            className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl flex items-center gap-2 whitespace-nowrap ${
-                              activeVslIndex === idx 
-                              ? 'bg-brand-gold text-black' 
-                              : 'text-gray-500 hover:text-white'
-                            }`}
-                          >
-                            <Video size={14} /> {link.label}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="aspect-video">
-                        <iframe 
-                          className="w-full h-full"
-                          src={selectedOffer.vslLinks[activeVslIndex].url}
-                          title="VSL Player"
-                          frameBorder="0"
-                          allowFullScreen
-                        ></iframe>
-                      </div>
-                    </div>
+          <div className="space-y-12">
+            {/* MEIO: LAYOUT DE DUAS COLUNAS (ESPIONAGEM) */}
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+              {/* MEIO (ESQUERDA 60%) */}
+              <div className="w-full lg:w-[60%] space-y-6">
+                <div className="bg-brand-card p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden">
+                  <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6">
+                    {selectedOffer.vslLinks.map((link, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveVslIndex(idx)}
+                        className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${
+                          activeVslIndex === idx 
+                          ? 'bg-brand-gold text-black' 
+                          : 'text-gray-500 hover:text-white'
+                        }`}
+                      >
+                        <Video size={12} /> {selectedOffer.vslLinks.length > 1 ? `VSL ${idx + 1}` : 'VSL'}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5">
+                    <iframe 
+                      className="w-full h-full"
+                      src={selectedOffer.vslLinks[activeVslIndex].url}
+                      title="VSL Player"
+                      frameBorder="0"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
                 </div>
-                <div className="w-full lg:w-80 space-y-6">
-                    <div className="bg-brand-hover p-6 rounded-[32px] border border-white/5 shadow-xl">
-                        <h3 className="text-brand-gold font-black uppercase text-xs mb-4">Informações</h3>
-                        <div className="space-y-4">
-                            <div className="flex justify-between"><span className="text-gray-500 text-xs font-bold uppercase">Nicho</span><span className="text-white text-xs font-black uppercase">{selectedOffer.niche}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500 text-xs font-bold uppercase">Rede</span><span className="text-white text-xs font-black uppercase">{selectedOffer.trafficSource}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500 text-xs font-bold uppercase">Idioma</span><span className="text-white text-xs font-black uppercase">{selectedOffer.language}</span></div>
+              </div>
+
+              {/* MEIO (DIREITA 40%) */}
+              <div className="w-full lg:w-[40%] space-y-4">
+                <div className="bg-brand-card p-8 rounded-[32px] border border-white/5 shadow-2xl h-full">
+                  <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic">
+                    <ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO
+                  </h3>
+                  <div className="grid grid-cols-1 gap-6">
+                    {[
+                      { icon: Tag, label: 'Nicho', value: selectedOffer.niche },
+                      { icon: Lock, label: 'Tipo de Produto', value: selectedOffer.productType },
+                      { icon: Globe, label: 'Idioma', value: selectedOffer.language },
+                      { icon: Monitor, label: 'Rede de Tráfego', value: selectedOffer.trafficSource },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-4 bg-brand-hover rounded-2xl border border-white/5">
+                        <div className="flex items-center gap-3">
+                          <item.icon className="text-brand-gold w-5 h-5" />
+                          <span className="text-gray-500 text-[10px] font-black uppercase">{item.label}</span>
                         </div>
-                    </div>
+                        <span className="text-white text-base font-black uppercase italic tracking-tight">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-             </div>
+              </div>
+            </div>
+
+            {/* BASE: CRIATIVOS ESPIONADOS */}
+            <div className="space-y-6">
+               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
+                 <ImageIcon className="text-brand-gold w-6 h-6" /> CRIATIVOS ESPIONADOS
+               </h3>
+               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                 {selectedOffer.creativeImages.map((img, i) => (
+                   <div key={i} className="aspect-square bg-brand-card rounded-2xl overflow-hidden border border-white/5 group relative cursor-pointer">
+                     <img src={img} alt="Creative" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                     <div className="absolute inset-0 bg-brand-gold/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Eye className="text-white w-8 h-8" />
+                     </div>
+                   </div>
+                 ))}
+               </div>
+            </div>
+
+            {/* BASE: PÁGINAS DE VENDA */}
+            <div className="space-y-6">
+               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
+                 <Layout className="text-brand-gold w-6 h-6" /> PÁGINAS DE VENDA
+               </h3>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <a 
+                   href={selectedOffer.pageUrl} 
+                   target="_blank" 
+                   rel="noreferrer"
+                   className="p-6 bg-brand-card rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group"
+                 >
+                   <div className="flex items-center gap-4">
+                      <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
+                        <Monitor size={20} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Acessar</p>
+                        <p className="text-white font-black uppercase text-lg italic">Sales Page Oficial</p>
+                      </div>
+                   </div>
+                   <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
+                 </a>
+
+                 <a 
+                   href="#" 
+                   target="_blank" 
+                   rel="noreferrer"
+                   className="p-6 bg-brand-card rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group"
+                 >
+                   <div className="flex items-center gap-4">
+                      <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
+                        <MousePointer2 size={20} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Acessar</p>
+                        <p className="text-white font-black uppercase text-lg italic">Página de Checkout</p>
+                      </div>
+                   </div>
+                   <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
+                 </a>
+               </div>
+            </div>
           </div>
         </div>
       );
@@ -390,12 +453,38 @@ const App: React.FC = () => {
 
     switch (currentPage) {
       case 'home':
+        const scalingOffers = applyEliteFilters(MOCK_OFFERS.filter(o => o.trend === 'Escalando'));
+        const intelligenceOffers = applyEliteFilters([...MOCK_OFFERS].reverse().slice(0, 4));
+        const archiveOffers = applyEliteFilters(MOCK_OFFERS.filter(o => favorites.includes(o.id)));
+
         return (
-          <div className="animate-in fade-in duration-700">
-            <div className="mb-12">
-                <h2 className="text-3xl font-black text-white uppercase italic mb-6">Em Destaque</h2>
+          <div className="animate-in fade-in duration-700 space-y-16">
+            {/* Operações em Escala */}
+            <div>
+                <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
+                  <Zap className="text-brand-gold" fill="currentColor" /> Operações em Escala
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {applyEliteFilters(MOCK_OFFERS.slice(0, 4)).map(offer => (
+                {scalingOffers.map(offer => (
+                    <OfferCard 
+                    key={offer.id} 
+                    offer={offer} 
+                    isFavorite={favorites.includes(offer.id)}
+                    onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
+                    onClick={() => setSelectedOffer(offer)}
+                    />
+                ))}
+                {scalingOffers.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs px-2">Nenhuma operação em escala identificada.</p>}
+                </div>
+            </div>
+
+            {/* Monitor de Inteligência (24h) */}
+            <div>
+                <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
+                  <Monitor className="text-brand-gold" /> Monitor de Inteligência (24h)
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {intelligenceOffers.map(offer => (
                     <OfferCard 
                     key={offer.id} 
                     offer={offer} 
@@ -406,18 +495,23 @@ const App: React.FC = () => {
                 ))}
                 </div>
             </div>
+
+            {/* Seu Arquivo Secreto */}
             <div>
-                <h2 className="text-3xl font-black text-white uppercase italic mb-6">Recentemente Adicionados</h2>
+                <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
+                  <Star className="text-brand-gold" fill="currentColor" /> Seu Arquivo Secreto
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {applyEliteFilters(MOCK_OFFERS.slice(1, 5)).map(offer => (
+                {archiveOffers.map(offer => (
                     <OfferCard 
                     key={offer.id} 
                     offer={offer} 
-                    isFavorite={favorites.includes(offer.id)}
+                    isFavorite={true}
                     onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
                     onClick={() => setSelectedOffer(offer)}
                     />
                 ))}
+                {archiveOffers.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs px-2 italic">Seu arquivo secreto está vazio. Favorite ofertas para espionagem contínua.</p>}
                 </div>
             </div>
           </div>
@@ -427,7 +521,7 @@ const App: React.FC = () => {
         return (
           <div className="animate-in fade-in duration-700">
             <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-              <Star className="text-brand-gold" fill="#D4AF37" /> Favoritos
+              <Star className="text-brand-gold" fill="currentColor" /> Favoritos
             </h2>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {favOffers.map(offer => (
@@ -440,7 +534,7 @@ const App: React.FC = () => {
                 />
               ))}
               {favOffers.length === 0 && (
-                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhum favorito encontrado para os filtros atuais.</div>
+                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Sua base de favoritos está vazia.</div>
               )}
             </div>
           </div>
@@ -458,28 +552,30 @@ const App: React.FC = () => {
                   onClick={() => setSelectedOffer(offer)}
                 />
               ))}
+              {filtered.length === 0 && (
+                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhuma oferta correspondente encontrada.</div>
+              )}
             </div>
           </div>
         );
       default:
-        return <div className="text-center py-20 text-gray-500 font-black uppercase italic">Em Breve...</div>;
+        return <div className="text-center py-20 text-gray-500 font-black uppercase italic">Módulo VIP em desenvolvimento...</div>;
     }
   };
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
-      {/* SIDEBAR */}
+      {/* SIDEBAR ORIGINAL */}
       <aside className="w-72 bg-brand-card border-r border-white/5 hidden lg:flex flex-col fixed h-screen z-[90]">
         <div className="p-10 h-full flex flex-col">
           <div className="flex items-center space-x-3 mb-16 px-2">
             <div className="bg-brand-gold p-2 rounded-xl shadow-xl shadow-brand-gold/10">
               <Eye className="text-black" size={24} />
             </div>
-            <span className="text-2xl font-black tracking-tighter text-white">007 SWIPER</span>
+            <span className="text-2xl font-black tracking-tighter text-white uppercase italic">007 Swiper</span>
           </div>
           
           <nav className="space-y-2">
-            {/* UPPER */}
             <SidebarItem 
               icon={HomeIcon} 
               label="Home" 
@@ -499,9 +595,8 @@ const App: React.FC = () => {
               onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} 
             />
             
-            {/* LOWER */}
             <div className="pt-8 pb-4">
-              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Análise</p>
+              <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4">Inteligência</p>
               <SidebarItem 
                 icon={Tag} 
                 label="Ofertas" 
@@ -552,42 +647,43 @@ const App: React.FC = () => {
             <div className="flex items-center gap-4 bg-brand-card p-2 pr-6 rounded-[24px] border border-white/5 shadow-2xl ml-6">
                 <div className="w-10 h-10 bg-brand-gold rounded-xl flex items-center justify-center font-black text-black text-lg shadow-lg">007</div>
                 <div className="hidden sm:block">
-                  <p className="font-black text-[10px] uppercase tracking-tighter text-white">Agente Secreto</p>
-                  <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">VIP</p>
+                  <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente VIP</p>
                 </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
-             <div className="flex flex-col gap-1.5">
-               <label className="text-[9px] font-black uppercase text-gray-600 px-1">Nicho</label>
-               <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
+          {!selectedOffer && (
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] font-black uppercase text-gray-600 px-1">Nicho</label>
+                <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
                   <option value="Todos">Todos</option>
                   {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
-               </select>
-             </div>
-             <div className="flex flex-col gap-1.5">
-               <label className="text-[9px] font-black uppercase text-gray-600 px-1">Tipo de Produto</label>
-               <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] font-black uppercase text-gray-600 px-1">Tipo de Produto</label>
+                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
                   <option value="Todos">Todos</option>
                   {PRODUCT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-               </select>
-             </div>
-             <div className="flex flex-col gap-1.5">
-               <label className="text-[9px] font-black uppercase text-gray-600 px-1">Rede de Tráfego</label>
-               <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] font-black uppercase text-gray-600 px-1">Rede de Tráfego</label>
+                <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
                   <option value="Todos">Todas</option>
                   {TRAFFIC_SOURCES.map(ts => <option key={ts} value={ts}>{ts}</option>)}
-               </select>
-             </div>
-             <div className="flex flex-col gap-1.5">
-               <label className="text-[9px] font-black uppercase text-gray-600 px-1">Idioma</label>
-               <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] font-black uppercase text-gray-600 px-1">Idioma</label>
+                <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer">
                   <option value="Todos">Todos</option>
                   {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
-               </select>
-             </div>
-          </div>
+                </select>
+              </div>
+            </div>
+          )}
         </header>
 
         <div className="p-10 max-w-[1600px] mx-auto min-h-screen pb-32">
