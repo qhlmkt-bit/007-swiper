@@ -479,7 +479,7 @@ const App: React.FC = () => {
             {/* SALES PAGES */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
-                 <Layout className="text-brand-gold w-6 h-6" /> PÁGINAS DE VENDA
+                 <Layout className="text-brand-gold w-6 h-6" /> PÁGINA OFICIAL
                </h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                  <a href={selectedOffer.pageUrl} target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
@@ -502,6 +502,27 @@ const App: React.FC = () => {
                       <div>
                         <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p>
                         <p className="text-white font-black uppercase text-base md:text-lg italic">Página de Checkout</p>
+                      </div>
+                   </div>
+                   <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
+                 </a>
+               </div>
+            </div>
+
+            {/* ADS LIBRARY - MODULAR INTELLIGENCE */}
+            <div className="space-y-6">
+               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
+                 <Library className="text-brand-gold w-6 h-6" /> BIBLIOTECA DE ANÚNCIOS
+               </h3>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                 <a href={selectedOffer.facebookUrl} target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
+                   <div className="flex items-center gap-4">
+                      <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
+                        <Facebook size={20} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p>
+                        <p className="text-white font-black uppercase text-base md:text-lg italic">ACESSAR BIBLIOTECA DE ANÚNCIOS</p>
                       </div>
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
@@ -709,7 +730,6 @@ const App: React.FC = () => {
     <div className="p-10 h-full flex flex-col">
       <div className="flex items-center space-x-3 mb-16 px-2">
         <div className="bg-brand-gold p-2 rounded-xl shadow-xl shadow-brand-gold/10">
-          {/* Fix: changed <eye /> to <Eye /> (imported from lucide-react) */}
           <Eye className="text-black" size={24} />
         </div>
         <span className="text-2xl font-black tracking-tighter text-white uppercase italic">007 Swiper</span>
