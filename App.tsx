@@ -189,19 +189,30 @@ const OfferCard: React.FC<{
 const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
   <div className="min-h-screen bg-brand-dark flex flex-col items-center">
     {isSuccess && (
-      <div className="w-full bg-brand-gold text-black py-4 px-6 md:px-12 text-center font-black animate-in fade-in slide-in-from-top-4 duration-500 flex items-center justify-between gap-4 border-b-4 border-black/10 shadow-[0_4px_30px_rgba(212,175,55,0.4)] sticky top-0 z-[100]">
-        <div className="flex-1 flex items-center justify-center gap-3">
-          <Trophy size={24} className="shrink-0" />
-          <span className="text-xs md:text-sm lg:text-base tracking-tight uppercase leading-tight">
-            PAGAMENTO CONFIRMADO! 🕵️‍♂️ SUA CHAVE: 
-            <span className="bg-black text-brand-gold px-3 py-1 rounded mx-2 inline-flex items-center gap-1 shadow-lg">
-              <Lock size={14} /> AGENTE007
-            </span> 
-          </span>
+      <div className="w-full bg-[#050505] border-b-2 border-brand-gold py-6 px-6 md:px-12 text-center animate-in fade-in slide-in-from-top-4 duration-500 flex flex-col md:row items-center justify-between gap-6 sticky top-0 z-[100] shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <div className="flex items-center gap-4">
+          <div className="bg-brand-gold p-3 rounded-full shadow-[0_0_20px_rgba(212,175,55,0.3)] hidden sm:flex">
+            <ShieldCheck size={28} className="text-black" />
+          </div>
+          <div className="text-left">
+            <h2 className="text-brand-gold font-black uppercase text-xl md:text-2xl tracking-tighter">ACESSO À INTELIGÊNCIA LIBERADO! 🕵️‍♂️</h2>
+            <p className="text-gray-400 text-xs md:text-sm font-bold uppercase tracking-tight leading-relaxed max-w-2xl">
+              Sua chave de acesso ao Quartel General é única e confidencial. SALVE ESTA SENHA AGORA: 
+              <span className="text-brand-gold font-black ml-2 text-lg md:text-xl">AGENTE007</span>
+            </p>
+          </div>
         </div>
-        <button onClick={onCloseSuccess} className="p-1 hover:bg-black/10 rounded-full transition-colors">
-          <X size={24} />
-        </button>
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <button 
+            onClick={onLogin}
+            className="flex-1 md:flex-none px-8 py-3.5 bg-brand-gold text-black font-black rounded-xl uppercase text-xs md:text-sm tracking-tighter hover:scale-105 transition-all shadow-xl shadow-brand-gold/20 flex items-center justify-center gap-2 border-2 border-black/10"
+          >
+            <Lock size={18} /> ENTRAR NO ARSENAL
+          </button>
+          <button onClick={onCloseSuccess} className="p-2 text-gray-600 hover:text-white transition-colors">
+            <X size={24} />
+          </button>
+        </div>
       </div>
     )}
     
