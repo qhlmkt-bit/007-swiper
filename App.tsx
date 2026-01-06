@@ -236,6 +236,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         <div className="absolute -top-10 -right-10 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
           <Eye size={200} />
         </div>
+        {/* Requirement: Fully Gold Title */}
         <h2 className="text-4xl font-black mb-2 uppercase tracking-tighter italic text-brand-gold">ACESSO PREMIUM</h2>
         <p className="text-gray-600 mb-10 font-bold text-sm tracking-tight italic">O arsenal definitivo para quem joga no nível profissional.</p>
         <div className="text-7xl font-black mb-12 tracking-tighter flex items-end justify-center text-black">
@@ -334,7 +335,8 @@ const App: React.FC = () => {
                 onClick={(e) => toggleFavorite(selectedOffer.id, e)}
                 className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-brand-gold text-black' : 'bg-brand-hover text-white border-white/5'}`}
               >
-                <Star size={18} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'Arquivado' : 'Arquivar'}
+                {/* Requirement: Favoritar label */}
+                <Star size={18} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'Favoritado' : 'Favoritar'}
               </button>
             </div>
           </div>
@@ -456,7 +458,8 @@ const App: React.FC = () => {
         return (
           <div className="animate-in fade-in duration-700">
             <h2 className="text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-              <Star className="text-brand-gold" fill="#D4AF37" /> Arquivo Secreto
+              {/* Label updated to Favoritos */}
+              <Star className="text-brand-gold" fill="#D4AF37" /> Favoritos
             </h2>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {favOffers.map(offer => (
@@ -469,7 +472,7 @@ const App: React.FC = () => {
                 />
               ))}
               {favOffers.length === 0 && (
-                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhuma oferta no arquivo secreto.</div>
+                <div className="col-span-full py-20 text-center text-gray-500 font-black uppercase italic">Nenhuma oferta nos favoritos.</div>
               )}
             </div>
           </div>
@@ -501,7 +504,8 @@ const App: React.FC = () => {
             />
             <SidebarItem 
               icon={Star} 
-              label="Arquivo Secreto" 
+              {/* Requirement: Updated Label */}
+              label="Favoritos" 
               active={currentPage === 'favorites'} 
               onClick={() => { setCurrentPage('favorites'); setSelectedOffer(null); }} 
             />
