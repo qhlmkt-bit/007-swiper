@@ -35,7 +35,12 @@ import {
   Filter,
   Library,
   Loader2,
-  Info
+  Info,
+  Users,
+  Award,
+  CircleCheck,
+  ZapOff,
+  Files
 } from 'lucide-react';
 
 /** 
@@ -55,7 +60,7 @@ export interface Offer {
   title: string;
   niche: Niche;
   language: string;
-  trafficSource: string[]; // Treated as an array for modular icon display
+  trafficSource: string[];
   productType: ProductType;
   description: string;
   vslLinks: VslLink[];
@@ -67,6 +72,9 @@ export interface Offer {
   views: number;
   transcriptionUrl: string;
   creativeImages: string[];
+  creativeEmbedUrls: string[]; // Up to 3 video players
+  creativeDownloadUrls: string[]; // Links for each video
+  creativeZipUrl: string; // Full arsenal link
   isFavorite?: boolean;
 }
 
@@ -74,7 +82,6 @@ export interface Offer {
  * CONSTANTS 
  */
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
-
 const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping', 'E-book'];
 
 /**
@@ -177,7 +184,7 @@ const OfferCard: React.FC<{
 );
 
 /**
- * LANDING PAGE COMPONENT
+ * LANDING PAGE COMPONENT (Updated with new Copy and Plans)
  */
 const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
   <div className="min-h-screen bg-brand-dark flex flex-col items-center">
@@ -228,53 +235,142 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-gold/10 via-transparent to-transparent -z-10 pointer-events-none opacity-40"></div>
       
       <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 mb-6 md:mb-8 rounded-full border border-brand-gold/30 bg-brand-gold/5 text-brand-gold text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">
-        Inteligência Digital de Elite
+        Inteligência de Mercado em Tempo Real
       </div>
       
-      <h1 className="text-4xl md:text-6xl lg:text-8xl font-black text-white mb-6 md:mb-8 leading-[1.1] md:leading-[0.9] tracking-tighter uppercase italic max-w-6xl">
-        ESPIONE AS OFERTAS QUE <br className="hidden md:block" /> <span className="text-brand-gold">DOMINAM O JOGO.</span>
+      <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 md:mb-10 leading-[1.1] md:leading-[1.0] tracking-tighter uppercase italic max-w-6xl">
+        Acesse sem limites as ofertas mais lucrativas e escaladas do mercado de resposta direta <span className="text-brand-gold">antes da concorrência.</span>
       </h1>
-      <p className="text-gray-400 text-base md:text-2xl font-medium max-w-4xl mb-12 md:mb-16 italic px-2">
-        Acesse a base de dados dos maiores players do mercado e copie as estratégias que já estão faturando alto.
+      
+      <p className="text-gray-400 text-base md:text-xl font-medium max-w-4xl mb-12 md:mb-16 italic px-2 leading-relaxed">
+        Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligência competitiva que transforma dados em resultados escaláveis.
       </p>
 
-      {/* SEÇÃO DE BENEFÍCIOS RÁPIDOS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full max-w-4xl mb-20 md:mb-24 px-2">
-        <div className="bg-brand-card p-8 md:p-10 rounded-[30px] md:rounded-[40px] border border-white/5 text-left group">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg">
-            <Download size={24} className="md:w-8 md:h-8" />
+      {/* VIDEO DEMO PLACEHOLDER */}
+      <div className="w-full max-w-4xl aspect-video bg-brand-card rounded-[32px] border border-white/10 mb-20 md:mb-32 flex flex-col items-center justify-center gap-6 group cursor-pointer hover:border-brand-gold/50 transition-all shadow-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-brand-gold/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div className="w-20 h-20 bg-brand-gold text-black rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
+          <Play fill="currentColor" size={32} />
+        </div>
+        <p className="text-white font-black uppercase text-xs md:text-sm tracking-widest italic group-hover:text-brand-gold transition-colors">
+          Descubra como rastreamos e organizamos ofertas escaladas em tempo real
+        </p>
+      </div>
+
+      {/* SEÇÃO DE BENEFÍCIOS RÁPIDOS - "DECODIFIQUE" */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 w-full max-w-5xl mb-24 md:mb-32 px-2">
+        <div className="md:col-span-6 bg-brand-card p-8 md:p-10 rounded-[30px] border border-white/5 text-left group">
+          <div className="w-12 h-12 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg group-hover:bg-brand-gold group-hover:text-black transition-all">
+            <Zap size={24} />
           </div>
-          <h3 className="text-white font-black uppercase text-xl md:text-2xl mb-4 tracking-tight italic">Downloads Instantâneos</h3>
-          <p className="text-gray-500 font-medium text-base md:text-lg leading-relaxed">
-            Economize milhares de reais em produção. Tenha acesso direto a VSLs, transcrições e criativos validados.
+          <h3 className="text-white font-black uppercase text-xl md:text-2xl mb-4 tracking-tight italic">Decodifique o que Realmente Converte</h3>
+          <p className="text-gray-500 font-medium text-base leading-relaxed">
+            Chega de testar às cegas. No 007 Swiper, você acessa ofertas validadas pelo mercado, organizadas por nicho, formato e estratégia. Entenda o que faz um funil bater ROI antes mesmo de subir sua primeira campanha.
           </p>
         </div>
 
-        <div className="bg-brand-card p-8 md:p-10 rounded-[30px] md:rounded-[40px] border border-white/5 text-left group">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg">
-            <Target size={24} className="md:w-8 md:h-8" />
+        <div className="md:col-span-6 bg-brand-card p-8 md:p-10 rounded-[30px] border border-white/5 text-left group">
+          <div className="w-12 h-12 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg group-hover:bg-brand-gold group-hover:text-black transition-all">
+            <Files size={24} />
           </div>
-          <h3 className="text-white font-black uppercase text-xl md:text-2xl mb-4 tracking-tight italic">Precisão Milimétrica</h3>
-          <p className="text-gray-500 font-medium text-base md:text-lg leading-relaxed">
-            Descubra as fontes de tráfego reais e as estruturas de vendas que estão escalando no Facebook, TikTok e YouTube.
+          <h3 className="text-white font-black uppercase text-xl md:text-2xl mb-4 tracking-tight italic">Banco de Criativos Escalados</h3>
+          <p className="text-gray-500 font-medium text-base leading-relaxed">
+            O mercado não perdoa amadorismo criativo. Por isso, entregamos um arsenal de anúncios já provados que estão em escala ativa agora. Baixe, analise a estrutura e modele para o seu produto em minutos.
+          </p>
+        </div>
+
+        <div className="md:col-span-12 lg:col-span-4 lg:col-start-5 bg-brand-card p-8 rounded-[30px] border border-white/5 text-center group">
+          <div className="w-12 h-12 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg mx-auto group-hover:bg-brand-gold group-hover:text-black transition-all">
+            <Globe size={24} />
+          </div>
+          <h3 className="text-white font-black uppercase text-lg mb-3 tracking-tight italic">Inteligência Global, Resultados Locais</h3>
+          <p className="text-gray-500 font-medium text-sm leading-relaxed">
+            Escale sem fronteiras. Todas as ofertas, VSLs e criativos disponíveis em múltiplos idiomas para que você possa importar as melhores tendências do exterior diretamente para o Brasil.
           </p>
         </div>
       </div>
       
-      {/* CHECKOUT CARD */}
-      <div className="bg-white text-black p-10 md:p-14 rounded-[40px] md:rounded-[60px] w-full max-w-xl shadow-2xl relative overflow-hidden group border-b-[8px] md:border-b-[12px] border-brand-gold mx-2">
-        <h2 className="text-3xl md:text-5xl font-black mb-2 md:mb-4 uppercase tracking-tighter italic text-[#D4AF37]">ACESSO PREMIUM</h2>
-        <p className="text-gray-600 mb-8 md:mb-12 font-bold text-base md:text-lg tracking-tight italic">O arsenal definitivo para o mercado digital profissional.</p>
-        <div className="text-6xl md:text-8xl font-black mb-10 md:mb-14 tracking-tighter flex items-end justify-center text-black">
-          R$ 197<span className="text-xl md:text-2xl text-gray-400 font-black mb-2 md:mb-3 ml-2">/mês</span>
+      {/* PRICING PLANS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full max-w-5xl mb-24 md:mb-32 px-4">
+        {/* MONTHLY */}
+        <div className="bg-brand-card border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-brand-gold/30 transition-all flex flex-col">
+          <h3 className="text-brand-gold font-black uppercase text-lg md:text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3>
+          <div className="flex items-baseline gap-2 mb-8">
+            <span className="text-4xl md:text-5xl font-black text-white italic">R$ 197</span>
+            <span className="text-gray-500 font-black text-sm uppercase">/mês</span>
+          </div>
+          <ul className="space-y-4 mb-12 flex-1">
+            {[
+              'Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 
+              'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', 
+              '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'
+            ].map((item, i) => (
+              <li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic">
+                <CircleCheck size={16} className="text-brand-gold shrink-0" /> {item}
+              </li>
+            ))}
+          </ul>
+          <button 
+            onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
+            className="w-full py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter"
+          >
+            QUERO ACESSO MENSAL
+          </button>
         </div>
-        <button 
-          onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
-          className="w-full py-6 md:py-8 bg-brand-dark text-brand-gold font-black text-xl md:text-3xl rounded-[24px] md:rounded-[32px] hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter flex items-center justify-center gap-3 md:gap-4"
-        >
-          <Zap size={24} fill="currentColor" className="md:w-8 md:h-8" /> QUERO ACESSO AGORA
-        </button>
+
+        {/* QUARTERLY */}
+        <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_50px_rgba(212,175,55,0.2)] flex flex-col scale-105 border-t-[8px] border-brand-gold">
+          <div className="absolute top-6 right-8 bg-brand-gold text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
+            Economize R$ 94
+          </div>
+          <h3 className="text-brand-gold font-black uppercase text-lg md:text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3>
+          <div className="flex items-baseline gap-2 mb-8">
+            <span className="text-4xl md:text-5xl font-black italic">R$ 497</span>
+            <span className="text-gray-400 font-black text-sm uppercase">/trimestre</span>
+          </div>
+          <ul className="space-y-4 mb-12 flex-1">
+            {[
+              'Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 
+              'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 
+              'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'
+            ].map((item, i) => (
+              <li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic">
+                <CircleCheck size={16} className="text-brand-gold shrink-0" /> {item}
+              </li>
+            ))}
+          </ul>
+          <button 
+            onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
+            className="w-full py-5 bg-brand-dark text-brand-gold font-black text-lg rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter"
+          >
+            ASSINAR PLANO TRIMESTRAL
+          </button>
+        </div>
       </div>
+
+      {/* GUARANTEE & FOOTER */}
+      <div className="w-full max-w-4xl bg-brand-card p-10 md:p-16 rounded-[40px] border border-brand-gold/20 mb-32 flex flex-col md:flex-row items-center gap-10 md:gap-16">
+        <div className="w-32 h-32 md:w-48 md:h-48 shrink-0 flex items-center justify-center border-4 border-brand-gold rounded-full relative">
+          <span className="text-brand-gold font-black text-5xl italic">7</span>
+          <span className="absolute -bottom-2 bg-brand-gold text-black px-4 py-1 text-[10px] font-black uppercase rounded">Dias</span>
+        </div>
+        <div className="text-left flex-1">
+          <h2 className="text-white font-black text-2xl md:text-4xl uppercase italic mb-4 tracking-tighter">Garantia Incondicional de 7 Dias</h2>
+          <p className="text-gray-500 font-medium text-base mb-8 leading-relaxed italic">
+            Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você sentir que a plataforma não é para você, devolvemos 100% do seu dinheiro. Sem perguntas.
+          </p>
+          <button 
+            onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
+            className="px-10 py-5 bg-brand-gold text-black font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-tighter"
+          >
+            [COMEÇAR AGORA – RISCO ZERO]
+          </button>
+        </div>
+      </div>
+
+      <footer className="text-gray-600 text-xs font-bold uppercase tracking-widest italic border-t border-white/5 pt-12 w-full">
+        © 2024 007 Swiper Intelligence Platform. Todos os direitos reservados.
+      </footer>
     </main>
   </div>
 );
@@ -311,7 +407,6 @@ const App: React.FC = () => {
         const response = await fetch(CSV_URL);
         const text = await response.text();
         
-        // CSV Parsing Logic: Skip row 1, headers on row 2, data from row 3.
         const lines = text.split(/\r?\n/).filter(l => l.trim());
         if (lines.length < 2) throw new Error("Database file is missing expected headers.");
 
@@ -324,7 +419,7 @@ const App: React.FC = () => {
             row[header] = values[i] || '';
           });
 
-          // Mapping logic: columns O (language) and P (trafficSource)
+          // Detailed mapping including new hybrid creatives columns
           return {
             id: row.id || idx.toString(),
             title: row.title || 'Sem Título',
@@ -338,11 +433,13 @@ const App: React.FC = () => {
             downloadUrl: row.vslDownloadUrl || '#',
             transcriptionUrl: row.transcriptionUrl || '#',
             creativeImages: row.creativeImages ? row.creativeImages.split(',').map((s: string) => s.trim()) : [],
+            creativeEmbedUrls: row.creativeEmbedUrls ? row.creativeEmbedUrls.split(',').map((s: string) => s.trim()) : [],
+            creativeDownloadUrls: row.creativeDownloadUrls ? row.creativeDownloadUrls.split(',').map((s: string) => s.trim()) : [],
+            creativeZipUrl: row.creativeZipUrl || '#',
             pageUrl: row.pageUrl || '#',
             facebookUrl: row.facebookUrl || '#',
             language: row.language || 'Português',
             trafficSource: row.trafficSource ? row.trafficSource.split(',').map((s: string) => s.trim()) : ['Facebook Ads'],
-            structure: 'VSL'
           };
         });
 
@@ -413,7 +510,6 @@ const App: React.FC = () => {
   const availableLanguages = ['Todos', ...Array.from(new Set(offers.map(o => o.language)))];
   const availableTrafficSources = ['Todos', ...Array.from(new Set(offers.flatMap(o => o.trafficSource)))];
 
-  // CONDITIONAL FILTERS DISPLAY LOGIC - RESTORED FILTERS FOR MODULAR PAGES
   const showFilters = ['offers', 'vsl', 'creatives', 'pages', 'ads_library'].includes(currentPage) && !selectedOffer;
 
   const renderContent = () => {
@@ -421,7 +517,7 @@ const App: React.FC = () => {
       return (
         <div className="flex flex-col items-center justify-center py-40 gap-4 animate-pulse">
           <Loader2 className="text-brand-gold animate-spin" size={48} />
-          <p className="text-brand-gold font-black uppercase text-xs tracking-widest italic">Sincronizando Banco de Dados...</p>
+          <p className="text-brand-gold font-black uppercase text-xs tracking-widest italic">Infiltrando nos Servidores...</p>
         </div>
       );
     }
@@ -517,12 +613,37 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* CREATIVES */}
+            {/* HYBRID CREATIVES SECTION */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
-                 <ImageIcon className="text-brand-gold w-6 h-6" /> CRIATIVOS ESPIONADOS
+                 <ImageIcon className="text-brand-gold w-6 h-6" /> ARSENAL DE CRIATIVOS HÍBRIDOS
                </h3>
-               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+               
+               {/* Video Players (up to 3) */}
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {selectedOffer.creativeEmbedUrls.slice(0, 3).map((embedUrl, i) => (
+                    <div key={i} className="flex flex-col gap-4">
+                      <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+                        <iframe 
+                          src={embedUrl}
+                          className="w-full h-full"
+                          frameBorder="0"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                      <a 
+                        href={selectedOffer.creativeDownloadUrls[i] || '#'}
+                        target="_blank"
+                        className="w-full py-3 bg-brand-hover text-brand-gold font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-brand-gold hover:text-black transition-all border border-brand-gold/20"
+                      >
+                        <Download size={14} /> BAIXAR ESTE CRIATIVO
+                      </a>
+                    </div>
+                  ))}
+               </div>
+
+               {/* Image Gallery */}
+               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pt-8">
                  {selectedOffer.creativeImages.map((img, i) => (
                    <div key={i} className="aspect-square bg-brand-card rounded-2xl overflow-hidden border border-white/5 group relative cursor-pointer">
                      <img src={img} alt="Creative" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -531,14 +652,24 @@ const App: React.FC = () => {
                      </div>
                    </div>
                  ))}
-                 {selectedOffer.creativeImages.length === 0 && <p className="text-gray-600 font-black text-xs uppercase italic col-span-full">Nenhum criativo disponível.</p>}
+               </div>
+
+               {/* Arsenal Zip Button */}
+               <div className="pt-10 flex justify-center">
+                  <a 
+                    href={selectedOffer.creativeZipUrl}
+                    target="_blank"
+                    className="px-10 py-5 bg-brand-gold text-black font-black text-lg rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl uppercase tracking-tighter flex items-center gap-3 italic"
+                  >
+                    <Zap size={20} fill="currentColor" /> BAIXAR ARSENAL COMPLETO (ZIP)
+                  </a>
                </div>
             </div>
 
             {/* PAGES */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
-                 <Layout className="text-brand-gold w-6 h-6" /> PÁGINA OFICIAL
+                 <Layout className="text-brand-gold w-6 h-6" /> ESTRUTURA DE VENDAS
                </h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                  <a href={selectedOffer.pageUrl} target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
@@ -553,23 +684,14 @@ const App: React.FC = () => {
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
                  </a>
-               </div>
-            </div>
-
-            {/* ADS LIBRARY */}
-            <div className="space-y-6">
-               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
-                 <Library className="text-brand-gold w-6 h-6" /> BIBLIOTECA DE ANÚNCIOS
-               </h3>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                  <a href={selectedOffer.facebookUrl} target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
                       <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
-                        <Facebook size={20} />
+                        <Library size={20} />
                       </div>
                       <div>
                         <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p>
-                        <p className="text-white font-black uppercase text-base md:text-lg italic">ACESSAR BIBLIOTECA DE ANÚNCIOS</p>
+                        <p className="text-white font-black uppercase text-base md:text-lg italic">BIBLIOTECA DE ANÚNCIOS</p>
                       </div>
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
@@ -621,7 +743,7 @@ const App: React.FC = () => {
                     onClick={() => trackView(offer)}
                     />
                 ))}
-                {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic px-2">Nenhuma atividade recente registrada.</p>}
+                {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic px-2">Nenhuma atividade registrada.</p>}
                 </div>
             </div>
           </div>
@@ -672,19 +794,28 @@ const App: React.FC = () => {
         );
 
       case 'creatives':
-        const allCreatives = filtered.flatMap(o => o.creativeImages.map(img => ({ img, offer: o })));
         return (
-          <div className="animate-in fade-in duration-700">
-             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4">
-              {allCreatives.map((item, i) => (
-                <div key={i} onClick={() => trackView(item.offer)} className="aspect-square bg-brand-card rounded-xl overflow-hidden border border-white/5 group relative cursor-pointer">
-                    <img src={item.img} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" alt="" />
-                    <div className="absolute inset-x-0 bottom-0 bg-black/80 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <p className="text-[9px] font-black text-white uppercase truncate">{item.offer.title}</p>
-                    </div>
-                </div>
-              ))}
-            </div>
+          <div className="animate-in fade-in duration-700 space-y-12">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                {filtered.map(offer => (
+                  <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
+                      <div className="relative aspect-video">
+                          <img src={offer.coverImage} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt="" />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                              <ImageIcon className="text-brand-gold group-hover:scale-125 transition-all" size={32} />
+                              <p className="text-[10px] text-white font-black uppercase tracking-widest bg-black/60 px-3 py-1 rounded-full">{offer.creativeEmbedUrls.length + offer.creativeImages.length} Arquivos</p>
+                          </div>
+                      </div>
+                      <div className="p-4 bg-brand-hover">
+                          <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
+                          <div className="flex items-center gap-2">
+                             {offer.trafficSource.slice(0, 1).map((s, i) => <TrafficIcon key={i} source={s} />)}
+                             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acessar Arsenal</p>
+                          </div>
+                      </div>
+                  </div>
+                ))}
+             </div>
           </div>
         );
 
@@ -793,7 +924,7 @@ const App: React.FC = () => {
           <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); }} />
           <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); }} />
           <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); }} />
-          <SidebarItem icon={Library} label="BIBLIOTECA DE ANÚNCIOS" active={currentPage === 'ads_library'} onClick={() => { setCurrentPage('ads_library'); setSelectedOffer(null); }} />
+          <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => { setCurrentPage('ads_library'); setSelectedOffer(null); }} />
         </div>
       </nav>
 
