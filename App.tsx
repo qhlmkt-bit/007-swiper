@@ -60,7 +60,7 @@ export interface Offer {
   productType: ProductType;
   description: string;
   vslLinks: VslLink[];
-  downloadUrl: string;
+  vslDownloadUrl: string;
   trend: Trend;
   facebookUrl: string;
   pageUrl: string;
@@ -89,7 +89,7 @@ const getEmbedUrl = (url: string) => {
   
   // Vimeo
   if (trimmed.includes('vimeo.com')) {
-    const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/);
+    const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
     if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?badge=0&autopause=0&player_id=0&app_id=58479`;
   }
   
@@ -278,7 +278,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
       </div>
       
       <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 md:mb-10 leading-[1.1] md:leading-[1.0] tracking-tighter uppercase italic max-w-6xl">
-        Acesse sem limites as ofertas mais lucrativas e escaladas do mercado de resposta direta <span className="text-brand-gold">antes da concorrência.</span>
+        ESPIONE AS OFERTAS QUE <span className="text-brand-gold">DOMINAM O JOGO.</span>
       </h1>
       
       <p className="text-gray-400 text-base md:text-xl font-medium max-w-4xl mb-12 md:mb-16 italic px-2 leading-relaxed">
@@ -345,7 +345,6 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
               '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'
             ].map((item, i) => (
               <li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic">
-                {/* Fixed: Using the correct imported icon name CheckCircle */}
                 <CheckCircle size={16} className="text-brand-gold shrink-0" /> {item}
               </li>
             ))}
@@ -375,7 +374,6 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
               'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'
             ].map((item, i) => (
               <li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic">
-                {/* Fixed: Using the correct imported icon name CheckCircle */}
                 <CheckCircle size={16} className="text-brand-gold shrink-0" /> {item}
               </li>
             ))}
@@ -451,6 +449,7 @@ const App: React.FC = () => {
         const lines = text.split(/\r?\n/).filter(l => l.trim());
         if (lines.length < 2) throw new Error("Database file is missing expected headers.");
 
+        // Parsing line 2 as headers
         const headers = lines[1].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
         
         const parsedData: Offer[] = lines.slice(2).map((line, idx) => {
@@ -460,26 +459,35 @@ const App: React.FC = () => {
             row[header] = values[i] || '';
           });
 
+          // Re-mapping based on provided instructions:
+          // Col I (8): vslEmbedUrl
+          // Col L (11): creativeEmbedUrls
+          // Col N (13): facebookUrl
+          // Col O (14): pageUrl
+          // Col P (15): language
+          // Col Q (16): trafficSource
+          // Col R (17): creativeZipUrl
+          
           return {
-            id: row.id || idx.toString(),
-            title: row.title || 'Sem Título',
-            niche: row.niche || 'Geral',
-            productType: row.productType || 'Infoproduto',
-            description: row.description || '',
-            coverImage: row.coverImage || '',
-            trend: row.trend || 'Estável',
-            views: parseInt(row.views) || 0,
-            vslLinks: [{ label: 'VSL Principal', url: row.vslEmbedUrl || '' }],
-            downloadUrl: row.vslDownloadUrl || '#',
-            transcriptionUrl: row.transcriptionUrl || '#',
-            creativeImages: row.creativeImages ? row.creativeImages.split(',').map((s: string) => s.trim()) : [],
-            creativeEmbedUrls: row.creativeEmbedUrls ? row.creativeEmbedUrls.split(',').map((s: string) => s.trim()) : [],
-            creativeDownloadUrls: row.creativeDownloadUrls ? row.creativeDownloadUrls.split(',').map((s: string) => s.trim()) : [],
-            creativeZipUrl: row.creativeZipUrl || '#',
-            pageUrl: row.pageUrl || '#',
-            facebookUrl: row.facebookUrl || '#',
-            language: row.language || 'Português',
-            trafficSource: row.trafficSource ? row.trafficSource.split(',').map((s: string) => s.trim()) : ['Facebook Ads'],
+            id: values[0] || row.id || idx.toString(),
+            title: values[1] || row.title || 'Sem Título',
+            niche: values[2] || row.niche || 'Geral',
+            productType: values[3] || row.productType || 'Infoproduto',
+            description: values[4] || row.description || '',
+            coverImage: values[5] || row.coverImage || '',
+            trend: values[6] || row.trend || 'Estável',
+            views: parseInt(values[7]) || parseInt(row.views) || 0,
+            vslLinks: [{ label: 'VSL Principal', url: values[8] || row.vslEmbedUrl || '' }],
+            vslDownloadUrl: values[9] || row.vslDownloadUrl || '#',
+            transcriptionUrl: values[10] || row.transcriptionUrl || '#',
+            creativeImages: (values[11] || row.creativeImages || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+            creativeEmbedUrls: (values[12] || row.creativeEmbedUrls || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+            creativeDownloadUrls: (values[13] || row.creativeDownloadUrls || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+            facebookUrl: values[13] || row.facebookUrl || '#', // Col N (index 13)
+            pageUrl: values[14] || row.pageUrl || '#',         // Col O (index 14)
+            language: values[15] || row.language || 'Português', // Col P (index 15)
+            trafficSource: (values[16] || row.trafficSource || '').split(',').map((s: string) => s.trim()).filter(Boolean), // Col Q (index 16)
+            creativeZipUrl: values[17] || row.creativeZipUrl || '#', // Col R (index 17)
           };
         });
 
@@ -576,10 +584,10 @@ const App: React.FC = () => {
             </button>
             
             <div className="flex flex-wrap items-center gap-3">
-              <a href={selectedOffer.downloadUrl} target="_blank" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+              <a href={selectedOffer.vslDownloadUrl} target="_blank" rel="noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
                 <Download size={16} /> BAIXAR VSL
               </a>
-              <a href={selectedOffer.transcriptionUrl} target="_blank" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg">
+              <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg">
                 <FileText size={16} /> BAIXAR TRANSCRIÇÃO
               </a>
               <button 
@@ -654,6 +662,7 @@ const App: React.FC = () => {
                       <a 
                         href={selectedOffer.creativeDownloadUrls[i] || '#'}
                         target="_blank"
+                        rel="noreferrer"
                         className="w-full py-3 bg-brand-hover text-brand-gold font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-brand-gold hover:text-black transition-all border border-brand-gold/20"
                       >
                         <Download size={14} /> BAIXAR ESTE CRIATIVO
@@ -677,6 +686,7 @@ const App: React.FC = () => {
                   <a 
                     href={selectedOffer.creativeZipUrl}
                     target="_blank"
+                    rel="noreferrer"
                     className="px-10 py-5 bg-brand-gold text-black font-black text-lg rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl uppercase tracking-tighter flex items-center gap-3 italic"
                   >
                     <Zap size={20} fill="currentColor" /> BAIXAR ARSENAL COMPLETO (ZIP)
@@ -704,7 +714,7 @@ const App: React.FC = () => {
                  <a href={selectedOffer.facebookUrl} target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
                       <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
-                        <Library size={20} />
+                        <Facebook size={20} />
                       </div>
                       <div>
                         <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p>
