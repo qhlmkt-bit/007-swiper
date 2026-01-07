@@ -16,6 +16,7 @@ import {
   Download,
   Video,
   Zap,
+  ZapOff,
   Globe,
   X,
   ExternalLink,
@@ -81,8 +82,17 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8J
 const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping', 'E-book'];
 
 /**
- * UTILS - VIDEO NORMALIZATION
+ * UTILS - DATA NORMALIZATION
  */
+const getDriveDirectLink = (url: string) => {
+  if (!url) return '';
+  if (url.includes('drive.google.com')) {
+    const idMatch = url.match(/[-\w]{25,}/);
+    if (idMatch) return `https://lh3.googleusercontent.com/u/0/d/${idMatch[0]}`;
+  }
+  return url;
+};
+
 const getEmbedUrl = (url: string) => {
   if (!url) return '';
   const trimmed = url.trim();
@@ -99,7 +109,6 @@ const getEmbedUrl = (url: string) => {
     if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`;
   }
 
-  // Already an embed link or other format
   return trimmed;
 };
 
@@ -140,9 +149,11 @@ const TrafficIcon: React.FC<{ source: string }> = ({ source }) => {
 
 const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => {
   const embed = getEmbedUrl(url);
-  if (!embed) return (
-    <div className="w-full h-full flex items-center justify-center text-gray-700 font-black uppercase italic text-xs">
-      Link de vídeo inválido
+  if (!embed || embed === '') return (
+    <div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-brand-hover border border-dashed border-white/10 rounded-2xl gap-3">
+      {/* Fixed: ZapOff was not imported from lucide-react */}
+      <ZapOff size={32} className="opacity-20" />
+      <p className="font-black uppercase italic text-xs tracking-widest opacity-40">Visualização indisponível</p>
     </div>
   );
 
@@ -170,7 +181,7 @@ const OfferCard: React.FC<{
   >
     <div className="relative aspect-video overflow-hidden">
       <img 
-        src={offer.coverImage || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} 
+        src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} 
         alt={offer.title} 
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
       />
@@ -282,7 +293,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
       </h1>
       
       <p className="text-gray-400 text-base md:text-xl font-medium max-w-4xl mb-12 md:mb-16 italic px-2 leading-relaxed">
-        Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligência competitiva que transforma dados em resultados escaláveis.
+        Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligativa que transforma dados em resultados escaláveis.
       </p>
 
       {/* VIDEO DEMO PLACEHOLDER */}
@@ -449,7 +460,6 @@ const App: React.FC = () => {
         const lines = text.split(/\r?\n/).filter(l => l.trim());
         if (lines.length < 2) throw new Error("Database file is missing expected headers.");
 
-        // Parsing line 2 as headers
         const headers = lines[1].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
         
         const parsedData: Offer[] = lines.slice(2).map((line, idx) => {
@@ -459,15 +469,15 @@ const App: React.FC = () => {
             row[header] = values[i] || '';
           });
 
-          // Re-mapping based on provided instructions:
-          // Col I (8): vslEmbedUrl
-          // Col L (11): creativeEmbedUrls
-          // Col N (13): facebookUrl
-          // Col O (14): pageUrl
-          // Col P (15): language
-          // Col Q (16): trafficSource
-          // Col R (17): creativeZipUrl
-          
+          // PRECISE COLUMN MAPPING (FIXED AS REQUESTED)
+          // Col A(0): id, Col B(1): title, Col C(2): niche, Col D(3): productType, Col E(4): description, 
+          // Col F(5): coverImage, Col G(6): trend, Col H(7): views
+          // Col I(8): vslEmbedUrl, Col J(9): vslDownloadUrl, Col K(10): transcriptionUrl
+          // Col L(11): creativeEmbedUrls, Col M(12): creativeDownloadUrls
+          // Col N(13): facebookUrl, Col O(14): pageUrl
+          // Col P(15): language, Col Q(16): trafficSource
+          // Col R(17): creativeZipUrl
+
           return {
             id: values[0] || row.id || idx.toString(),
             title: values[1] || row.title || 'Sem Título',
@@ -480,14 +490,14 @@ const App: React.FC = () => {
             vslLinks: [{ label: 'VSL Principal', url: values[8] || row.vslEmbedUrl || '' }],
             vslDownloadUrl: values[9] || row.vslDownloadUrl || '#',
             transcriptionUrl: values[10] || row.transcriptionUrl || '#',
-            creativeImages: (values[11] || row.creativeImages || '').split(',').map((s: string) => s.trim()).filter(Boolean),
-            creativeEmbedUrls: (values[12] || row.creativeEmbedUrls || '').split(',').map((s: string) => s.trim()).filter(Boolean),
-            creativeDownloadUrls: (values[13] || row.creativeDownloadUrls || '').split(',').map((s: string) => s.trim()).filter(Boolean),
-            facebookUrl: values[13] || row.facebookUrl || '#', // Col N (index 13)
-            pageUrl: values[14] || row.pageUrl || '#',         // Col O (index 14)
-            language: values[15] || row.language || 'Português', // Col P (index 15)
-            trafficSource: (values[16] || row.trafficSource || '').split(',').map((s: string) => s.trim()).filter(Boolean), // Col Q (index 16)
-            creativeZipUrl: values[17] || row.creativeZipUrl || '#', // Col R (index 17)
+            creativeEmbedUrls: (values[11] || row.creativeEmbedUrls || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+            creativeDownloadUrls: (values[12] || row.creativeDownloadUrls || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+            facebookUrl: values[13] || row.facebookUrl || '#',
+            pageUrl: values[14] || row.pageUrl || '#',
+            language: values[15] || row.language || 'Português',
+            trafficSource: (values[16] || row.trafficSource || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+            creativeZipUrl: values[17] || row.creativeZipUrl || '#',
+            creativeImages: [], // Handled by embed urls / zip for hybrid structure
           };
         });
 
@@ -584,10 +594,16 @@ const App: React.FC = () => {
             </button>
             
             <div className="flex flex-wrap items-center gap-3">
-              <a href={selectedOffer.vslDownloadUrl} target="_blank" rel="noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+              <a 
+                href={selectedOffer.vslDownloadUrl} 
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
+              >
                 <Download size={16} /> BAIXAR VSL
               </a>
-              <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg">
+              <a 
+                href={selectedOffer.transcriptionUrl} 
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg"
+              >
                 <FileText size={16} /> BAIXAR TRANSCRIÇÃO
               </a>
               <button 
@@ -661,8 +677,6 @@ const App: React.FC = () => {
                       </div>
                       <a 
                         href={selectedOffer.creativeDownloadUrls[i] || '#'}
-                        target="_blank"
-                        rel="noreferrer"
                         className="w-full py-3 bg-brand-hover text-brand-gold font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-brand-gold hover:text-black transition-all border border-brand-gold/20"
                       >
                         <Download size={14} /> BAIXAR ESTE CRIATIVO
@@ -671,22 +685,9 @@ const App: React.FC = () => {
                   ))}
                </div>
 
-               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pt-8">
-                 {selectedOffer.creativeImages.map((img, i) => (
-                   <div key={i} className="aspect-square bg-brand-card rounded-2xl overflow-hidden border border-white/5 group relative cursor-pointer">
-                     <img src={img} alt="Creative" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                     <div className="absolute inset-0 bg-brand-gold/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Eye className="text-white w-8 h-8" />
-                     </div>
-                   </div>
-                 ))}
-               </div>
-
                <div className="pt-10 flex justify-center">
                   <a 
                     href={selectedOffer.creativeZipUrl}
-                    target="_blank"
-                    rel="noreferrer"
                     className="px-10 py-5 bg-brand-gold text-black font-black text-lg rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl uppercase tracking-tighter flex items-center gap-3 italic"
                   >
                     <Zap size={20} fill="currentColor" /> BAIXAR ARSENAL COMPLETO (ZIP)
@@ -800,7 +801,7 @@ const App: React.FC = () => {
               {filtered.map(offer => (
                 <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
                     <div className="relative aspect-video">
-                        <img src={offer.coverImage} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="" />
+                        <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="" />
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="w-14 h-14 bg-brand-gold text-black rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
                                 <Play fill="currentColor" size={24} />
@@ -827,10 +828,10 @@ const App: React.FC = () => {
                 {filtered.map(offer => (
                   <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
                       <div className="relative aspect-video">
-                          <img src={offer.coverImage} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt="" />
+                          <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt="" />
                           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                               <ImageIcon className="text-brand-gold group-hover:scale-125 transition-all" size={32} />
-                              <p className="text-[10px] text-white font-black uppercase tracking-widest bg-black/60 px-3 py-1 rounded-full">{offer.creativeEmbedUrls.length + offer.creativeImages.length} Arquivos</p>
+                              <p className="text-[10px] text-white font-black uppercase tracking-widest bg-black/60 px-3 py-1 rounded-full">{offer.creativeEmbedUrls.length} Vídeos</p>
                           </div>
                       </div>
                       <div className="p-4 bg-brand-hover">
