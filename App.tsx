@@ -151,7 +151,6 @@ const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
   const embed = getEmbedUrl(url);
   if (!embed || embed === '') return (
     <div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-brand-hover border border-dashed border-white/10 rounded-2xl gap-3">
-      {/* Fixed: ZapOff was not imported from lucide-react */}
       <ZapOff size={32} className="opacity-20" />
       <p className="font-black uppercase italic text-xs tracking-widest opacity-40">Visualização indisponível</p>
     </div>
@@ -497,7 +496,7 @@ const App: React.FC = () => {
             language: values[15] || row.language || 'Português',
             trafficSource: (values[16] || row.trafficSource || '').split(',').map((s: string) => s.trim()).filter(Boolean),
             creativeZipUrl: values[17] || row.creativeZipUrl || '#',
-            creativeImages: [], // Handled by embed urls / zip for hybrid structure
+            creativeImages: [], 
           };
         });
 
@@ -596,12 +595,16 @@ const App: React.FC = () => {
             <div className="flex flex-wrap items-center gap-3">
               <a 
                 href={selectedOffer.vslDownloadUrl} 
+                target="_blank"
+                rel="noreferrer"
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
               >
                 <Download size={16} /> BAIXAR VSL
               </a>
               <a 
                 href={selectedOffer.transcriptionUrl} 
+                target="_blank"
+                rel="noreferrer"
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg"
               >
                 <FileText size={16} /> BAIXAR TRANSCRIÇÃO
@@ -677,21 +680,14 @@ const App: React.FC = () => {
                       </div>
                       <a 
                         href={selectedOffer.creativeDownloadUrls[i] || '#'}
+                        target="_blank"
+                        rel="noreferrer"
                         className="w-full py-3 bg-brand-hover text-brand-gold font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-brand-gold hover:text-black transition-all border border-brand-gold/20"
                       >
                         <Download size={14} /> BAIXAR ESTE CRIATIVO
                       </a>
                     </div>
                   ))}
-               </div>
-
-               <div className="pt-10 flex justify-center">
-                  <a 
-                    href={selectedOffer.creativeZipUrl}
-                    className="px-10 py-5 bg-brand-gold text-black font-black text-lg rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl uppercase tracking-tighter flex items-center gap-3 italic"
-                  >
-                    <Zap size={20} fill="currentColor" /> BAIXAR ARSENAL COMPLETO (ZIP)
-                  </a>
                </div>
             </div>
 
@@ -725,6 +721,21 @@ const App: React.FC = () => {
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
                  </a>
                </div>
+            </div>
+
+            {/* ZIP DOWNLOAD HIGHLIGHTED AT THE END */}
+            <div className="pt-10 md:pt-16 flex justify-center pb-8 border-t border-white/5">
+                <a 
+                  href={selectedOffer.creativeZipUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-12 py-6 bg-brand-gold text-black font-black text-xl md:text-2xl rounded-[24px] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(212,175,55,0.25)] uppercase tracking-tighter flex items-center gap-4 italic group"
+                >
+                  <div className="p-2 bg-black/10 rounded-xl group-hover:bg-black/20 transition-colors">
+                    <Zap size={24} fill="currentColor" className="md:w-8 md:h-8" />
+                  </div>
+                  BAIXAR ARSENAL COMPLETO (ZIP)
+                </a>
             </div>
           </div>
         </div>
