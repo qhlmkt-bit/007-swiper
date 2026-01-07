@@ -36,10 +36,6 @@ import {
   Library,
   Loader2,
   Info,
-  Users,
-  Award,
-  CircleCheck,
-  ZapOff,
   Files
 } from 'lucide-react';
 
@@ -72,9 +68,9 @@ export interface Offer {
   views: number;
   transcriptionUrl: string;
   creativeImages: string[];
-  creativeEmbedUrls: string[]; // Up to 3 video players
-  creativeDownloadUrls: string[]; // Links for each video
-  creativeZipUrl: string; // Full arsenal link
+  creativeEmbedUrls: string[]; 
+  creativeDownloadUrls: string[]; 
+  creativeZipUrl: string; 
   isFavorite?: boolean;
 }
 
@@ -83,6 +79,29 @@ export interface Offer {
  */
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 const PRODUCT_TYPES: ProductType[] = ['Infoproduto', 'Low Ticket', 'Nutracêutico', 'Dropshipping', 'E-book'];
+
+/**
+ * UTILS - VIDEO NORMALIZATION
+ */
+const getEmbedUrl = (url: string) => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  
+  // Vimeo
+  if (trimmed.includes('vimeo.com')) {
+    const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/);
+    if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?badge=0&autopause=0&player_id=0&app_id=58479`;
+  }
+  
+  // YouTube
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+    const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+    if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`;
+  }
+
+  // Already an embed link or other format
+  return trimmed;
+};
 
 /**
  * UI COMPONENTS
@@ -117,6 +136,26 @@ const TrafficIcon: React.FC<{ source: string }> = ({ source }) => {
   if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />;
   if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />;
   return <Target size={14} className="text-brand-gold" />;
+};
+
+const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => {
+  const embed = getEmbedUrl(url);
+  if (!embed) return (
+    <div className="w-full h-full flex items-center justify-center text-gray-700 font-black uppercase italic text-xs">
+      Link de vídeo inválido
+    </div>
+  );
+
+  return (
+    <iframe 
+      className="w-full h-full"
+      src={embed}
+      title={title || "Video Player"}
+      frameBorder="0"
+      allow="autoplay; fullscreen; picture-in-picture"
+      allowFullScreen
+    ></iframe>
+  );
 };
 
 const OfferCard: React.FC<{
@@ -184,7 +223,7 @@ const OfferCard: React.FC<{
 );
 
 /**
- * LANDING PAGE COMPONENT (Updated with new Copy and Plans)
+ * LANDING PAGE COMPONENT
  */
 const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
   <div className="min-h-screen bg-brand-dark flex flex-col items-center">
@@ -306,7 +345,8 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
               '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'
             ].map((item, i) => (
               <li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic">
-                <CircleCheck size={16} className="text-brand-gold shrink-0" /> {item}
+                {/* Fixed: Using the correct imported icon name CheckCircle */}
+                <CheckCircle size={16} className="text-brand-gold shrink-0" /> {item}
               </li>
             ))}
           </ul>
@@ -335,7 +375,8 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
               'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'
             ].map((item, i) => (
               <li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic">
-                <CircleCheck size={16} className="text-brand-gold shrink-0" /> {item}
+                {/* Fixed: Using the correct imported icon name CheckCircle */}
+                <CheckCircle size={16} className="text-brand-gold shrink-0" /> {item}
               </li>
             ))}
           </ul>
@@ -419,7 +460,6 @@ const App: React.FC = () => {
             row[header] = values[i] || '';
           });
 
-          // Detailed mapping including new hybrid creatives columns
           return {
             id: row.id || idx.toString(),
             title: row.title || 'Sem Título',
@@ -505,7 +545,6 @@ const App: React.FC = () => {
     });
   };
 
-  // UNIQUE FILTERS
   const availableNiches = ['Todos', ...Array.from(new Set(offers.map(o => o.niche)))];
   const availableLanguages = ['Todos', ...Array.from(new Set(offers.map(o => o.language)))];
   const availableTrafficSources = ['Todos', ...Array.from(new Set(offers.flatMap(o => o.trafficSource)))];
@@ -554,7 +593,6 @@ const App: React.FC = () => {
 
           <div className="space-y-12">
             <div className="flex flex-col lg:flex-row gap-8 items-start">
-              {/* VSL PLAYER */}
               <div className="w-full lg:w-[60%] space-y-6">
                 <div className="bg-brand-card p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-white/5 shadow-2xl overflow-hidden">
                   <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide">
@@ -571,22 +609,11 @@ const App: React.FC = () => {
                     ))}
                   </div>
                   <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5">
-                    {selectedOffer.vslLinks[activeVslIndex]?.url ? (
-                      <iframe 
-                        className="w-full h-full"
-                        src={selectedOffer.vslLinks[activeVslIndex].url}
-                        title="VSL Player"
-                        frameBorder="0"
-                        allowFullScreen
-                      ></iframe>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-700 font-black uppercase italic text-xs">Player indisponível</div>
-                    )}
+                    <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" />
                   </div>
                 </div>
               </div>
 
-              {/* OPERATION INFO */}
               <div className="w-full lg:w-[40%] space-y-4">
                 <div className="bg-brand-card p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 shadow-2xl h-full">
                   <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic">
@@ -613,23 +640,16 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* HYBRID CREATIVES SECTION */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
                  <ImageIcon className="text-brand-gold w-6 h-6" /> ARSENAL DE CRIATIVOS HÍBRIDOS
                </h3>
                
-               {/* Video Players (up to 3) */}
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {selectedOffer.creativeEmbedUrls.slice(0, 3).map((embedUrl, i) => (
                     <div key={i} className="flex flex-col gap-4">
                       <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl">
-                        <iframe 
-                          src={embedUrl}
-                          className="w-full h-full"
-                          frameBorder="0"
-                          allowFullScreen
-                        ></iframe>
+                        <VideoPlayer url={embedUrl} title={`Creative Player ${i + 1}`} />
                       </div>
                       <a 
                         href={selectedOffer.creativeDownloadUrls[i] || '#'}
@@ -642,7 +662,6 @@ const App: React.FC = () => {
                   ))}
                </div>
 
-               {/* Image Gallery */}
                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pt-8">
                  {selectedOffer.creativeImages.map((img, i) => (
                    <div key={i} className="aspect-square bg-brand-card rounded-2xl overflow-hidden border border-white/5 group relative cursor-pointer">
@@ -654,7 +673,6 @@ const App: React.FC = () => {
                  ))}
                </div>
 
-               {/* Arsenal Zip Button */}
                <div className="pt-10 flex justify-center">
                   <a 
                     href={selectedOffer.creativeZipUrl}
@@ -666,7 +684,6 @@ const App: React.FC = () => {
                </div>
             </div>
 
-            {/* PAGES */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
                  <Layout className="text-brand-gold w-6 h-6" /> ESTRUTURA DE VENDAS
