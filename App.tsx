@@ -368,7 +368,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         </div>
 
         {/* QUARTERLY */}
-        <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_50px_rgba(212,175,55,0.2)] flex flex-col scale-105 border-t-[8px] border-brand-gold">
+        <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_50px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-brand-gold">
           <div className="absolute top-6 right-8 bg-brand-gold text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
             Economize R$ 94
           </div>
@@ -596,7 +596,7 @@ const App: React.FC = () => {
               <a 
                 href={selectedOffer.vslDownloadUrl} 
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
               >
                 <Download size={16} /> BAIXAR VSL
@@ -604,7 +604,7 @@ const App: React.FC = () => {
               <a 
                 href={selectedOffer.transcriptionUrl} 
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg"
               >
                 <FileText size={16} /> BAIXAR TRANSCRIÇÃO
@@ -681,7 +681,7 @@ const App: React.FC = () => {
                       <a 
                         href={selectedOffer.creativeDownloadUrls[i] || '#'}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="w-full py-3 bg-brand-hover text-brand-gold font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-brand-gold hover:text-black transition-all border border-brand-gold/20"
                       >
                         <Download size={14} /> BAIXAR ESTE CRIATIVO
@@ -696,7 +696,7 @@ const App: React.FC = () => {
                  <Layout className="text-brand-gold w-6 h-6" /> ESTRUTURA DE VENDAS
                </h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                 <a href={selectedOffer.pageUrl} target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
+                 <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
                       <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
                         <Monitor size={20} />
@@ -708,7 +708,7 @@ const App: React.FC = () => {
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
                  </a>
-                 <a href={selectedOffer.facebookUrl} target="_blank" rel="noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
+                 <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
                       <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
                         <Facebook size={20} />
@@ -723,13 +723,19 @@ const App: React.FC = () => {
                </div>
             </div>
 
-            {/* ZIP DOWNLOAD HIGHLIGHTED AT THE END */}
+            {/* ZIP DOWNLOAD HIGHLIGHTED AT THE END - Corrected index 17 and layout */}
             <div className="pt-10 md:pt-16 flex justify-center pb-8 border-t border-white/5">
                 <a 
-                  href={selectedOffer.creativeZipUrl}
+                  href={selectedOffer.creativeZipUrl && selectedOffer.creativeZipUrl !== '#' ? selectedOffer.creativeZipUrl : '#'}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="px-12 py-6 bg-brand-gold text-black font-black text-xl md:text-2xl rounded-[24px] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(212,175,55,0.25)] uppercase tracking-tighter flex items-center gap-4 italic group"
+                  onClick={(e) => {
+                    if (!selectedOffer.creativeZipUrl || selectedOffer.creativeZipUrl === '#') {
+                      e.preventDefault();
+                      alert('Link do Arsenal ZIP não configurado nesta oferta.');
+                    }
+                  }}
                 >
                   <div className="p-2 bg-black/10 rounded-xl group-hover:bg-black/20 transition-colors">
                     <Zap size={24} fill="currentColor" className="md:w-8 md:h-8" />
@@ -876,7 +882,7 @@ const App: React.FC = () => {
                         </button>
                     </div>
                     <div className="space-y-3">
-                        <a href={offer.pageUrl} target="_blank" rel="noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
+                        <a href={offer.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
                             <Monitor size={14} /> PÁGINA OFICIAL <ExternalLink size={12} />
                         </a>
                     </div>
@@ -904,7 +910,7 @@ const App: React.FC = () => {
                         </button>
                     </div>
                     <div className="space-y-3">
-                        <a href={offer.facebookUrl} target="_blank" rel="noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
+                        <a href={offer.facebookUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
                             <Facebook size={14} /> BIBLIOTECA DE ANÚNCIOS <ExternalLink size={12} />
                         </a>
                     </div>
