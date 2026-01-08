@@ -68,7 +68,7 @@ export interface Offer {
   facebookUrl: string;
   pageUrl: string;
   coverImage: string;
-  views: string; // Authority text from Column H
+  views: string; // Authority text from Column H (index 7)
   transcriptionUrl: string;
   creativeImages: string[];
   creativeEmbedUrls: string[]; 
@@ -104,7 +104,6 @@ const getEmbedUrl = (url: string) => {
     const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
     if (vimeoIdMatch) {
       const baseEmbed = `https://player.vimeo.com/video/${vimeoIdMatch[1]}`;
-      // CLEAN PLAYER UI: Always append specific parameters to hide metadata
       return `${baseEmbed}?title=0&byline=0&portrait=0&badge=0&autopause=0`;
     }
   }
@@ -190,7 +189,7 @@ const OfferCard: React.FC<{
         alt={offer.title} 
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
       />
-      <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+      <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
         {offer.trend === 'Escalando' && (
           <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
             <Zap size={10} fill="currentColor" /> Escalando
@@ -201,10 +200,10 @@ const OfferCard: React.FC<{
             <TrendingUp size={12} className="w-3 h-3" /> Em Alta
           </div>
         )}
-        {/* Authority Text Badge */}
+        {/* Authority Text Badge - Refined Premium Style */}
         {offer.views && (
-          <div className="px-2.5 py-1 bg-black/60 backdrop-blur-md text-brand-gold text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl border border-brand-gold/20">
-            <Flame size={12} fill="currentColor" className="text-brand-gold" /> {offer.views}
+          <div className="px-2.5 py-1 bg-brand-dark/90 backdrop-blur-xl text-brand-gold text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-brand-gold/30">
+            <Flame size={12} fill="currentColor" className="text-brand-gold animate-pulse" /> {offer.views}
           </div>
         )}
       </div>
@@ -314,7 +313,6 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         </p>
       </div>
 
-      {/* SEÇÃO DE BENEFÍCIOS RÁPIDOS - "DECODIFIQUE" */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 w-full max-w-5xl mb-24 md:mb-32 px-2">
         <div className="md:col-span-6 bg-brand-card p-8 md:p-10 rounded-[30px] border border-white/5 text-left group">
           <div className="w-12 h-12 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg group-hover:bg-brand-gold group-hover:text-black transition-all">
@@ -347,9 +345,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         </div>
       </div>
       
-      {/* PRICING PLANS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full max-w-5xl mb-24 md:mb-32 px-4">
-        {/* MONTHLY */}
         <div className="bg-brand-card border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-brand-gold/30 transition-all flex flex-col">
           <h3 className="text-brand-gold font-black uppercase text-lg md:text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3>
           <div className="flex items-baseline gap-2 mb-8">
@@ -375,7 +371,6 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
           </button>
         </div>
 
-        {/* QUARTERLY */}
         <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_50px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-brand-gold">
           <div className="absolute top-6 right-8 bg-brand-gold text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
             Economize R$ 94
@@ -405,7 +400,6 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         </div>
       </div>
 
-      {/* GUARANTEE & FOOTER */}
       <div className="w-full max-w-4xl bg-brand-card p-10 md:p-16 rounded-[40px] border border-brand-gold/20 mb-32 flex flex-col md:flex-row items-center gap-10 md:gap-16">
         <div className="w-32 h-32 md:w-48 md:h-48 shrink-0 flex items-center justify-center border-4 border-brand-gold rounded-full relative">
           <span className="text-brand-gold font-black text-5xl italic">7</span>
@@ -485,7 +479,7 @@ const App: React.FC = () => {
             description: values[4] || row.description || '',
             coverImage: values[5] || row.coverImage || '',
             trend: values[6] || row.trend || 'Estável',
-            views: values[7] || row.views || 'N/A', // Column H (index 7)
+            views: values[7] || row.views || 'N/A', // Column H (index 7) Authority Text
             vslLinks: [{ label: 'VSL Principal', url: values[8] || row.vslEmbedUrl || '' }],
             vslDownloadUrl: values[9] || row.vslDownloadUrl || '#',
             transcriptionUrl: values[10] || row.transcriptionUrl || '#',
@@ -500,8 +494,6 @@ const App: React.FC = () => {
           };
         });
 
-        // INVERSION LOGIC: The latest entries in the spreadsheet are the newest.
-        // Reversing ensures index.reverse() moves bottom rows to the top of the app list.
         setOffers(parsedData.reverse());
       } catch (error) {
         console.error('Error fetching intelligence database:', error);
@@ -626,11 +618,12 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
-            <div className="flex flex-col gap-2 mb-8">
+            <div className="flex flex-col gap-3 mb-8">
               <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">{selectedOffer.title}</h2>
               {selectedOffer.views && (
-                <div className="flex items-center gap-2 text-brand-gold font-black uppercase text-sm italic mt-2 tracking-widest">
-                  <Flame size={18} fill="currentColor" /> {selectedOffer.views}
+                <div className="flex items-center gap-3 bg-brand-card/50 px-4 py-2 rounded-xl border border-brand-gold/30 w-fit">
+                  <Flame size={20} fill="currentColor" className="text-brand-gold animate-bounce" />
+                  <span className="text-brand-gold font-black uppercase text-sm md:text-base italic tracking-widest">{selectedOffer.views}</span>
                 </div>
               )}
             </div>
@@ -767,7 +760,6 @@ const App: React.FC = () => {
 
     switch (currentPage) {
       case 'home':
-        // Due to .reverse() in fetch, the first elements are now the most recent ones.
         const scalingHome = offers.filter(o => o.trend === 'Escalando').slice(0, 4);
         const recentlyHome = offers.filter(o => recentlyViewed.includes(o.id));
 
