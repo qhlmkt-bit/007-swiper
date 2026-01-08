@@ -102,8 +102,8 @@ const getEmbedUrl = (url: string) => {
     const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
     if (vimeoIdMatch) {
       const baseEmbed = `https://player.vimeo.com/video/${vimeoIdMatch[1]}`;
-      // Clean player UI as requested
-      return `${baseEmbed}?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479`;
+      // CLEAN PLAYER UI: Always append specific parameters
+      return `${baseEmbed}?title=0&byline=0&portrait=0&badge=0&autopause=0`;
     }
   }
   
@@ -291,7 +291,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         Inteligência de Mercado em Tempo Real
       </div>
       
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 md:mb-10 leading-[1.1] md:leading-[1.0] tracking-tighter uppercase italic max-w-6xl">
+      <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 md:mb-10 leading-[1.1] md:leading-[1.0] tracking-tighter uppercase italic max-w-6xl">
         Acesse sem limites as ofertas mais lucrativas e escaladas do mercado de resposta direta <span className="text-brand-gold">antes da concorrência.</span>
       </h1>
       
@@ -472,11 +472,7 @@ const App: React.FC = () => {
             row[header] = values[i] || '';
           });
 
-          // PRECISE COLUMN MAPPING (VERIFIED INDEX 0-17)
-          // Col N(13): facebookUrl, Col O(14): pageUrl
-          // Col P(15): language, Col Q(16): trafficSource
-          // Col R(17): creativeZipUrl
-
+          // PRECISE COLUMN MAPPING (INDEX 0-17)
           return {
             id: values[0] || row.id || idx.toString(),
             title: values[1] || row.title || 'Sem Título',
@@ -723,7 +719,7 @@ const App: React.FC = () => {
                </div>
             </div>
 
-            {/* ZIP DOWNLOAD HIGHLIGHTED AT THE END - Corrected index 17 and final positioning */}
+            {/* ZIP DOWNLOAD HIGHLIGHTED AT THE END - Positioned below 'Estrutura de Vendas' as requested */}
             <div className="pt-10 md:pt-16 flex justify-center pb-8 border-t border-white/5">
                 <a 
                   href={selectedOffer.creativeZipUrl && selectedOffer.creativeZipUrl !== '#' ? selectedOffer.creativeZipUrl : '#'}
@@ -940,6 +936,62 @@ const App: React.FC = () => {
           </div>
         );
 
+      case 'settings':
+        return (
+          <div className="animate-in fade-in duration-700 max-w-4xl mx-auto space-y-10">
+            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4">
+              <Settings className="text-brand-gold" /> Painel do Agente
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Card 1 - Perfil */}
+              <div className="bg-brand-card p-8 rounded-[32px] border border-white/5 shadow-2xl">
+                <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Identificação do Operador</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-3 border-b border-white/5">
+                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Nome</span>
+                    <span className="text-white font-black uppercase italic">Operador 007</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-white/5">
+                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Status</span>
+                    <span className="text-green-500 font-black uppercase italic flex items-center gap-2"><CheckCircle size={14} /> Assinatura Ativa</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3">
+                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Nível</span>
+                    <span className="text-brand-gold font-black uppercase italic">Operação VIP</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2 - Suporte */}
+              <div className="bg-brand-card p-8 rounded-[32px] border border-white/5 shadow-2xl">
+                <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Suporte e Contatos</h3>
+                <p className="text-gray-400 text-sm font-bold italic mb-6">
+                  Para dúvidas estratégicas ou problemas técnicos, contate o comando via e-mail:
+                </p>
+                <a href="mailto:qhl.mkt@gmail.com" className="w-full py-4 bg-brand-hover rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-brand-gold hover:text-black transition-all">
+                  <FileText size={18} /> qhl.mkt@gmail.com
+                </a>
+              </div>
+
+              {/* Card 3 - Sugestões */}
+              <div className="bg-brand-card p-8 rounded-[32px] border border-white/5 shadow-2xl md:col-span-2">
+                <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Inteligência On-Demand</h3>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <input 
+                    type="text" 
+                    placeholder="Cole o link da página de vendas ou VSL aqui..." 
+                    className="flex-1 bg-brand-dark border border-white/10 rounded-xl px-5 py-3 text-sm text-white font-bold placeholder:text-gray-700 outline-none focus:border-brand-gold transition-all"
+                  />
+                  <button className="px-8 py-3 bg-brand-gold text-black font-black rounded-xl uppercase text-xs tracking-widest hover:scale-105 transition-all">
+                    Sugerir Oferta para Mineração
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return <div className="text-center py-20 text-gray-500 font-black uppercase italic">Em desenvolvimento...</div>;
     }
@@ -961,7 +1013,7 @@ const App: React.FC = () => {
       <nav className="space-y-2">
         <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => { setCurrentPage('home'); setSelectedOffer(null); }} />
         <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => { setCurrentPage('favorites'); setSelectedOffer(null); }} />
-        <SidebarItem icon={Settings} label="Configurações" active={currentPage === 'settings'} onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} />
+        <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} />
         
         <div className="pt-8 pb-4">
           <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
