@@ -68,7 +68,7 @@ export interface Offer {
   facebookUrl: string;
   pageUrl: string;
   coverImage: string;
-  views: string; // Changed to string to accept custom authority text (e.g., "10k+ Anúncios Ativos")
+  views: string; // Authority text from Column H
   transcriptionUrl: string;
   creativeImages: string[];
   creativeEmbedUrls: string[]; 
@@ -485,7 +485,7 @@ const App: React.FC = () => {
             description: values[4] || row.description || '',
             coverImage: values[5] || row.coverImage || '',
             trend: values[6] || row.trend || 'Estável',
-            views: values[7] || row.views || 'N/A', // Mapped from Column H (index 7) as authority text
+            views: values[7] || row.views || 'N/A', // Column H (index 7)
             vslLinks: [{ label: 'VSL Principal', url: values[8] || row.vslEmbedUrl || '' }],
             vslDownloadUrl: values[9] || row.vslDownloadUrl || '#',
             transcriptionUrl: values[10] || row.transcriptionUrl || '#',
@@ -500,7 +500,9 @@ const App: React.FC = () => {
           };
         });
 
-        setOffers(parsedData);
+        // INVERSION LOGIC: The latest entries in the spreadsheet are the newest.
+        // Reversing ensures index.reverse() moves bottom rows to the top of the app list.
+        setOffers(parsedData.reverse());
       } catch (error) {
         console.error('Error fetching intelligence database:', error);
       } finally {
@@ -737,7 +739,6 @@ const App: React.FC = () => {
                </div>
             </div>
 
-            {/* ZIP DOWNLOAD HIGHLIGHTED AT THE END - Positioned below 'Estrutura de Vendas' as requested */}
             <div className="pt-10 md:pt-16 flex justify-center pb-8 border-t border-white/5">
                 <a 
                   href={selectedOffer.creativeZipUrl && selectedOffer.creativeZipUrl !== '#' ? selectedOffer.creativeZipUrl : '#'}
@@ -766,6 +767,7 @@ const App: React.FC = () => {
 
     switch (currentPage) {
       case 'home':
+        // Due to .reverse() in fetch, the first elements are now the most recent ones.
         const scalingHome = offers.filter(o => o.trend === 'Escalando').slice(0, 4);
         const recentlyHome = offers.filter(o => recentlyViewed.includes(o.id));
 
@@ -962,7 +964,6 @@ const App: React.FC = () => {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Card 1 - Perfil Refactored */}
               <div className="bg-brand-card p-6 rounded-[24px] border border-white/5 shadow-2xl">
                 <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Identificação do Operador</h3>
                 <div className="space-y-3">
@@ -981,7 +982,6 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Card 2 - Suporte Refactored */}
               <div className="bg-brand-card p-6 rounded-[24px] border border-white/5 shadow-2xl flex flex-col justify-between">
                 <div>
                   <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Suporte e Contatos</h3>
