@@ -38,7 +38,8 @@ import {
   Loader2,
   Info,
   Files,
-  Copy
+  Copy,
+  Flame
 } from 'lucide-react';
 
 /** 
@@ -67,7 +68,7 @@ export interface Offer {
   facebookUrl: string;
   pageUrl: string;
   coverImage: string;
-  views: number;
+  views: string; // Changed to string to accept custom authority text (e.g., "10k+ Anúncios Ativos")
   transcriptionUrl: string;
   creativeImages: string[];
   creativeEmbedUrls: string[]; 
@@ -200,6 +201,12 @@ const OfferCard: React.FC<{
             <TrendingUp size={12} className="w-3 h-3" /> Em Alta
           </div>
         )}
+        {/* Authority Text Badge */}
+        {offer.views && (
+          <div className="px-2.5 py-1 bg-black/60 backdrop-blur-md text-brand-gold text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl border border-brand-gold/20">
+            <Flame size={12} fill="currentColor" className="text-brand-gold" /> {offer.views}
+          </div>
+        )}
       </div>
       <div className="absolute top-3 right-3">
         <button 
@@ -227,10 +234,6 @@ const OfferCard: React.FC<{
             </div>
           ))}
           <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{offer.productType}</span>
-        </div>
-        <div className="flex items-center text-gray-500 text-xs font-black italic">
-          <Eye size={14} className="mr-1 text-brand-gold" />
-          {offer.views > 1000 ? `${(offer.views / 1000).toFixed(1)}K` : offer.views}
         </div>
       </div>
     </div>
@@ -482,7 +485,7 @@ const App: React.FC = () => {
             description: values[4] || row.description || '',
             coverImage: values[5] || row.coverImage || '',
             trend: values[6] || row.trend || 'Estável',
-            views: parseInt(values[7]) || parseInt(row.views) || 0,
+            views: values[7] || row.views || 'N/A', // Mapped from Column H (index 7) as authority text
             vslLinks: [{ label: 'VSL Principal', url: values[8] || row.vslEmbedUrl || '' }],
             vslDownloadUrl: values[9] || row.vslDownloadUrl || '#',
             transcriptionUrl: values[10] || row.transcriptionUrl || '#',
@@ -621,6 +624,15 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
+            <div className="flex flex-col gap-2 mb-8">
+              <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">{selectedOffer.title}</h2>
+              {selectedOffer.views && (
+                <div className="flex items-center gap-2 text-brand-gold font-black uppercase text-sm italic mt-2 tracking-widest">
+                  <Flame size={18} fill="currentColor" /> {selectedOffer.views}
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-col lg:flex-row gap-8 items-start">
               <div className="w-full lg:w-[60%] space-y-6">
                 <div className="bg-brand-card p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-white/5 shadow-2xl overflow-hidden">
