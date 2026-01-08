@@ -7,38 +7,38 @@ import {
   Palette, 
   FileText, 
   Search, 
-  LogOut,
-  ChevronRight,
-  Monitor,
+  LogOut, 
+  ChevronRight, 
+  Monitor, 
   Eye, 
-  Lock,
-  Trophy,
-  Download,
-  Video,
-  Zap,
-  ZapOff,
-  Globe,
-  X,
-  ExternalLink,
-  ImageIcon,
-  Layout,
-  MousePointer2,
-  TrendingUp,
-  ShieldCheck,
-  CheckCircle,
-  Play,
-  Facebook,
-  Youtube,
-  Smartphone,
-  Clock,
-  Target,
-  Menu,
-  Filter,
-  Library,
-  Loader2,
-  Info,
-  Files,
-  Copy,
+  Lock, 
+  Trophy, 
+  Download, 
+  Video, 
+  Zap, 
+  ZapOff, 
+  Globe, 
+  X, 
+  ExternalLink, 
+  ImageIcon, 
+  Layout, 
+  MousePointer2, 
+  TrendingUp, 
+  ShieldCheck, 
+  CheckCircle, 
+  Play, 
+  Facebook, 
+  Youtube, 
+  Smartphone, 
+  Clock, 
+  Target, 
+  Menu, 
+  Filter, 
+  Library, 
+  Loader2, 
+  Info, 
+  Files, 
+  Copy, 
   Flame
 } from 'lucide-react';
 
@@ -87,18 +87,18 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8J
  */
 const getDriveDirectLink = (url: string) => {
   if (!url) return '';
-  if (url.includes('drive.google.com')) {
-    const idMatch = url.match(/[-\w]{25,}/);
+  const trimmed = url.trim();
+  if (trimmed.includes('drive.google.com')) {
+    const idMatch = trimmed.match(/[-\w]{25,}/);
     if (idMatch) return `https://lh3.googleusercontent.com/u/0/d/${idMatch[0]}`;
   }
-  return url;
+  return trimmed;
 };
 
 const getEmbedUrl = (url: string) => {
   if (!url) return '';
   const trimmed = url.trim();
   
-  // Vimeo
   if (trimmed.includes('vimeo.com')) {
     const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
     if (vimeoIdMatch) {
@@ -107,7 +107,6 @@ const getEmbedUrl = (url: string) => {
     }
   }
   
-  // YouTube
   if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
     const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
     if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`;
@@ -143,7 +142,7 @@ const SidebarItem: React.FC<{
 );
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => {
-  const normalized = source.toLowerCase();
+  const normalized = source.toLowerCase().trim();
   if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />;
   if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />;
   if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />;
@@ -189,20 +188,19 @@ const OfferCard: React.FC<{
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
       />
       <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-        {offer.trend === 'Escalando' && (
+        {offer.trend.trim().toLowerCase() === 'escalando' && (
           <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
             <Zap size={10} fill="currentColor" /> Escalando
           </div>
         )}
-        {offer.trend === 'Em Alta' && (
+        {offer.trend.trim().toLowerCase() === 'em alta' && (
           <div className="px-2.5 py-1 bg-brand-gold text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
             <TrendingUp size={12} className="w-3 h-3" /> Em Alta
           </div>
         )}
-        {/* Authority Text Badge - Column H */}
-        {offer.views && (
+        {offer.views && offer.views.trim() !== '' && (
           <div className="px-2.5 py-1 bg-brand-dark/90 backdrop-blur-xl text-brand-gold text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-brand-gold/30">
-            <Flame size={12} fill="currentColor" className="text-brand-gold animate-pulse" /> {offer.views}
+            <Flame size={12} fill="currentColor" className="text-brand-gold animate-pulse" /> {offer.views.trim()}
           </div>
         )}
       </div>
@@ -301,7 +299,6 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligência que transforma dados em resultados escaláveis.
       </p>
 
-      {/* VIDEO DEMO PLACEHOLDER */}
       <div className="w-full max-w-4xl aspect-video bg-brand-card rounded-[32px] border border-white/10 mb-20 md:mb-32 flex flex-col items-center justify-center gap-6 group cursor-pointer hover:border-brand-gold/50 transition-all shadow-2xl relative overflow-hidden">
         <div className="absolute inset-0 bg-brand-gold/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         <div className="w-20 h-20 bg-brand-gold text-black rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
@@ -344,80 +341,6 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full max-w-5xl mb-24 md:mb-32 px-4">
-        <div className="bg-brand-card border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-brand-gold/30 transition-all flex flex-col">
-          <h3 className="text-brand-gold font-black uppercase text-lg md:text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3>
-          <div className="flex items-baseline gap-2 mb-8">
-            <span className="text-4xl md:text-5xl font-black text-white italic">R$ 197</span>
-            <span className="text-gray-500 font-black text-sm uppercase">/mês</span>
-          </div>
-          <ul className="space-y-4 mb-12 flex-1">
-            {[
-              'Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 
-              'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', 
-              '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'
-            ].map((item, i) => (
-              <li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic">
-                <CheckCircle size={16} className="text-brand-gold shrink-0" /> {item}
-              </li>
-            ))}
-          </ul>
-          <button 
-            onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
-            className="w-full py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter"
-          >
-            QUERO ACESSO MENSAL
-          </button>
-        </div>
-
-        <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_50px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-brand-gold">
-          <div className="absolute top-6 right-8 bg-brand-gold text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
-            Economize R$ 94
-          </div>
-          <h3 className="text-brand-gold font-black uppercase text-lg md:text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3>
-          <div className="flex items-baseline gap-2 mb-8">
-            <span className="text-4xl md:text-5xl font-black italic">R$ 497</span>
-            <span className="text-gray-400 font-black text-sm uppercase">/trimestre</span>
-          </div>
-          <ul className="space-y-4 mb-12 flex-1">
-            {[
-              'Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 
-              'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 
-              'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'
-            ].map((item, i) => (
-              <li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic">
-                <CheckCircle size={16} className="text-brand-gold shrink-0" /> {item}
-              </li>
-            ))}
-          </ul>
-          <button 
-            onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
-            className="w-full py-5 bg-brand-dark text-brand-gold font-black text-lg rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter"
-          >
-            ASSINAR PLANO TRIMESTRAL
-          </button>
-        </div>
-      </div>
-
-      <div className="w-full max-w-4xl bg-brand-card p-10 md:p-16 rounded-[40px] border border-brand-gold/20 mb-32 flex flex-col md:flex-row items-center gap-10 md:gap-16">
-        <div className="w-32 h-32 md:w-48 md:h-48 shrink-0 flex items-center justify-center border-4 border-brand-gold rounded-full relative">
-          <span className="text-brand-gold font-black text-5xl italic">7</span>
-          <span className="absolute -bottom-2 bg-brand-gold text-black px-4 py-1 text-[10px] font-black uppercase rounded">Dias</span>
-        </div>
-        <div className="text-left flex-1">
-          <h2 className="text-white font-black text-2xl md:text-4xl uppercase italic mb-4 tracking-tighter">Garantia Incondicional de 7 Dias</h2>
-          <p className="text-gray-500 font-medium text-base mb-8 leading-relaxed italic">
-            Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você sentir que a plataforma não é para você, devolvemos 100% do seu dinheiro. Sem perguntas.
-          </p>
-          <button 
-            onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
-            className="px-10 py-5 bg-brand-gold text-black font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-tighter"
-          >
-            [COMEÇAR AGORA – RISCO ZERO]
-          </button>
-        </div>
-      </div>
-
       <footer className="text-gray-600 text-xs font-bold uppercase tracking-widest italic border-t border-white/5 pt-12 w-full">
         © 2024 007 Swiper Intelligence Platform. Todos os direitos reservados.
       </footer>
@@ -460,39 +383,41 @@ const App: React.FC = () => {
         const lines = text.split(/\r?\n/).filter(l => l.trim());
         if (lines.length < 2) throw new Error("Database file is missing expected headers.");
 
-        const headers = lines[1].split(/,(?=(?:(?:[^!]*"){2})*[^!]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
+        // Assumes headers are on the second line (index 1)
+        const headerLine = lines[1].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
         
         const parsedData: Offer[] = lines.slice(2).map((line, idx) => {
-          const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
-          const row: any = {};
-          headers.forEach((header, i) => {
-            row[header] = values[i] || '';
-          });
+          const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, '').trim());
+          
+          // STRICT VALIDATION: If ID (0) or Title (1) are empty/missing, return null
+          if (!values[0] || !values[1] || values[1].toLowerCase() === 'undefined' || values[1] === '') {
+            return null;
+          }
 
-          // PRECISE COLUMN MAPPING (INDEX 0-17)
           return {
-            id: values[0] || row.id || idx.toString(),
-            title: values[1] || row.title || 'Sem Título',
-            niche: (values[2] || row.niche || 'Geral').trim(),
-            productType: (values[3] || row.productType || 'Geral').trim(), // Column D
-            description: values[4] || row.description || '',
-            coverImage: values[5] || row.coverImage || '',
-            trend: values[6] || row.trend || 'Estável',
-            views: values[7] || row.views || 'N/A', // Column H (index 7) Authority Text
-            vslLinks: [{ label: 'VSL Principal', url: values[8] || row.vslEmbedUrl || '' }],
-            vslDownloadUrl: values[9] || row.vslDownloadUrl || '#',
-            transcriptionUrl: values[10] || row.transcriptionUrl || '#',
-            creativeEmbedUrls: (values[11] || row.creativeEmbedUrls || '').split(',').map((s: string) => s.trim()).filter(Boolean),
-            creativeDownloadUrls: (values[12] || row.creativeDownloadUrls || '').split(',').map((s: string) => s.trim()).filter(Boolean),
-            facebookUrl: values[13] || row.facebookUrl || '#',
-            pageUrl: values[14] || row.pageUrl || '#',
-            language: (values[15] || row.language || 'Português').trim(),
-            trafficSource: (values[16] || row.trafficSource || '').split(',').map((s: string) => s.trim()).filter(Boolean),
-            creativeZipUrl: values[17] || row.creativeZipUrl || '#',
+            id: values[0],
+            title: values[1],
+            niche: values[2] || 'Geral',
+            productType: values[3] || 'Geral', // Column D
+            description: values[4] || '',
+            coverImage: values[5] || '',
+            trend: values[6] || 'Estável',
+            views: values[7] || '', // Column H Authority Text
+            vslLinks: [{ label: 'VSL Principal', url: values[8] || '' }],
+            vslDownloadUrl: values[9] || '#',
+            transcriptionUrl: values[10] || '#',
+            creativeEmbedUrls: (values[11] || '').split(',').map(s => s.trim()).filter(Boolean),
+            creativeDownloadUrls: (values[12] || '').split(',').map(s => s.trim()).filter(Boolean),
+            facebookUrl: values[13] || '#',
+            pageUrl: values[14] || '#',
+            language: values[15] || 'Português',
+            trafficSource: (values[16] || '').split(',').map(s => s.trim()).filter(Boolean),
+            creativeZipUrl: values[17] || '#',
             creativeImages: [], 
           };
-        });
+        }).filter((o): o is Offer => o !== null); // Filter out rows that failed validation
 
+        // Invert to show latest first
         setOffers(parsedData.reverse());
       } catch (error) {
         console.error('Error fetching intelligence database:', error);
@@ -546,7 +471,8 @@ const App: React.FC = () => {
 
   const applyEliteFilters = (offersList: Offer[]) => {
     return offersList.filter(o => {
-      const matchesSearch = o.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch = q === '' || o.title.toLowerCase().includes(q) || o.description.toLowerCase().includes(q);
       const matchesNiche = selectedNiche === 'Todos' || o.niche.toLowerCase() === selectedNiche.toLowerCase();
       const matchesType = selectedType === 'Todos' || o.productType.toLowerCase() === selectedType.toLowerCase();
       const matchesLanguage = selectedLanguage === 'Todos' || o.language.toLowerCase() === selectedLanguage.toLowerCase();
@@ -555,19 +481,26 @@ const App: React.FC = () => {
     });
   };
 
-  // Dynamic Filters logic
-  const getUniqueValues = (key: 'niche' | 'language' | 'productType') => {
-    const values = offers.map(o => o[key].trim());
-    // Normalize to handle case sensitivity during grouping, but keep original case for display if possible (first seen)
-    const uniqueNormalized = Array.from(new Set(values.map(v => v.toLowerCase())));
+  const getUniqueValues = (key: keyof Offer) => {
+    const values: string[] = [];
+    offers.forEach(o => {
+      const val = o[key];
+      if (Array.isArray(val)) {
+        val.forEach(v => values.push(v.trim()));
+      } else if (typeof val === 'string') {
+        values.push(val.trim());
+      }
+    });
+
+    const uniqueNormalized = Array.from(new Set(values.filter(Boolean).map(v => v.toLowerCase())));
     const uniqueOriginal = uniqueNormalized.map(norm => values.find(v => v.toLowerCase() === norm) || norm);
-    return ['Todos', ...uniqueOriginal.sort()];
+    return ['Todos', ...uniqueOriginal.sort((a, b) => a.localeCompare(b))];
   };
 
   const availableNiches = getUniqueValues('niche');
   const availableLanguages = getUniqueValues('language');
   const availableTypes = getUniqueValues('productType');
-  const availableTrafficSources = ['Todos', ...Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort()];
+  const availableTrafficSources = getUniqueValues('trafficSource');
 
   const showFilters = ['offers', 'vsl', 'creatives', 'pages', 'ads_library'].includes(currentPage) && !selectedOffer;
 
@@ -629,7 +562,7 @@ const App: React.FC = () => {
           <div className="space-y-12">
             <div className="flex flex-col gap-3 mb-8">
               <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">{selectedOffer.title}</h2>
-              {selectedOffer.views && (
+              {selectedOffer.views && selectedOffer.views.trim() !== '' && (
                 <div className="flex items-center gap-3 bg-brand-card/50 px-4 py-2 rounded-xl border border-brand-gold/30 w-fit">
                   <Flame size={20} fill="currentColor" className="text-brand-gold animate-bounce" />
                   <span className="text-brand-gold font-black uppercase text-sm md:text-base italic tracking-widest">{selectedOffer.views}</span>
@@ -769,7 +702,7 @@ const App: React.FC = () => {
 
     switch (currentPage) {
       case 'home':
-        const scalingHome = offers.filter(o => o.trend === 'Escalando').slice(0, 4);
+        const scalingHome = offers.filter(o => o.trend.trim().toLowerCase() === 'escalando').slice(0, 4);
         const recentlyHome = offers.filter(o => recentlyViewed.includes(o.id));
 
         return (
@@ -825,6 +758,7 @@ const App: React.FC = () => {
                 />
               ))}
             </div>
+            {filtered.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center">Nenhuma inteligência encontrada para estes filtros.</p>}
           </div>
         );
 
@@ -1092,26 +1026,26 @@ const App: React.FC = () => {
                 <Filter size={14} /> {isFiltersOpen ? 'FECHAR FILTROS' : 'FILTRAR RESULTADOS'}
               </button>
 
-              <div className={`${isFiltersOpen ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-3 md:gap-4 mt-4 lg:mt-0`}>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
+              <div className={`${isFiltersOpen ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-3 md:gap-4 mt-4 lg:mt-0 overflow-x-auto pb-2 scrollbar-hide`}>
+                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                   <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Nicho</label>
                   <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                     {availableNiches.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </div>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
+                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                   <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tipo de Produto</label>
                   <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                     {availableTypes.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
+                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                   <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tráfego</label>
                   <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                     {availableTrafficSources.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[45%] lg:min-w-0">
+                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                   <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
                   <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
                     {availableLanguages.map(l => <option key={l} value={l}>{l}</option>)}
