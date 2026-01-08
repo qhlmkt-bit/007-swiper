@@ -37,7 +37,8 @@ import {
   Library,
   Loader2,
   Info,
-  Files
+  Files,
+  Copy
 } from 'lucide-react';
 
 /** 
@@ -102,7 +103,7 @@ const getEmbedUrl = (url: string) => {
     const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
     if (vimeoIdMatch) {
       const baseEmbed = `https://player.vimeo.com/video/${vimeoIdMatch[1]}`;
-      // CLEAN PLAYER UI: Always append specific parameters
+      // CLEAN PLAYER UI: Always append specific parameters to hide metadata
       return `${baseEmbed}?title=0&byline=0&portrait=0&badge=0&autopause=0`;
     }
   }
@@ -564,6 +565,11 @@ const App: React.FC = () => {
 
   const showFilters = ['offers', 'vsl', 'creatives', 'pages', 'ads_library'].includes(currentPage) && !selectedOffer;
 
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText('qhl.mkt@gmail.com');
+    alert('E-mail copiado para a área de transferência! 📋');
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -938,55 +944,46 @@ const App: React.FC = () => {
 
       case 'settings':
         return (
-          <div className="animate-in fade-in duration-700 max-w-4xl mx-auto space-y-10">
+          <div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10">
             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4">
               <Settings className="text-brand-gold" /> Painel do Agente
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Card 1 - Perfil */}
-              <div className="bg-brand-card p-8 rounded-[32px] border border-white/5 shadow-2xl">
+              {/* Card 1 - Perfil Refactored */}
+              <div className="bg-brand-card p-6 rounded-[24px] border border-white/5 shadow-2xl">
                 <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Identificação do Operador</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-3 border-b border-white/5">
-                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Nome</span>
-                    <span className="text-white font-black uppercase italic">Operador 007</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Agente</span>
+                    <span className="text-white font-black uppercase italic text-sm">Operador 007</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-white/5">
-                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Status</span>
-                    <span className="text-green-500 font-black uppercase italic flex items-center gap-2"><CheckCircle size={14} /> Assinatura Ativa</span>
+                  <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Plano</span>
+                    <span className="bg-brand-gold text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest italic shadow-lg shadow-brand-gold/10">Operação VIP</span>
                   </div>
-                  <div className="flex justify-between items-center py-3">
-                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Nível</span>
-                    <span className="text-brand-gold font-black uppercase italic">Operação VIP</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Acesso</span>
+                    <span className="text-white font-black uppercase italic text-sm">Ilimitado</span>
                   </div>
                 </div>
               </div>
 
-              {/* Card 2 - Suporte */}
-              <div className="bg-brand-card p-8 rounded-[32px] border border-white/5 shadow-2xl">
-                <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Suporte e Contatos</h3>
-                <p className="text-gray-400 text-sm font-bold italic mb-6">
-                  Para dúvidas estratégicas ou problemas técnicos, contate o comando via e-mail:
-                </p>
-                <a href="mailto:qhl.mkt@gmail.com" className="w-full py-4 bg-brand-hover rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-brand-gold hover:text-black transition-all">
-                  <FileText size={18} /> qhl.mkt@gmail.com
-                </a>
-              </div>
-
-              {/* Card 3 - Sugestões */}
-              <div className="bg-brand-card p-8 rounded-[32px] border border-white/5 shadow-2xl md:col-span-2">
-                <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Inteligência On-Demand</h3>
-                <div className="flex flex-col md:flex-row gap-4">
-                  <input 
-                    type="text" 
-                    placeholder="Cole o link da página de vendas ou VSL aqui..." 
-                    className="flex-1 bg-brand-dark border border-white/10 rounded-xl px-5 py-3 text-sm text-white font-bold placeholder:text-gray-700 outline-none focus:border-brand-gold transition-all"
-                  />
-                  <button className="px-8 py-3 bg-brand-gold text-black font-black rounded-xl uppercase text-xs tracking-widest hover:scale-105 transition-all">
-                    Sugerir Oferta para Mineração
-                  </button>
+              {/* Card 2 - Suporte Refactored */}
+              <div className="bg-brand-card p-6 rounded-[24px] border border-white/5 shadow-2xl flex flex-col justify-between">
+                <div>
+                  <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Suporte e Contatos</h3>
+                  <div className="flex flex-col gap-1.5 mb-6">
+                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic">E-mail de Comando</span>
+                    <span className="text-white font-black text-lg md:text-xl italic">qhl.mkt@gmail.com</span>
+                  </div>
                 </div>
+                <button 
+                  onClick={handleCopyEmail}
+                  className="w-full py-3.5 bg-brand-hover rounded-xl flex items-center justify-center gap-3 text-white font-black hover:bg-brand-gold hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"
+                >
+                  <Copy size={16} /> Copiar E-mail
+                </button>
               </div>
             </div>
           </div>
