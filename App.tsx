@@ -100,7 +100,11 @@ const getEmbedUrl = (url: string) => {
   // Vimeo
   if (trimmed.includes('vimeo.com')) {
     const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
-    if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?badge=0&autopause=0&player_id=0&app_id=58479`;
+    if (vimeoIdMatch) {
+      const baseEmbed = `https://player.vimeo.com/video/${vimeoIdMatch[1]}`;
+      // Clean player UI as requested
+      return `${baseEmbed}?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479`;
+    }
   }
   
   // YouTube
@@ -287,12 +291,12 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         Inteligência de Mercado em Tempo Real
       </div>
       
-      <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 md:mb-10 leading-[1.1] md:leading-[1.0] tracking-tighter uppercase italic max-w-6xl">
-        ESPIONE AS OFERTAS QUE <span className="text-brand-gold">DOMINAM O JOGO.</span>
+      <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 md:mb-10 leading-[1.1] md:leading-[1.0] tracking-tighter uppercase italic max-w-6xl">
+        Acesse sem limites as ofertas mais lucrativas e escaladas do mercado de resposta direta <span className="text-brand-gold">antes da concorrência.</span>
       </h1>
       
       <p className="text-gray-400 text-base md:text-xl font-medium max-w-4xl mb-12 md:mb-16 italic px-2 leading-relaxed">
-        Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligativa que transforma dados em resultados escaláveis.
+        Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligência que transforma dados em resultados escaláveis.
       </p>
 
       {/* VIDEO DEMO PLACEHOLDER */}
@@ -468,11 +472,7 @@ const App: React.FC = () => {
             row[header] = values[i] || '';
           });
 
-          // PRECISE COLUMN MAPPING (FIXED AS REQUESTED)
-          // Col A(0): id, Col B(1): title, Col C(2): niche, Col D(3): productType, Col E(4): description, 
-          // Col F(5): coverImage, Col G(6): trend, Col H(7): views
-          // Col I(8): vslEmbedUrl, Col J(9): vslDownloadUrl, Col K(10): transcriptionUrl
-          // Col L(11): creativeEmbedUrls, Col M(12): creativeDownloadUrls
+          // PRECISE COLUMN MAPPING (VERIFIED INDEX 0-17)
           // Col N(13): facebookUrl, Col O(14): pageUrl
           // Col P(15): language, Col Q(16): trafficSource
           // Col R(17): creativeZipUrl
@@ -723,7 +723,7 @@ const App: React.FC = () => {
                </div>
             </div>
 
-            {/* ZIP DOWNLOAD HIGHLIGHTED AT THE END - Corrected index 17 and layout */}
+            {/* ZIP DOWNLOAD HIGHLIGHTED AT THE END - Corrected index 17 and final positioning */}
             <div className="pt-10 md:pt-16 flex justify-center pb-8 border-t border-white/5">
                 <a 
                   href={selectedOffer.creativeZipUrl && selectedOffer.creativeZipUrl !== '#' ? selectedOffer.creativeZipUrl : '#'}
