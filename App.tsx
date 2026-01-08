@@ -115,25 +115,6 @@ const getEmbedUrl = (url: string) => {
   return trimmed;
 };
 
-const getThumbnailUrl = (url: string, fallback: string) => {
-  if (!url) return getDriveDirectLink(fallback);
-  const trimmed = url.trim();
-  
-  // YouTube Thumbnail Extraction
-  const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
-  if (ytIdMatch) {
-    return `https://img.youtube.com/vi/${ytIdMatch[1]}/hqdefault.jpg`;
-  }
-
-  // Google Drive
-  if (trimmed.includes('drive.google.com')) {
-    return getDriveDirectLink(trimmed);
-  }
-
-  // If it's a direct image or other, return as is (if valid)
-  return trimmed;
-};
-
 /**
  * UI COMPONENTS
  */
@@ -807,32 +788,26 @@ const App: React.FC = () => {
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                {filtered.map(offer => {
-                  const coverToDisplay = offer.creativeEmbedUrls.length > 0 
-                    ? getThumbnailUrl(offer.creativeEmbedUrls[0], offer.coverImage)
-                    : getDriveDirectLink(offer.coverImage);
-                  
-                  return (
-                    <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
-                        <div className="relative aspect-video">
-                            <img src={coverToDisplay} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                                <ImageIcon className="text-brand-gold group-hover:scale-125 transition-all" size={32} />
-                                <p className="text-[10px] text-white font-black uppercase tracking-widest bg-black/60 px-3 py-1 rounded-full shadow-lg border border-white/10">
-                                  {offer.creativeEmbedUrls.length} {offer.creativeEmbedUrls.length === 1 ? 'VÍDEO' : 'VÍDEOS'}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="p-4 bg-brand-hover">
-                            <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
-                            <div className="flex items-center gap-2">
-                               {offer.trafficSource.slice(0, 1).map((s, i) => <TrafficIcon key={i} source={s} />)}
-                               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acessar Arsenal</p>
-                            </div>
-                        </div>
-                    </div>
-                  );
-                })}
+                {filtered.map(offer => (
+                  <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
+                      <div className="relative aspect-video">
+                          <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                              <ImageIcon className="text-brand-gold group-hover:scale-125 transition-all" size={32} />
+                              <p className="text-[10px] text-white font-black uppercase tracking-widest bg-black/60 px-3 py-1 rounded-full shadow-lg border border-white/10">
+                                {offer.creativeEmbedUrls.length} {offer.creativeEmbedUrls.length === 1 ? 'VÍDEO' : 'VÍDEOS'}
+                              </p>
+                          </div>
+                      </div>
+                      <div className="p-4 bg-brand-hover">
+                          <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
+                          <div className="flex items-center gap-2">
+                             {offer.trafficSource.slice(0, 1).map((s, i) => <TrafficIcon key={i} source={s} />)}
+                             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acessar Arsenal</p>
+                          </div>
+                      </div>
+                  </div>
+                ))}
              </div>
           </div>
         );
@@ -840,24 +815,23 @@ const App: React.FC = () => {
       case 'pages':
         return (
           <div className="animate-in fade-in duration-700">
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filtered.map(offer => (
-                <div key={offer.id} className="bg-brand-card p-6 rounded-[24px] md:rounded-[32px] border border-white/5 hover:border-brand-gold/50 transition-all group">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-brand-hover rounded-xl flex items-center justify-center group-hover:bg-brand-gold group-hover:text-black transition-all">
-                                <Layout size={20} />
+                <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
+                    <div className="relative aspect-video">
+                        <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                            <div className="p-3 bg-brand-dark/40 rounded-full backdrop-blur-sm group-hover:bg-brand-gold group-hover:text-black transition-all">
+                                <Monitor size={24} />
                             </div>
-                            <p className="text-white font-black uppercase text-sm md:text-base italic truncate max-w-[150px] md:max-w-none">{offer.title}</p>
                         </div>
-                        <button onClick={(e) => toggleFavorite(offer.id, e)} className="text-gray-600 hover:text-brand-gold transition-colors">
-                            <Star size={18} fill={favorites.includes(offer.id) ? "currentColor" : "none"} />
-                        </button>
                     </div>
-                    <div className="space-y-3">
-                        <a href={offer.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
-                            <Monitor size={14} /> PÁGINA OFICIAL <ExternalLink size={12} />
-                        </a>
+                    <div className="p-4 bg-brand-hover">
+                        <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
+                        <div className="flex items-center justify-between gap-2">
+                           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acessar Página</p>
+                           <ExternalLink size={12} className="text-gray-600" />
+                        </div>
                     </div>
                 </div>
               ))}
@@ -868,24 +842,23 @@ const App: React.FC = () => {
       case 'ads_library':
         return (
           <div className="animate-in fade-in duration-700">
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filtered.map(offer => (
-                <div key={offer.id} className="bg-brand-card p-6 rounded-[24px] md:rounded-[32px] border border-white/5 hover:border-brand-gold/50 transition-all group">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-brand-hover rounded-xl flex items-center justify-center group-hover:bg-brand-gold group-hover:text-black transition-all">
-                                <Library size={20} />
+                <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
+                    <div className="relative aspect-video">
+                        <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                            <div className="p-3 bg-brand-dark/40 rounded-full backdrop-blur-sm group-hover:bg-brand-gold group-hover:text-black transition-all">
+                                <Library size={24} />
                             </div>
-                            <p className="text-white font-black uppercase text-sm md:text-base italic truncate max-w-[150px] md:max-w-none">{offer.title}</p>
                         </div>
-                        <button onClick={(e) => toggleFavorite(offer.id, e)} className="text-gray-600 hover:text-brand-gold transition-colors">
-                            <Star size={18} fill={favorites.includes(offer.id) ? "currentColor" : "none"} />
-                        </button>
                     </div>
-                    <div className="space-y-3">
-                        <a href={offer.facebookUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-brand-hover hover:bg-white/5 rounded-xl border border-white/5 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all">
-                            <Facebook size={14} /> BIBLIOTECA DE ANÚNCIOS <ExternalLink size={12} />
-                        </a>
+                    <div className="p-4 bg-brand-hover">
+                        <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
+                        <div className="flex items-center justify-between gap-2">
+                           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Anúncios Ativos</p>
+                           <Facebook size={12} className="text-blue-500" />
+                        </div>
                     </div>
                 </div>
               ))}
