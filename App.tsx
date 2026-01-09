@@ -68,7 +68,7 @@ export interface Offer {
   facebookUrl: string;
   pageUrl: string;
   coverImage: string;
-  views: string; // Authority text from Column H (index 7)
+  views: string; 
   transcriptionUrl: string;
   creativeImages: string[];
   creativeEmbedUrls: string[]; 
@@ -82,6 +82,64 @@ export interface Offer {
  */
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 const CHECKOUT_URL = 'https://go.perfectpay.com.br/PPU38CQ5PGO';
+
+/**
+ * CUSTOM STYLES INJECTION
+ */
+const GlobalStyles = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    
+    :root {
+      --brand-gold: #D4AF37;
+      --brand-dark: #0a0a0a;
+      --brand-card: #121212;
+      --brand-hover: #1a1a1a;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--brand-dark);
+      color: #ffffff;
+      margin: 0;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--brand-dark);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #222;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--brand-gold);
+    }
+
+    /* Button Pulse Animation */
+    .btn-pulse {
+      animation: pulse-gold 2s infinite;
+    }
+
+    @keyframes pulse-gold {
+      0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.6); }
+      70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    }
+
+    /* Custom Tailwind Overrides for consistency */
+    .bg-brand-dark { background-color: var(--brand-dark); }
+    .bg-brand-card { background-color: var(--brand-card); }
+    .bg-brand-hover { background-color: var(--brand-hover); }
+    .bg-brand-gold { background-color: var(--brand-gold); }
+    .text-brand-gold { color: var(--brand-gold); }
+    .border-brand-gold { border-color: var(--brand-gold); }
+    .selection\\:bg-brand-gold ::selection { background-color: var(--brand-gold); color: black; }
+  `}</style>
+);
 
 /**
  * UTILS - DATA NORMALIZATION
@@ -310,39 +368,8 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 w-full max-w-5xl mb-24 md:mb-32 px-2">
-        <div className="md:col-span-6 bg-brand-card p-8 md:p-10 rounded-[30px] border border-white/5 text-left group">
-          <div className="w-12 h-12 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg group-hover:bg-brand-gold group-hover:text-black transition-all">
-            <Zap size={24} />
-          </div>
-          <h3 className="text-white font-black uppercase text-xl md:text-2xl mb-4 tracking-tight italic">Decodifique o que Realmente Converte</h3>
-          <p className="text-gray-500 font-medium text-base leading-relaxed">
-            Chega de testar às cegas. No 007 Swiper, você acessa ofertas validadas pelo mercado, organizadas por nicho, formato e estratégia. Entenda o que faz um funil bater ROI antes mesmo de subir sua primeira campanha.
-          </p>
-        </div>
-
-        <div className="md:col-span-6 bg-brand-card p-8 md:p-10 rounded-[30px] border border-white/5 text-left group">
-          <div className="w-12 h-12 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg group-hover:bg-brand-gold group-hover:text-black transition-all">
-            <Files size={24} />
-          </div>
-          <h3 className="text-white font-black uppercase text-xl md:text-2xl mb-4 tracking-tight italic">Banco de Criativos Escalados</h3>
-          <p className="text-gray-500 font-medium text-base leading-relaxed">
-            O mercado não perdoa amadorismo criativo. Por isso, entregamos um arsenal de anúncios já provados que estão em escala ativa agora. Baixe, analise a estrutura e modele para o seu produto em minutos.
-          </p>
-        </div>
-
-        <div className="md:col-span-12 lg:col-span-4 lg:col-start-5 bg-brand-card p-8 rounded-[30px] border border-white/5 text-center group">
-          <div className="w-12 h-12 bg-brand-hover rounded-2xl flex items-center justify-center mb-6 text-brand-gold shadow-lg mx-auto group-hover:bg-brand-gold group-hover:text-black transition-all">
-            <Globe size={24} />
-          </div>
-          <h3 className="text-white font-black uppercase text-lg mb-3 tracking-tight italic">Inteligência Global, Resultados Locais</h3>
-          <p className="text-gray-500 font-medium text-sm leading-relaxed">
-            Escale sem fronteiras. Todas as ofertas, VSLs e criativos disponíveis em múltiplos idiomas para que você possa importar as melhores tendências do exterior diretamente para o Brasil.
-          </p>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full max-w-5xl mb-24 md:mb-32 px-4">
+        {/* Monthly Plan */}
         <div className="bg-brand-card border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-brand-gold/30 transition-all flex flex-col">
           <h3 className="text-brand-gold font-black uppercase text-lg md:text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3>
           <div className="flex items-baseline gap-2 mb-8">
@@ -371,6 +398,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
           </div>
         </div>
 
+        {/* Quarterly Plan */}
         <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_50px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-brand-gold">
           <div className="absolute top-6 right-8 bg-brand-gold text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
             Economize R$ 94
@@ -403,6 +431,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         </div>
       </div>
 
+      {/* Guarantee Section */}
       <div className="w-full max-w-4xl bg-brand-card p-10 md:p-16 rounded-[40px] border border-brand-gold/20 mb-32 flex flex-col md:flex-row items-center gap-10 md:gap-16">
         <div className="w-32 h-32 md:w-48 md:h-48 shrink-0 flex items-center justify-center border-4 border-brand-gold rounded-full relative">
           <span className="text-brand-gold font-black text-5xl italic">7</span>
@@ -478,11 +507,11 @@ const App: React.FC = () => {
             id: values[0],
             title: values[1],
             niche: values[2] || 'Geral',
-            productType: values[3] || 'Geral', // Column D
+            productType: values[3] || 'Geral', 
             description: values[4] || '',
             coverImage: values[5] || '',
             trend: values[6] || 'Estável',
-            views: values[7] || '', // Column H Authority Text
+            views: values[7] || '', 
             vslLinks: [{ label: 'VSL Principal', url: values[8] || '' }],
             vslDownloadUrl: values[9] || '#',
             transcriptionUrl: values[10] || '#',
@@ -1021,7 +1050,12 @@ const App: React.FC = () => {
   };
 
   if (!isLoggedIn) {
-    return <LandingPage onLogin={handleLogin} isSuccess={isSuccess} onCloseSuccess={() => setIsSuccess(false)} />;
+    return (
+      <>
+        <GlobalStyles />
+        <LandingPage onLogin={handleLogin} isSuccess={isSuccess} onCloseSuccess={() => setIsSuccess(false)} />
+      </>
+    );
   }
 
   const SidebarContent = () => (
@@ -1056,6 +1090,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
+      <GlobalStyles />
       {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300"
