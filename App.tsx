@@ -116,25 +116,22 @@ const STYLES = `
     background: var(--brand-gold);
   }
 
-  /* Button Pulse Animation */
-  .btn-pulse {
-    animation: pulse-gold 2s infinite;
+  /* Custom Glow for Gold Buttons */
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+    transition: all 0.3s ease;
+  }
+  .gold-glow:hover {
+    box-shadow: 0 0 35px rgba(212, 175, 55, 0.6);
   }
 
-  @keyframes pulse-gold {
-    0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.6); }
-    70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
-  }
-
-  /* Custom Tailwind Overrides */
+  /* Custom Tailwind Class Emulation */
   .bg-brand-dark { background-color: var(--brand-dark); }
   .bg-brand-card { background-color: var(--brand-card); }
   .bg-brand-hover { background-color: var(--brand-hover); }
   .bg-brand-gold { background-color: var(--brand-gold); }
   .text-brand-gold { color: var(--brand-gold); }
   .border-brand-gold { border-color: var(--brand-gold); }
-  .selection\\:bg-brand-gold ::selection { background-color: var(--brand-gold); color: black; }
 `;
 
 /**
@@ -295,163 +292,127 @@ const OfferCard: React.FC<{
  * LANDING PAGE COMPONENT
  */
 const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
-  <div className="min-h-screen bg-brand-dark flex flex-col items-center">
+  <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center">
+    {/* Success Access Notification */}
     {isSuccess && (
-      <div className="w-full bg-[#050505] border-b-2 border-brand-gold py-6 px-4 md:px-12 text-center animate-in fade-in slide-in-from-top-4 duration-500 flex flex-col md:flex-row items-center justify-between gap-6 sticky top-0 z-[100] shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+      <div className="w-full bg-[#050505] border-b-2 border-[#D4AF37] py-6 px-4 md:px-12 text-center animate-bounce flex flex-col md:flex-row items-center justify-between gap-6 sticky top-0 z-[100] shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
         <div className="flex items-center gap-4">
-          <div className="bg-brand-gold p-3 rounded-full shadow-[0_0_20px_rgba(212,175,55,0.3)] hidden sm:flex">
+          <div className="bg-[#D4AF37] p-3 rounded-full shadow-[0_0_20px_rgba(212,175,55,0.3)]">
             <ShieldCheck size={28} className="text-black" />
           </div>
           <div className="text-left">
-            <h2 className="text-brand-gold font-black uppercase text-lg md:text-2xl tracking-tighter">ACESSO À INTELIGÊNCIA LIBERADO! 🕵️‍♂️</h2>
-            <p className="text-gray-400 text-[10px] md:text-sm font-bold uppercase tracking-tight leading-relaxed max-w-2xl">
-              Sua chave de acesso ao Quartel General é única e confidencial. SALVE ESTA SENHA AGORA: 
-              <span className="text-brand-gold font-black ml-2 text-base md:text-xl">AGENTE007</span>
-            </p>
+            <h2 className="text-[#D4AF37] font-black uppercase text-lg md:text-2xl tracking-tighter">ACESSO À INTELIGÊNCIA LIBERADO! 🕵️‍♂️</h2>
+            <p className="text-gray-400 text-[10px] md:text-sm font-bold uppercase tracking-tight">Sua chave é única. SENHA: <span className="text-[#D4AF37] font-black">AGENTE007</span></p>
           </div>
         </div>
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <button 
-            onClick={onLogin}
-            className="flex-1 md:flex-none px-6 py-3 bg-brand-gold text-black font-black rounded-xl uppercase text-[10px] md:text-sm tracking-tighter hover:scale-105 transition-all shadow-xl shadow-brand-gold/20 flex items-center justify-center gap-2 border-2 border-black/10"
-          >
-            <Lock size={16} /> ENTRAR NO ARSENAL
-          </button>
-          <button onClick={onCloseSuccess} className="p-2 text-gray-600 hover:text-white transition-colors">
-            <X size={24} />
-          </button>
-        </div>
+        <button onClick={onLogin} className="px-6 py-3 bg-[#D4AF37] text-black font-black rounded-xl uppercase hover:scale-105 transition-all shadow-xl">ENTRAR AGORA</button>
       </div>
     )}
     
     <nav className="w-full max-w-7xl px-4 md:px-8 py-8 flex justify-between items-center relative z-50">
-      <div className="flex items-center space-x-2 md:space-x-3">
-        <div className="bg-brand-gold p-2 md:p-2.5 rounded-2xl rotate-3 shadow-xl shadow-brand-gold/20">
+      <div className="flex items-center space-x-3">
+        <div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3 shadow-xl">
           <Eye className="text-black" size={24} />
         </div>
-        <span className="text-xl md:text-3xl font-black tracking-tighter text-white uppercase italic">007 Swiper</span>
+        <span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic">007 SWIPER</span>
       </div>
-      <button 
-        onClick={onLogin}
-        className="px-6 md:px-8 py-2.5 md:py-3 bg-brand-gold hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl shadow-brand-gold/30 flex items-center gap-2 uppercase text-[10px] md:text-xs tracking-tighter transform hover:scale-105"
-      >
-        <Lock size={14} /> Entrar
-      </button>
+      <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-2 bg-brand-card/50 border border-brand-gold/30 px-3 py-1.5 rounded-full">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-[10px] font-black text-brand-gold uppercase tracking-widest">AGENTE ATIVO</span>
+        </div>
+        <button 
+          onClick={onLogin}
+          className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter"
+        >
+          <Lock size={14} className="inline mr-2" /> Entrar
+        </button>
+      </div>
     </nav>
     
-    <main className="flex-1 w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-4 md:mt-8 mb-32 relative">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-gold/10 via-transparent to-transparent -z-10 pointer-events-none opacity-40"></div>
-      
-      <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 mb-6 md:mb-8 rounded-full border border-brand-gold/30 bg-brand-gold/5 text-brand-gold text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">
+    <main className="flex-1 w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-8 mb-32">
+      <div className="inline-block px-5 py-2 mb-8 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em]">
         Inteligência de Mercado em Tempo Real
       </div>
       
-      <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 md:mb-10 leading-[1.1] md:leading-[1.0] tracking-tighter uppercase italic max-w-6xl">
-        Acesse sem limites as ofertas mais lucrativas e escaladas do mercado de resposta direta <span className="text-brand-gold">antes da concorrência.</span>
+      <h1 className="text-5xl md:text-8xl font-black text-white mb-10 leading-[1.0] tracking-tighter uppercase italic max-w-5xl">
+        A MAIOR PLATAFORMA DE <span className="text-[#D4AF37]">ESPIONAGEM</span> DE OFERTAS
       </h1>
       
-      <p className="text-gray-400 text-base md:text-xl font-medium max-w-4xl mb-12 md:mb-16 italic px-2 leading-relaxed">
-        Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligência que transforma dados em resultados escaláveis.
+      <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-4xl mb-20 italic">
+        Acesse o arsenal secreto que os grandes produtores usam para faturar 7 dígitos todos os meses. Criativos, VSLs e Funis validados na palma da sua mão.
       </p>
 
-      <div className="w-full max-w-4xl aspect-video bg-brand-card rounded-[32px] border border-white/10 mb-20 md:mb-32 flex flex-col items-center justify-center gap-6 group cursor-pointer hover:border-brand-gold/50 transition-all shadow-2xl relative overflow-hidden">
-        <div className="absolute inset-0 bg-brand-gold/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        <div className="w-20 h-20 bg-brand-gold text-black rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
-          <Play fill="currentColor" size={32} />
-        </div>
-        <p className="text-white font-black uppercase text-xs md:text-sm tracking-widest italic group-hover:text-brand-gold transition-colors">
-          Descubra como rastreamos e organizamos ofertas escaladas em tempo real
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full max-w-5xl mb-24 md:mb-32 px-4">
-        {/* Monthly Plan */}
-        <div className="bg-brand-card border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-brand-gold/30 transition-all flex flex-col">
-          <h3 className="text-brand-gold font-black uppercase text-lg md:text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3>
-          <div className="flex items-baseline gap-2 mb-8">
-            <span className="text-4xl md:text-5xl font-black text-white italic">R$ 197</span>
+      {/* Plans Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full max-w-5xl mb-32">
+        {/* Monthly Card */}
+        <div className="bg-[#121212] border border-white/5 rounded-[40px] p-10 text-left hover:border-[#D4AF37]/30 transition-all flex flex-col group shadow-2xl">
+          <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO MENSAL</h3>
+          <div className="flex items-baseline gap-2 mb-10">
+            <span className="text-5xl font-black text-white italic">R$ 197</span>
             <span className="text-gray-500 font-black text-sm uppercase">/mês</span>
           </div>
-          <ul className="space-y-4 mb-12 flex-1">
-            {[
-              'Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 
-              'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', 
-              '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'
-            ].map((item, i) => (
-              <li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic">
-                <CheckCircle size={16} className="text-brand-gold shrink-0" /> {item}
-              </li>
+          <div className="space-y-4 mb-12 flex-1">
+            {['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Templates de Funil', 'Transcrições Ilimitadas', 'Suporte Prioritário'].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold">
+                <CheckCircle size={18} className="text-[#D4AF37]" /> {item}
+              </div>
             ))}
-          </ul>
-          <div className="flex flex-col">
-            <button 
-              onClick={() => window.open(CHECKOUT_URL, '_blank')}
-              className="w-full py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter btn-pulse hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]"
-            >
-              QUERO ACESSO MENSAL
-            </button>
-            <p className="text-[10px] text-gray-500 font-bold uppercase mt-4 text-center italic tracking-wider">Acesso imediato enviado para o seu e-mail após a confirmação.</p>
           </div>
+          <button 
+            onClick={() => window.open(CHECKOUT_URL, '_blank')}
+            className="w-full py-5 bg-[#D4AF37] text-black font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-tighter animate-pulse gold-glow"
+          >
+            QUERO ACESSO MENSAL
+          </button>
+          <p className="text-[10px] text-gray-600 font-bold uppercase mt-4 text-center italic">Acesso imediato enviado para o seu e-mail.</p>
         </div>
 
-        {/* Quarterly Plan */}
-        <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_50px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-brand-gold">
-          <div className="absolute top-6 right-8 bg-brand-gold text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
-            Economize R$ 94
+        {/* Quarterly Card */}
+        <div className="bg-white text-black rounded-[40px] p-10 text-left flex flex-col group shadow-[0_0_50px_rgba(212,175,55,0.2)] border-t-[10px] border-[#D4AF37] relative">
+          <div className="absolute top-8 right-10 bg-[#D4AF37] text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+            MELHOR CUSTO-BENEFÍCIO
           </div>
-          <h3 className="text-brand-gold font-black uppercase text-lg md:text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3>
-          <div className="flex items-baseline gap-2 mb-8">
-            <span className="text-4xl md:text-5xl font-black italic">R$ 497</span>
+          <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO TRIMESTRAL</h3>
+          <div className="flex items-baseline gap-2 mb-10">
+            <span className="text-5xl font-black italic">R$ 497</span>
             <span className="text-gray-400 font-black text-sm uppercase">/trimestre</span>
           </div>
-          <ul className="space-y-4 mb-12 flex-1">
-            {[
-              'Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 
-              'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 
-              'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'
-            ].map((item, i) => (
-              <li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic">
-                <CheckCircle size={16} className="text-brand-gold shrink-0" /> {item}
-              </li>
+          <div className="space-y-4 mb-12 flex-1">
+            {['Tudo do Mensal', 'Comunidade VIP', 'Radar Global 007', '12% OFF em Edições', 'Acesso Antecipado'].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold">
+                <CheckCircle size={18} className="text-[#D4AF37]" /> {item}
+              </div>
             ))}
-          </ul>
-          <div className="flex flex-col">
-            <button 
-              onClick={() => window.open(CHECKOUT_URL, '_blank')}
-              className="w-full py-5 bg-brand-dark text-brand-gold font-black text-lg rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter btn-pulse hover:shadow-[0_0_25px_rgba(212,175,55,0.5)]"
-            >
-              ASSINAR PLANO TRIMESTRAL
-            </button>
-            <p className="text-[10px] text-gray-400 font-bold uppercase mt-4 text-center italic tracking-wider">Acesso imediato enviado para o seu e-mail após a confirmação.</p>
           </div>
+          <button 
+            onClick={() => window.open(CHECKOUT_URL, '_blank')}
+            className="w-full py-5 bg-black text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-tighter animate-pulse gold-glow"
+          >
+            ASSINAR PLANO TRIMESTRAL
+          </button>
+          <p className="text-[10px] text-gray-400 font-bold uppercase mt-4 text-center italic">Acesso imediato enviado para o seu e-mail.</p>
         </div>
       </div>
 
-      {/* Guarantee Section */}
-      <div className="w-full max-w-4xl bg-brand-card p-10 md:p-16 rounded-[40px] border border-brand-gold/20 mb-32 flex flex-col md:flex-row items-center gap-10 md:gap-16">
-        <div className="w-32 h-32 md:w-48 md:h-48 shrink-0 flex items-center justify-center border-4 border-brand-gold rounded-full relative">
-          <span className="text-brand-gold font-black text-5xl italic">7</span>
-          <span className="absolute -bottom-2 bg-brand-gold text-black px-4 py-1 text-[10px] font-black uppercase rounded">Dias</span>
-        </div>
-        <div className="text-left flex-1">
-          <h2 className="text-white font-black text-2xl md:text-4xl uppercase italic mb-4 tracking-tighter">Garantia Incondicional de 7 Dias</h2>
-          <p className="text-gray-500 font-medium text-base mb-8 leading-relaxed italic">
-            Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você sentir que a plataforma não é para você, devolvemos 100% do seu dinheiro. Sem perguntas.
-          </p>
-          <div className="flex flex-col items-start">
-            <button 
-              onClick={() => window.open(CHECKOUT_URL, '_blank')}
-              className="px-10 py-5 bg-brand-gold text-black font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-tighter btn-pulse"
-            >
-              [COMEÇAR AGORA – RISCO ZERO]
-            </button>
-            <p className="text-[10px] text-gray-600 font-bold uppercase mt-4 italic tracking-wider">Acesso imediato enviado para o seu e-mail após a confirmação.</p>
+      <div className="w-full max-w-4xl bg-[#121212] p-12 rounded-[40px] border border-[#D4AF37]/20 flex flex-col md:flex-row items-center gap-10 text-left">
+          <div className="w-40 h-40 shrink-0 flex items-center justify-center border-4 border-[#D4AF37] rounded-full">
+            <span className="text-[#D4AF37] font-black text-5xl">7</span>
           </div>
-        </div>
+          <div>
+            <h2 className="text-white font-black text-3xl uppercase italic mb-3">GARANTIA DE 7 DIAS</h2>
+            <p className="text-gray-500 mb-6 italic">Não gostou? Devolvemos seu investimento sem perguntas. Risco zero para você espiar o mercado.</p>
+            <button 
+                onClick={() => window.open(CHECKOUT_URL, '_blank')}
+                className="px-8 py-4 bg-[#D4AF37] text-black font-black rounded-xl uppercase tracking-widest hover:scale-105 transition-all"
+            >
+                [ COMEÇAR AGORA ]
+            </button>
+          </div>
       </div>
 
-      <footer className="text-gray-600 text-xs font-bold uppercase tracking-widest italic border-t border-white/5 pt-12 w-full">
-        © 2024 007 Swiper Intelligence Platform. Todos os direitos reservados.
+      <footer className="mt-32 text-gray-600 text-[10px] font-black uppercase tracking-widest italic">
+        © 2024 007 SWIPER Intelligence Platform. All Rights Reserved.
       </footer>
     </main>
   </div>
@@ -1051,7 +1012,7 @@ const App: React.FC = () => {
         <div className="bg-brand-gold p-2 rounded-xl shadow-xl shadow-brand-gold/10">
           <Eye className="text-black" size={24} />
         </div>
-        <span className="text-2xl font-black tracking-tighter text-white uppercase italic">007 Swiper</span>
+        <span className="text-2xl font-black tracking-tighter text-white uppercase italic">007 SWIPER</span>
       </div>
       
       <nav className="space-y-2">
@@ -1076,7 +1037,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
+    <div className="flex min-h-screen bg-[#0a0a0a] text-white selection:bg-brand-gold selection:text-black">
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
       {isLoggedIn ? (
         <>
@@ -1092,7 +1053,7 @@ const App: React.FC = () => {
           </aside>
 
           <main className="flex-1 lg:ml-72 relative w-full">
-            <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-brand-dark/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4 md:gap-6">
+            <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4 md:gap-6">
               <div className="flex items-center justify-between gap-4">
                 <button 
                   onClick={() => setIsMobileMenuOpen(true)}
