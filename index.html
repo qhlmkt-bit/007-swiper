@@ -16,15 +16,6 @@
               card: '#121212',
               hover: '#1a1a1a'
             }
-          },
-          animation: {
-            'pulse-gold': 'pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          },
-          keyframes: {
-            'pulse-gold': {
-              '0%, 100%': { boxShadow: '0 0 0 0 rgba(212, 175, 55, 0.4)' },
-              '50%': { boxShadow: '0 0 0 10px rgba(212, 175, 55, 0)' },
-            }
           }
         }
       }
@@ -38,19 +29,6 @@
       color: #ffffff;
       margin: 0;
     }
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0a0a0a;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #222;
-      border-radius: 10px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #D4AF37;
-    }
     .btn-pulse {
       animation: pulse-gold 2s infinite;
     }
@@ -63,16 +41,17 @@
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "recharts": "https://esm.sh/recharts@^3.6.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react",
+    "recharts": "https://esm.sh/recharts"
   }
 }
 </script>
 </head>
 <body>
   <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
