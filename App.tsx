@@ -101,37 +101,39 @@ const STYLES = `
     overflow-x: hidden;
   }
 
-  /* Scrollbar Styling */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: var(--brand-dark);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #222;
-    border-radius: 10px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--brand-gold);
-  }
-
-  /* Custom Glow for Gold Buttons */
-  .gold-glow {
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  .gold-border { border: 1px solid rgba(212, 175, 55, 0.3); }
+  .gold-text { color: #D4AF37; }
+  .gold-bg { background-color: #D4AF37; }
+  
+  .btn-elite {
+    background-color: #D4AF37;
+    color: #000;
+    font-weight: 900;
+    text-transform: uppercase;
     transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
   }
-  .gold-glow:hover {
-    box-shadow: 0 0 35px rgba(212, 175, 55, 0.6);
+  
+  .btn-elite:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
   }
 
-  /* Custom Tailwind Class Emulation */
-  .bg-brand-dark { background-color: var(--brand-dark); }
-  .bg-brand-card { background-color: var(--brand-card); }
-  .bg-brand-hover { background-color: var(--brand-hover); }
-  .bg-brand-gold { background-color: var(--brand-gold); }
-  .text-brand-gold { color: var(--brand-gold); }
-  .border-brand-gold { border-color: var(--brand-gold); }
+  .plan-card {
+    background-color: #121212;
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 2rem;
+    transition: all 0.4s ease;
+  }
+
+  .plan-card:hover {
+    border-color: rgba(212, 175, 55, 0.5);
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
 `;
 
 /**
@@ -182,10 +184,10 @@ const SidebarItem: React.FC<{
     onClick={onClick}
     className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 ${
       active 
-        ? 'bg-brand-gold text-black font-black shadow-lg shadow-brand-gold/20' 
+        ? 'bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20' 
         : variant === 'danger' 
           ? 'text-red-500 hover:bg-red-500/10' 
-          : 'text-gray-400 hover:bg-brand-hover hover:text-white'
+          : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white'
     }`}
   >
     <Icon size={20} />
@@ -199,13 +201,13 @@ const TrafficIcon: React.FC<{ source: string }> = ({ source }) => {
   if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />;
   if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />;
   if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />;
-  return <Target size={14} className="text-brand-gold" />;
+  return <Target size={14} className="text-[#D4AF37]" />;
 };
 
 const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => {
   const embed = getEmbedUrl(url);
   if (!embed || embed === '') return (
-    <div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-brand-hover border border-dashed border-white/10 rounded-2xl gap-3">
+    <div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-[#1a1a1a] border border-dashed border-white/10 rounded-2xl gap-3">
       <ZapOff size={32} className="opacity-20" />
       <p className="font-black uppercase italic text-xs tracking-widest opacity-40">Visualização indisponível</p>
     </div>
@@ -231,7 +233,7 @@ const OfferCard: React.FC<{
 }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => (
   <div 
     onClick={onClick}
-    className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all duration-500 shadow-xl"
+    className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl"
   >
     <div className="relative aspect-video overflow-hidden">
       <img 
@@ -246,13 +248,13 @@ const OfferCard: React.FC<{
           </div>
         )}
         {offer.trend.trim().toLowerCase() === 'em alta' && (
-          <div className="px-2.5 py-1 bg-brand-gold text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
+          <div className="px-2.5 py-1 bg-[#D4AF37] text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
             <TrendingUp size={12} className="w-3 h-3" /> Em Alta
           </div>
         )}
         {offer.views && offer.views.trim() !== '' && (
-          <div className="px-2.5 py-1 bg-brand-dark/90 backdrop-blur-xl text-brand-gold text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-brand-gold/30">
-            <Flame size={12} fill="currentColor" className="text-brand-gold animate-pulse" /> {offer.views.trim()}
+          <div className="px-2.5 py-1 bg-[#0a0a0a]/90 backdrop-blur-xl text-[#D4AF37] text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-[#D4AF37]/30">
+            <Flame size={12} fill="currentColor" className="text-[#D4AF37] animate-pulse" /> {offer.views.trim()}
           </div>
         )}
       </div>
@@ -260,20 +262,20 @@ const OfferCard: React.FC<{
         <button 
           onClick={onToggleFavorite}
           className={`p-2.5 rounded-xl backdrop-blur-xl transition-all duration-300 ${
-            isFavorite ? 'bg-brand-gold text-black scale-110' : 'bg-brand-gold/20 text-white hover:bg-brand-gold hover:text-black'
+            isFavorite ? 'bg-[#D4AF37] text-black scale-110' : 'bg-[#D4AF37]/20 text-white hover:bg-[#D4AF37] hover:text-black'
           }`}
         >
           <Star size={18} fill={isFavorite ? "currentColor" : "none"} />
         </button>
       </div>
       <div className="absolute bottom-3 left-3">
-        <div className="px-2 py-0.5 bg-brand-gold text-black text-[9px] font-black rounded uppercase shadow-lg">
+        <div className="px-2 py-0.5 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase shadow-lg">
           {offer.niche}
         </div>
       </div>
     </div>
     <div className="p-5">
-      <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-brand-gold transition-colors italic">{offer.title}</h3>
+      <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors italic">{offer.title}</h3>
       <div className="flex items-center justify-between border-t border-white/5 pt-4">
         <div className="flex flex-wrap items-center gap-2">
           {offer.trafficSource.slice(0, 2).map((source, idx) => (
@@ -293,126 +295,139 @@ const OfferCard: React.FC<{
  */
 const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
   <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center">
-    {/* Success Access Notification */}
+    {/* Success Notification */}
     {isSuccess && (
-      <div className="w-full bg-[#050505] border-b-2 border-[#D4AF37] py-6 px-4 md:px-12 text-center animate-bounce flex flex-col md:flex-row items-center justify-between gap-6 sticky top-0 z-[100] shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+      <div className="w-full bg-black border-b-2 border-[#D4AF37] py-6 px-4 md:px-12 text-center animate-pulse flex flex-col md:flex-row items-center justify-between gap-6 sticky top-0 z-[100] shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
         <div className="flex items-center gap-4">
-          <div className="bg-[#D4AF37] p-3 rounded-full shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+          <div className="bg-[#D4AF37] p-3 rounded-full">
             <ShieldCheck size={28} className="text-black" />
           </div>
           <div className="text-left">
-            <h2 className="text-[#D4AF37] font-black uppercase text-lg md:text-2xl tracking-tighter">ACESSO À INTELIGÊNCIA LIBERADO! 🕵️‍♂️</h2>
-            <p className="text-gray-400 text-[10px] md:text-sm font-bold uppercase tracking-tight">Sua chave é única. SENHA: <span className="text-[#D4AF37] font-black">AGENTE007</span></p>
+            <h2 className="text-[#D4AF37] font-black uppercase text-lg md:text-2xl tracking-tighter italic leading-none">ACESSO À INTELIGÊNCIA LIBERADO!</h2>
+            <p className="text-gray-400 text-[10px] md:text-sm font-bold uppercase mt-1">Sua chave é restrita. SENHA DE AGENTE: <span className="text-white font-black bg-[#D4AF37]/20 px-2 py-0.5 rounded ml-1">AGENTE007</span></p>
           </div>
         </div>
-        <button onClick={onLogin} className="px-6 py-3 bg-[#D4AF37] text-black font-black rounded-xl uppercase hover:scale-105 transition-all shadow-xl">ENTRAR AGORA</button>
+        <button onClick={onLogin} className="px-8 py-3 bg-[#D4AF37] text-black font-black rounded-xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter">ENTRAR NO QG</button>
       </div>
     )}
     
-    <nav className="w-full max-w-7xl px-4 md:px-8 py-8 flex justify-between items-center relative z-50">
+    <nav className="w-full max-w-7xl px-4 md:px-10 py-10 flex justify-between items-center relative z-50">
       <div className="flex items-center space-x-3">
-        <div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3 shadow-xl">
-          <Eye className="text-black" size={24} />
+        <div className="bg-[#D4AF37] p-3 rounded-2xl rotate-3 shadow-xl">
+          <Eye className="text-black" size={28} />
         </div>
-        <span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic">007 SWIPER</span>
+        <div className="flex flex-col">
+          <span className="text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span>
+          <span className="text-[10px] text-[#D4AF37] font-black tracking-[0.3em] uppercase mt-1 opacity-70">Intelligence Systems</span>
+        </div>
       </div>
-      <div className="flex items-center gap-4">
-        <div className="hidden md:flex items-center gap-2 bg-brand-card/50 border border-brand-gold/30 px-3 py-1.5 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-[10px] font-black text-brand-gold uppercase tracking-widest">AGENTE ATIVO</span>
+      <div className="flex items-center gap-5">
+        <div className="hidden lg:flex items-center gap-3 bg-[#121212] border border-[#D4AF37]/30 px-4 py-2 rounded-full">
+            <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+            <span className="text-[11px] font-black text-[#D4AF37] uppercase tracking-[0.2em]">AGENTE ATIVO</span>
         </div>
         <button 
           onClick={onLogin}
-          className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter"
+          className="px-8 py-3 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-2xl uppercase text-xs tracking-widest italic"
         >
-          <Lock size={14} className="inline mr-2" /> Entrar
+          <Lock size={14} className="inline mr-2 mb-0.5" /> LOGIN
         </button>
       </div>
     </nav>
     
-    <main className="flex-1 w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-8 mb-32">
-      <div className="inline-block px-5 py-2 mb-8 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em]">
-        Inteligência de Mercado em Tempo Real
+    <main className="flex-1 w-full max-w-7xl px-4 md:px-10 flex flex-col items-center justify-center text-center mt-12 mb-32">
+      <div className="inline-block px-6 py-2.5 mb-10 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#D4AF37] text-[11px] font-black uppercase tracking-[0.3em]">
+        Top Secret: Inteligência Competitiva
       </div>
       
-      <h1 className="text-5xl md:text-8xl font-black text-white mb-10 leading-[1.0] tracking-tighter uppercase italic max-w-5xl">
-        A MAIOR PLATAFORMA DE <span className="text-[#D4AF37]">ESPIONAGEM</span> DE OFERTAS
+      <h1 className="text-5xl md:text-9xl font-black text-white mb-12 leading-[0.95] tracking-tighter uppercase italic max-w-6xl">
+        A PLATAFORMA QUE A <span className="text-[#D4AF37]">CONCORRÊNCIA</span> TEME
       </h1>
       
-      <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-4xl mb-20 italic">
-        Acesse o arsenal secreto que os grandes produtores usam para faturar 7 dígitos todos os meses. Criativos, VSLs e Funis validados na palma da sua mão.
+      <p className="text-gray-400 text-xl md:text-3xl font-medium max-w-5xl mb-24 italic leading-relaxed">
+        Pare de adivinhar. O 007 Swiper entrega as ofertas validadas, criativos de escala e funis milionários que estão dominando o mercado agora. 
       </p>
 
-      {/* Plans Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full max-w-5xl mb-32">
-        {/* Monthly Card */}
-        <div className="bg-[#121212] border border-white/5 rounded-[40px] p-10 text-left hover:border-[#D4AF37]/30 transition-all flex flex-col group shadow-2xl">
-          <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO MENSAL</h3>
-          <div className="flex items-baseline gap-2 mb-10">
-            <span className="text-5xl font-black text-white italic">R$ 197</span>
-            <span className="text-gray-500 font-black text-sm uppercase">/mês</span>
+      {/* Luxury Plans Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 w-full max-w-6xl mb-40 px-4">
+        {/* Monthly Plan Card */}
+        <div className="plan-card p-10 md:p-14 text-left flex flex-col relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 -mr-16 -mt-16 rounded-full blur-3xl"></div>
+          <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-widest">PLANO MENSAL</h3>
+          <div className="flex items-baseline gap-2 mb-12">
+            <span className="text-6xl font-black text-white italic">R$ 197</span>
+            <span className="text-gray-500 font-black text-sm uppercase tracking-widest">/mês</span>
           </div>
-          <div className="space-y-4 mb-12 flex-1">
-            {['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Templates de Funil', 'Transcrições Ilimitadas', 'Suporte Prioritário'].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold">
-                <CheckCircle size={18} className="text-[#D4AF37]" /> {item}
+          <div className="space-y-6 mb-16 flex-1">
+            {['Banco de Ofertas VIP', 'Arsenal de Criativos Híbridos', 'Templates de Funil Estruturado', 'Transcrições de VSL Ilimitadas', 'Suporte Técnico 007'].map((item, i) => (
+              <div key={i} className="flex items-center gap-4 text-gray-300 text-base font-bold italic">
+                <CheckCircle size={20} className="text-[#D4AF37] shrink-0" /> {item}
               </div>
             ))}
           </div>
-          <button 
-            onClick={() => window.open(CHECKOUT_URL, '_blank')}
-            className="w-full py-5 bg-[#D4AF37] text-black font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-tighter animate-pulse gold-glow"
-          >
-            QUERO ACESSO MENSAL
-          </button>
-          <p className="text-[10px] text-gray-600 font-bold uppercase mt-4 text-center italic">Acesso imediato enviado para o seu e-mail.</p>
+          <div className="mt-auto">
+            <button 
+              onClick={() => window.open(CHECKOUT_URL, '_blank')}
+              className="w-full py-6 btn-elite rounded-2xl animate-pulse text-xl italic tracking-tighter"
+            >
+              QUERO ACESSO MENSAL
+            </button>
+            <p className="text-[10px] text-gray-600 font-black uppercase mt-5 text-center italic tracking-widest opacity-60">
+              Acesso imediato enviado para o seu e-mail.
+            </p>
+          </div>
         </div>
 
-        {/* Quarterly Card */}
-        <div className="bg-white text-black rounded-[40px] p-10 text-left flex flex-col group shadow-[0_0_50px_rgba(212,175,55,0.2)] border-t-[10px] border-[#D4AF37] relative">
-          <div className="absolute top-8 right-10 bg-[#D4AF37] text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-            MELHOR CUSTO-BENEFÍCIO
+        {/* Quarterly Plan Card */}
+        <div className="bg-white rounded-[2.5rem] p-10 md:p-14 text-left flex flex-col relative shadow-[0_0_80px_rgba(212,175,55,0.3)] border-t-[12px] border-[#D4AF37] scale-105">
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#D4AF37] text-black px-6 py-2 rounded-full text-[12px] font-black uppercase tracking-[0.2em] shadow-xl">
+            ELITE: ECONOMIA MÁXIMA
           </div>
-          <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO TRIMESTRAL</h3>
-          <div className="flex items-baseline gap-2 mb-10">
-            <span className="text-5xl font-black italic">R$ 497</span>
-            <span className="text-gray-400 font-black text-sm uppercase">/trimestre</span>
+          <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-widest">PLANO TRIMESTRAL</h3>
+          <div className="flex items-baseline gap-2 mb-12">
+            <span className="text-6xl font-black text-black italic">R$ 497</span>
+            <span className="text-gray-400 font-black text-sm uppercase tracking-widest">/trimestre</span>
           </div>
-          <div className="space-y-4 mb-12 flex-1">
-            {['Tudo do Mensal', 'Comunidade VIP', 'Radar Global 007', '12% OFF em Edições', 'Acesso Antecipado'].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold">
-                <CheckCircle size={18} className="text-[#D4AF37]" /> {item}
+          <div className="space-y-6 mb-16 flex-1">
+            {['Tudo do Plano Mensal', 'Comunidade de Networking VIP', 'Radar Global de Tendências', '12% OFF em Serviços de Edição', 'Acesso Antecipado a Atualizações'].map((item, i) => (
+              <div key={i} className="flex items-center gap-4 text-gray-800 text-base font-bold italic">
+                <CheckCircle size={20} className="text-[#D4AF37] shrink-0" /> {item}
               </div>
             ))}
           </div>
-          <button 
-            onClick={() => window.open(CHECKOUT_URL, '_blank')}
-            className="w-full py-5 bg-black text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-tighter animate-pulse gold-glow"
-          >
-            ASSINAR PLANO TRIMESTRAL
-          </button>
-          <p className="text-[10px] text-gray-400 font-bold uppercase mt-4 text-center italic">Acesso imediato enviado para o seu e-mail.</p>
+          <div className="mt-auto">
+            <button 
+              onClick={() => window.open(CHECKOUT_URL, '_blank')}
+              className="w-full py-6 bg-black text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl uppercase tracking-tighter animate-pulse italic"
+            >
+              ASSINAR PLANO TRIMESTRAL
+            </button>
+            <p className="text-[10px] text-gray-400 font-black uppercase mt-5 text-center italic tracking-widest opacity-80">
+              Acesso imediato enviado para o seu e-mail.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="w-full max-w-4xl bg-[#121212] p-12 rounded-[40px] border border-[#D4AF37]/20 flex flex-col md:flex-row items-center gap-10 text-left">
-          <div className="w-40 h-40 shrink-0 flex items-center justify-center border-4 border-[#D4AF37] rounded-full">
-            <span className="text-[#D4AF37] font-black text-5xl">7</span>
+      <div className="w-full max-w-5xl bg-[#121212] p-16 rounded-[3rem] border border-[#D4AF37]/30 flex flex-col lg:flex-row items-center gap-16 text-left relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#D4AF37]/5 to-transparent pointer-events-none"></div>
+          <div className="w-48 h-48 shrink-0 flex items-center justify-center border-8 border-[#D4AF37] rounded-full shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+            <span className="text-[#D4AF37] font-black text-7xl italic">7</span>
           </div>
-          <div>
-            <h2 className="text-white font-black text-3xl uppercase italic mb-3">GARANTIA DE 7 DIAS</h2>
-            <p className="text-gray-500 mb-6 italic">Não gostou? Devolvemos seu investimento sem perguntas. Risco zero para você espiar o mercado.</p>
+          <div className="relative z-10">
+            <h2 className="text-white font-black text-4xl md:text-5xl uppercase italic mb-5 tracking-tighter">RISCO ZERO: GARANTIA DE 7 DIAS</h2>
+            <p className="text-gray-400 text-lg mb-10 italic leading-relaxed">Não está satisfeito com o arsenal de inteligência? Devolvemos cada centavo do seu investimento sem burocracia. O risco é 100% nosso.</p>
             <button 
                 onClick={() => window.open(CHECKOUT_URL, '_blank')}
-                className="px-8 py-4 bg-[#D4AF37] text-black font-black rounded-xl uppercase tracking-widest hover:scale-105 transition-all"
+                className="px-12 py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase tracking-[0.2em] hover:scale-110 transition-all shadow-2xl italic text-lg"
             >
                 [ COMEÇAR AGORA ]
             </button>
           </div>
       </div>
 
-      <footer className="mt-32 text-gray-600 text-[10px] font-black uppercase tracking-widest italic">
-        © 2024 007 SWIPER Intelligence Platform. All Rights Reserved.
+      <footer className="mt-40 pt-20 border-t border-white/5 w-full text-gray-600 text-[11px] font-black uppercase tracking-[0.4em] italic opacity-50">
+        © 2024 007 SWIPER Intelligence Platform | Powered by Elite Marketers
       </footer>
     </main>
   </div>
@@ -578,8 +593,8 @@ const App: React.FC = () => {
     if (loading) {
       return (
         <div className="flex flex-col items-center justify-center py-40 gap-4 animate-pulse">
-          <Loader2 className="text-brand-gold animate-spin" size={48} />
-          <p className="text-brand-gold font-black uppercase text-xs tracking-widest italic">Infiltrando nos Servidores...</p>
+          <Loader2 className="text-[#D4AF37] animate-spin" size={48} />
+          <p className="text-[#D4AF37] font-black uppercase text-xs tracking-widest italic">Infiltrando nos Servidores...</p>
         </div>
       );
     }
@@ -590,9 +605,9 @@ const App: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <button 
               onClick={() => { setSelectedOffer(null); setActiveVslIndex(0); }}
-              className="flex items-center text-gray-500 hover:text-brand-gold transition-all font-black uppercase text-xs tracking-widest group"
+              className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
             >
-              <div className="bg-brand-hover p-2 rounded-lg mr-3 group-hover:bg-brand-gold group-hover:text-black transition-all">
+              <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
                 <ChevronRight className="rotate-180" size={16} />
               </div>
               Voltar para Base
@@ -603,7 +618,7 @@ const App: React.FC = () => {
                 href={selectedOffer.vslDownloadUrl} 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg italic"
               >
                 <Download size={16} /> BAIXAR VSL
               </a>
@@ -611,13 +626,13 @@ const App: React.FC = () => {
                 href={selectedOffer.transcriptionUrl} 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-brand-hover text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-brand-gold border border-white/5 transition-all shadow-lg"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"
               >
                 <FileText size={16} /> BAIXAR TRANSCRIÇÃO
               </a>
               <button 
                 onClick={() => toggleFavorite(selectedOffer.id)}
-                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-brand-gold text-black border-brand-gold' : 'bg-brand-hover text-white border-white/5'}`}
+                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-[#1a1a1a] text-white border-white/5'}`}
               >
                 <Star size={16} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'FAVORITADO' : 'FAVORITAR'}
               </button>
@@ -628,23 +643,23 @@ const App: React.FC = () => {
             <div className="flex flex-col gap-3 mb-8">
               <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">{selectedOffer.title}</h2>
               {selectedOffer.views && selectedOffer.views.trim() !== '' && (
-                <div className="flex items-center gap-3 bg-brand-card/50 px-4 py-2 rounded-xl border border-brand-gold/30 w-fit">
-                  <Flame size={20} fill="currentColor" className="text-brand-gold animate-bounce" />
-                  <span className="text-brand-gold font-black uppercase text-sm md:text-base italic tracking-widest">{selectedOffer.views}</span>
+                <div className="flex items-center gap-3 bg-[#121212]/50 px-4 py-2 rounded-xl border border-[#D4AF37]/30 w-fit">
+                  <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-bounce" />
+                  <span className="text-[#D4AF37] font-black uppercase text-sm md:text-base italic tracking-widest">{selectedOffer.views}</span>
                 </div>
               )}
             </div>
 
             <div className="flex flex-col lg:flex-row gap-8 items-start">
               <div className="w-full lg:w-[60%] space-y-6">
-                <div className="bg-brand-card p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-white/5 shadow-2xl overflow-hidden">
+                <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden">
                   <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide">
                     {selectedOffer.vslLinks.map((link, idx) => (
                       <button
                         key={idx}
                         onClick={() => setActiveVslIndex(idx)}
                         className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${
-                          activeVslIndex === idx ? 'bg-brand-gold text-black' : 'text-gray-500 hover:text-white'
+                          activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'
                         }`}
                       >
                         <Video size={12} /> {link.label}
@@ -658,8 +673,8 @@ const App: React.FC = () => {
               </div>
 
               <div className="w-full lg:w-[40%] space-y-4">
-                <div className="bg-brand-card p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 shadow-2xl h-full">
-                  <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic">
+                <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full">
+                  <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic">
                     <ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO
                   </h3>
                   <div className="grid grid-cols-1 gap-4 md:gap-6">
@@ -670,9 +685,9 @@ const App: React.FC = () => {
                       { icon: Globe, label: 'Idioma', value: selectedOffer.language },
                       { icon: Target, label: 'Fontes', value: selectedOffer.trafficSource.join(', ') },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-4 bg-brand-hover rounded-2xl border border-white/5">
+                      <div key={idx} className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-2xl border border-white/5">
                         <div className="flex items-center gap-3">
-                          <item.icon className="text-brand-gold w-5 h-5 shrink-0" />
+                          <item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" />
                           <span className="text-gray-500 text-[10px] font-black uppercase">{item.label}</span>
                         </div>
                         <span className="text-white text-sm font-black uppercase italic tracking-tight text-right line-clamp-1">{item.value}</span>
@@ -685,7 +700,7 @@ const App: React.FC = () => {
 
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
-                 <ImageIcon className="text-brand-gold w-6 h-6" /> ARSENAL DE CRIATIVOS HÍBRIDOS
+                 <ImageIcon className="text-[#D4AF37] w-6 h-6" /> ARSENAL DE CRIATIVOS HÍBRIDOS
                </h3>
                
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -698,7 +713,7 @@ const App: React.FC = () => {
                         href={selectedOffer.creativeDownloadUrls[i] || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full py-3 bg-brand-hover text-brand-gold font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-brand-gold hover:text-black transition-all border border-brand-gold/20"
+                        className="w-full py-3 bg-[#1a1a1a] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 italic"
                       >
                         <Download size={14} /> BAIXAR ESTE CRIATIVO
                       </a>
@@ -709,12 +724,12 @@ const App: React.FC = () => {
 
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
-                 <Layout className="text-brand-gold w-6 h-6" /> ESTRUTURA DE VENDAS
+                 <Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS
                </h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                 <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
+                 <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
+                      <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors">
                         <Monitor size={20} />
                       </div>
                       <div>
@@ -722,11 +737,11 @@ const App: React.FC = () => {
                         <p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p>
                       </div>
                    </div>
-                   <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
+                   <ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" />
                  </a>
-                 <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-brand-card rounded-[24px] md:rounded-[28px] border border-white/5 hover:border-brand-gold/50 transition-all flex items-center justify-between group">
+                 <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-brand-hover rounded-xl group-hover:bg-brand-gold group-hover:text-black transition-colors">
+                      <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors">
                         <Facebook size={20} />
                       </div>
                       <div>
@@ -734,7 +749,7 @@ const App: React.FC = () => {
                         <p className="text-white font-black uppercase text-base md:text-lg italic">BIBLIOTECA DE ANÚNCIOS</p>
                       </div>
                    </div>
-                   <ExternalLink size={20} className="text-gray-600 group-hover:text-brand-gold" />
+                   <ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" />
                  </a>
                </div>
             </div>
@@ -744,7 +759,7 @@ const App: React.FC = () => {
                   href={selectedOffer.creativeZipUrl && selectedOffer.creativeZipUrl !== '#' ? selectedOffer.creativeZipUrl : '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-12 py-6 bg-brand-gold text-black font-black text-xl md:text-2xl rounded-[24px] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(212,175,55,0.25)] uppercase tracking-tighter flex items-center gap-4 italic group"
+                  className="px-12 py-6 bg-[#D4AF37] text-black font-black text-xl md:text-2xl rounded-[24px] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(212,175,55,0.25)] uppercase tracking-tighter flex items-center gap-4 italic group"
                   onClick={(e) => {
                     if (!selectedOffer.creativeZipUrl || selectedOffer.creativeZipUrl === '#') {
                       e.preventDefault();
@@ -774,7 +789,7 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700 space-y-16 md:space-y-20">
             <div>
                 <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                  <Zap className="text-brand-gold" fill="currentColor" /> OPERAÇÕES EM ESCALA
+                  <Zap className="text-[#D4AF37]" fill="currentColor" /> OPERAÇÕES EM ESCALA
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {scalingHome.map(offer => (
@@ -791,7 +806,7 @@ const App: React.FC = () => {
 
             <div>
                 <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                  <Monitor className="text-brand-gold" /> VISTOS RECENTEMENTE
+                  <Monitor className="text-[#D4AF37]" /> VISTOS RECENTEMENTE
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {recentlyHome.map(offer => (
@@ -832,16 +847,16 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700">
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filtered.map(offer => (
-                <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
+                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
                     <div className="relative aspect-video">
                         <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-14 h-14 bg-brand-gold text-black rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
+                            <div className="w-14 h-14 bg-[#D4AF37] text-black rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
                                 <Play fill="currentColor" size={24} />
                             </div>
                         </div>
                     </div>
-                    <div className="p-4 bg-brand-hover">
+                    <div className="p-4 bg-[#1a1a1a]">
                         <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
                         <div className="flex items-center gap-2">
                            {offer.trafficSource.slice(0, 2).map((s, i) => <TrafficIcon key={i} source={s} />)}
@@ -859,17 +874,17 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700 space-y-12">
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {filtered.map(offer => (
-                  <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
+                  <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
                       <div className="relative aspect-video">
                           <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
                           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                              <ImageIcon className="text-brand-gold group-hover:scale-125 transition-all" size={32} />
+                              <ImageIcon className="text-[#D4AF37] group-hover:scale-125 transition-all" size={32} />
                               <p className="text-[10px] text-white font-black uppercase tracking-widest bg-black/60 px-3 py-1 rounded-full shadow-lg border border-white/10">
                                 {offer.creativeEmbedUrls.length} {offer.creativeEmbedUrls.length === 1 ? 'VÍDEO' : 'VÍDEOS'}
                               </p>
                           </div>
                       </div>
-                      <div className="p-4 bg-brand-hover">
+                      <div className="p-4 bg-[#1a1a1a]">
                           <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
                           <div className="flex items-center gap-2">
                              {offer.trafficSource.slice(0, 1).map((s, i) => <TrafficIcon key={i} source={s} />)}
@@ -887,16 +902,16 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700">
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filtered.map(offer => (
-                <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
+                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
                     <div className="relative aspect-video">
                         <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                            <div className="p-3 bg-brand-dark/40 rounded-full backdrop-blur-sm group-hover:bg-brand-gold group-hover:text-black transition-all">
+                            <div className="p-3 bg-[#0a0a0a]/40 rounded-full backdrop-blur-sm group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
                                 <Monitor size={24} />
                             </div>
                         </div>
                     </div>
-                    <div className="p-4 bg-brand-hover">
+                    <div className="p-4 bg-[#1a1a1a]">
                         <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
                         <div className="flex items-center justify-between gap-2">
                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acessar Página</p>
@@ -914,16 +929,16 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700">
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filtered.map(offer => (
-                <div key={offer.id} onClick={() => trackView(offer)} className="bg-brand-card rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-brand-gold/50 transition-all shadow-xl">
+                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
                     <div className="relative aspect-video">
                         <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                            <div className="p-3 bg-brand-dark/40 rounded-full backdrop-blur-sm group-hover:bg-brand-gold group-hover:text-black transition-all">
+                            <div className="p-3 bg-[#0a0a0a]/40 rounded-full backdrop-blur-sm group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
                                 <Library size={24} />
                             </div>
                         </div>
                     </div>
-                    <div className="p-4 bg-brand-hover">
+                    <div className="p-4 bg-[#1a1a1a]">
                         <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
                         <div className="flex items-center justify-between gap-2">
                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Anúncios Ativos</p>
@@ -960,12 +975,12 @@ const App: React.FC = () => {
         return (
           <div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10">
             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4">
-              <Settings className="text-brand-gold" /> Painel do Agente
+              <Settings className="text-[#D4AF37]" /> Painel do Agente
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-brand-card p-6 rounded-[24px] border border-white/5 shadow-2xl">
-                <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Identificação do Operador</h3>
+              <div className="bg-[#121212] p-6 rounded-[24px] border border-white/5 shadow-2xl">
+                <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic">Identificação do Operador</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center pb-3 border-b border-white/5">
                     <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Agente</span>
@@ -973,7 +988,7 @@ const App: React.FC = () => {
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-white/5">
                     <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Plano</span>
-                    <span className="bg-brand-gold text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest italic shadow-lg shadow-brand-gold/10">Operação VIP</span>
+                    <span className="bg-[#D4AF37] text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest italic shadow-lg shadow-[#D4AF37]/10">Operação VIP</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Acesso</span>
@@ -982,9 +997,9 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-brand-card p-6 rounded-[24px] border border-white/5 shadow-2xl flex flex-col justify-between">
+              <div className="bg-[#121212] p-6 rounded-[24px] border border-white/5 shadow-2xl flex flex-col justify-between">
                 <div>
-                  <h3 className="text-brand-gold font-black uppercase text-xs tracking-widest mb-6 italic">Suporte e Contatos</h3>
+                  <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic">Suporte e Contatos</h3>
                   <div className="flex flex-col gap-1.5 mb-6">
                     <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic">E-mail de Comando</span>
                     <span className="text-white font-black text-lg md:text-xl italic">qhl.mkt@gmail.com</span>
@@ -992,7 +1007,7 @@ const App: React.FC = () => {
                 </div>
                 <button 
                   onClick={handleCopyEmail}
-                  className="w-full py-3.5 bg-brand-hover rounded-xl flex items-center justify-center gap-3 text-white font-black hover:bg-brand-gold hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"
+                  className="w-full py-3.5 bg-[#1a1a1a] rounded-xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"
                 >
                   <Copy size={16} /> Copiar E-mail
                 </button>
@@ -1009,7 +1024,7 @@ const App: React.FC = () => {
   const SidebarContent = () => (
     <div className="p-10 h-full flex flex-col">
       <div className="flex items-center space-x-3 mb-16 px-2">
-        <div className="bg-brand-gold p-2 rounded-xl shadow-xl shadow-brand-gold/10">
+        <div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10">
           <Eye className="text-black" size={24} />
         </div>
         <span className="text-2xl font-black tracking-tighter text-white uppercase italic">007 SWIPER</span>
@@ -1037,7 +1052,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0a] text-white selection:bg-brand-gold selection:text-black">
+    <div className="flex min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37] selection:text-black">
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
       {isLoggedIn ? (
         <>
@@ -1048,7 +1063,7 @@ const App: React.FC = () => {
             />
           )}
           
-          <aside className={`w-72 bg-brand-card border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+          <aside className={`w-72 bg-[#121212] border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             <SidebarContent />
           </aside>
 
@@ -1057,12 +1072,12 @@ const App: React.FC = () => {
               <div className="flex items-center justify-between gap-4">
                 <button 
                   onClick={() => setIsMobileMenuOpen(true)}
-                  className="lg:hidden p-2 bg-brand-card border border-white/5 rounded-xl text-brand-gold hover:bg-brand-hover transition-colors"
+                  className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37] hover:bg-[#1a1a1a] transition-colors"
                 >
                   <Menu size={24} />
                 </button>
 
-                <div className="flex-1 flex items-center bg-brand-card px-4 md:px-6 py-2.5 md:py-3 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-inner max-w-xl">
+                <div className="flex-1 flex items-center bg-[#121212] px-4 md:px-6 py-2.5 md:py-3 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-inner max-w-xl">
                    <Search className="text-gray-500 mr-3 md:mr-4" size={18} />
                    <input 
                       type="text" 
@@ -1073,8 +1088,8 @@ const App: React.FC = () => {
                    />
                 </div>
 
-                <div className="flex items-center gap-3 bg-brand-card p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-brand-gold rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div>
+                <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0">
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div>
                     <div className="hidden sm:block">
                       <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p>
                     </div>
@@ -1085,7 +1100,7 @@ const App: React.FC = () => {
                 <div className="animate-in fade-in slide-in-from-top-2 duration-500">
                   <button 
                     onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                    className="lg:hidden w-full flex items-center justify-center gap-2 py-3 bg-brand-card border border-brand-gold/20 rounded-xl text-brand-gold font-black uppercase text-[10px] tracking-widest hover:bg-brand-hover transition-all"
+                    className="lg:hidden w-full flex items-center justify-center gap-2 py-3 bg-[#121212] border border-[#D4AF37]/20 rounded-xl text-[#D4AF37] font-black uppercase text-[10px] tracking-widest hover:bg-[#1a1a1a] transition-all"
                   >
                     <Filter size={14} /> {isFiltersOpen ? 'FECHAR FILTROS' : 'FILTRAR RESULTADOS'}
                   </button>
@@ -1093,25 +1108,25 @@ const App: React.FC = () => {
                   <div className={`${isFiltersOpen ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-3 md:gap-4 mt-4 lg:mt-0 overflow-x-auto pb-2 scrollbar-hide`}>
                     <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                       <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Nicho</label>
-                      <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                      <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
                         {availableNiches.map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
                     </div>
                     <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                       <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tipo de Produto</label>
-                      <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                      <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
                         {availableTypes.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>
                     <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                       <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tráfego</label>
-                      <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                      <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
                         {availableTrafficSources.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>
                     <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                       <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
-                      <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                      <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
                         {availableLanguages.map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
                     </div>
