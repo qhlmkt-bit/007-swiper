@@ -83,63 +83,59 @@ export interface Offer {
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 const CHECKOUT_URL = 'https://go.perfectpay.com.br/PPU38CQ5PGO';
 
-/**
- * CUSTOM STYLES INJECTION
- */
-const GlobalStyles = () => (
-  <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-    
-    :root {
-      --brand-gold: #D4AF37;
-      --brand-dark: #0a0a0a;
-      --brand-card: #121212;
-      --brand-hover: #1a1a1a;
-    }
+const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  
+  :root {
+    --brand-gold: #D4AF37;
+    --brand-dark: #0a0a0a;
+    --brand-card: #121212;
+    --brand-hover: #1a1a1a;
+  }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--brand-dark);
-      color: #ffffff;
-      margin: 0;
-    }
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--brand-dark);
+    color: #ffffff;
+    margin: 0;
+    overflow-x: hidden;
+  }
 
-    /* Scrollbar Styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--brand-dark);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #222;
-      border-radius: 10px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--brand-gold);
-    }
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--brand-dark);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #222;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-gold);
+  }
 
-    /* Button Pulse Animation */
-    .btn-pulse {
-      animation: pulse-gold 2s infinite;
-    }
+  /* Button Pulse Animation */
+  .btn-pulse {
+    animation: pulse-gold 2s infinite;
+  }
 
-    @keyframes pulse-gold {
-      0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.6); }
-      70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
-    }
+  @keyframes pulse-gold {
+    0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.6); }
+    70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+  }
 
-    /* Custom Tailwind Overrides for consistency */
-    .bg-brand-dark { background-color: var(--brand-dark); }
-    .bg-brand-card { background-color: var(--brand-card); }
-    .bg-brand-hover { background-color: var(--brand-hover); }
-    .bg-brand-gold { background-color: var(--brand-gold); }
-    .text-brand-gold { color: var(--brand-gold); }
-    .border-brand-gold { border-color: var(--brand-gold); }
-    .selection\\:bg-brand-gold ::selection { background-color: var(--brand-gold); color: black; }
-  `}</style>
-);
+  /* Custom Tailwind Overrides */
+  .bg-brand-dark { background-color: var(--brand-dark); }
+  .bg-brand-card { background-color: var(--brand-card); }
+  .bg-brand-hover { background-color: var(--brand-hover); }
+  .bg-brand-gold { background-color: var(--brand-gold); }
+  .text-brand-gold { color: var(--brand-gold); }
+  .border-brand-gold { border-color: var(--brand-gold); }
+  .selection\\:bg-brand-gold ::selection { background-color: var(--brand-gold); color: black; }
+`;
 
 /**
  * UTILS - DATA NORMALIZATION
@@ -1049,15 +1045,6 @@ const App: React.FC = () => {
     }
   };
 
-  if (!isLoggedIn) {
-    return (
-      <>
-        <GlobalStyles />
-        <LandingPage onLogin={handleLogin} isSuccess={isSuccess} onCloseSuccess={() => setIsSuccess(false)} />
-      </>
-    );
-  }
-
   const SidebarContent = () => (
     <div className="p-10 h-full flex flex-col">
       <div className="flex items-center space-x-3 mb-16 px-2">
@@ -1090,90 +1077,96 @@ const App: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-white selection:bg-brand-gold selection:text-black">
-      <GlobalStyles />
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-      
-      <aside className={`w-72 bg-brand-card border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <SidebarContent />
-      </aside>
+      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      {isLoggedIn ? (
+        <>
+          {isMobileMenuOpen && (
+            <div 
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+          )}
+          
+          <aside className={`w-72 bg-brand-card border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+            <SidebarContent />
+          </aside>
 
-      <main className="flex-1 lg:ml-72 relative w-full">
-        <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-brand-dark/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4 md:gap-6">
-          <div className="flex items-center justify-between gap-4">
-            <button 
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 bg-brand-card border border-white/5 rounded-xl text-brand-gold hover:bg-brand-hover transition-colors"
-            >
-              <Menu size={24} />
-            </button>
+          <main className="flex-1 lg:ml-72 relative w-full">
+            <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-brand-dark/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4 md:gap-6">
+              <div className="flex items-center justify-between gap-4">
+                <button 
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="lg:hidden p-2 bg-brand-card border border-white/5 rounded-xl text-brand-gold hover:bg-brand-hover transition-colors"
+                >
+                  <Menu size={24} />
+                </button>
 
-            <div className="flex-1 flex items-center bg-brand-card px-4 md:px-6 py-2.5 md:py-3 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-inner max-w-xl">
-               <Search className="text-gray-500 mr-3 md:mr-4" size={18} />
-               <input 
-                  type="text" 
-                  placeholder="Pesquisar inteligência..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-xs md:text-sm w-full font-bold placeholder:text-gray-700" 
-               />
-            </div>
-
-            <div className="flex items-center gap-3 bg-brand-card p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0">
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-brand-gold rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div>
-                <div className="hidden sm:block">
-                  <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p>
+                <div className="flex-1 flex items-center bg-brand-card px-4 md:px-6 py-2.5 md:py-3 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-inner max-w-xl">
+                   <Search className="text-gray-500 mr-3 md:mr-4" size={18} />
+                   <input 
+                      type="text" 
+                      placeholder="Pesquisar inteligência..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="bg-transparent border-none outline-none text-xs md:text-sm w-full font-bold placeholder:text-gray-700" 
+                   />
                 </div>
-            </div>
-          </div>
 
-          {showFilters && (
-            <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-              <button 
-                onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                className="lg:hidden w-full flex items-center justify-center gap-2 py-3 bg-brand-card border border-brand-gold/20 rounded-xl text-brand-gold font-black uppercase text-[10px] tracking-widest hover:bg-brand-hover transition-all"
-              >
-                <Filter size={14} /> {isFiltersOpen ? 'FECHAR FILTROS' : 'FILTRAR RESULTADOS'}
-              </button>
-
-              <div className={`${isFiltersOpen ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-3 md:gap-4 mt-4 lg:mt-0 overflow-x-auto pb-2 scrollbar-hide`}>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
-                  <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Nicho</label>
-                  <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
-                    {availableNiches.map(n => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                </div>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
-                  <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tipo de Produto</label>
-                  <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
-                    {availableTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
-                  <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tráfego</label>
-                  <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
-                    {availableTrafficSources.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
-                  <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
-                  <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
-                    {availableLanguages.map(l => <option key={l} value={l}>{l}</option>)}
-                  </select>
+                <div className="flex items-center gap-3 bg-brand-card p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0">
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-brand-gold rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div>
+                    <div className="hidden sm:block">
+                      <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p>
+                    </div>
                 </div>
               </div>
-            </div>
-          )}
-        </header>
 
-        <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">
-          {renderContent()}
-        </div>
-      </main>
+              {showFilters && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-500">
+                  <button 
+                    onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+                    className="lg:hidden w-full flex items-center justify-center gap-2 py-3 bg-brand-card border border-brand-gold/20 rounded-xl text-brand-gold font-black uppercase text-[10px] tracking-widest hover:bg-brand-hover transition-all"
+                  >
+                    <Filter size={14} /> {isFiltersOpen ? 'FECHAR FILTROS' : 'FILTRAR RESULTADOS'}
+                  </button>
+
+                  <div className={`${isFiltersOpen ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-3 md:gap-4 mt-4 lg:mt-0 overflow-x-auto pb-2 scrollbar-hide`}>
+                    <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
+                      <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Nicho</label>
+                      <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                        {availableNiches.map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                    </div>
+                    <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
+                      <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tipo de Produto</label>
+                      <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                        {availableTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
+                      <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tráfego</label>
+                      <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                        {availableTrafficSources.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
+                      <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
+                      <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-brand-card border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-brand-gold cursor-pointer transition-all">
+                        {availableLanguages.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </header>
+
+            <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">
+              {renderContent()}
+            </div>
+          </main>
+        </>
+      ) : (
+        <LandingPage onLogin={handleLogin} isSuccess={isSuccess} onCloseSuccess={() => setIsSuccess(false)} />
+      )}
     </div>
   );
 };
