@@ -365,7 +365,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
             ))}
           </ul>
           <button 
-            onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
+            onClick={() => window.open('https://pay.kiwify.com.br/mtU9l7e', '_blank')}
             className="w-full py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter"
           >
             QUERO ACESSO MENSAL
@@ -394,7 +394,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
             ))}
           </ul>
           <button 
-            onClick={() => window.open('https://pay.kiwify.com.br/SRiorgy', '_blank')}
+            onClick={() => window.open('https://pay.kiwify.com.br/ExDtrjE', '_blank')}
             className="w-full py-5 bg-brand-dark text-brand-gold font-black text-lg rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter"
           >
             ASSINAR PLANO TRIMESTRAL
