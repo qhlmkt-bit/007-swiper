@@ -339,7 +339,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
       </div>
     </nav>
     
-    <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 relative mx-auto">
+    <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative mx-auto">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#D4AF37]/10 via-transparent to-transparent -z-10 pointer-events-none opacity-40"></div>
       
       <div className="inline-block px-5 py-2 mb-10 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mx-auto">
@@ -485,6 +485,10 @@ const App: React.FC = () => {
   const [selectedTraffic, setSelectedTraffic] = useState<string>('Todos');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('Todos');
 
+  // Sub-navigation states
+  const [activeNicheModule, setActiveNicheModule] = useState<string | null>(null);
+  const [activeLanguageModule, setActiveLanguageModule] = useState<string | null>(null);
+
   const [isSuccess, setIsSuccess] = useState(false);
 
   // Fetch Data from Google Sheets
@@ -505,7 +509,6 @@ const App: React.FC = () => {
             return null;
           }
 
-          /* Correctly parsed offer object with no duplicate keys */
           return {
             id: values[0] || String(idx),
             title: values[1],
@@ -624,7 +627,7 @@ const App: React.FC = () => {
   const availableTypes = getUniqueValues('productType');
   const availableTrafficSources = getUniqueValues('trafficSource');
 
-  const showFilters = ['offers', 'vsl', 'creatives', 'pages', 'ads_library'].includes(currentPage) && !selectedOffer;
+  const showFilters = ['home', 'offers'].includes(currentPage) && !selectedOffer;
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText('qhl.mkt@gmail.com');
@@ -708,7 +711,7 @@ const App: React.FC = () => {
                       </button>
                     ))}
                   </div>
-                  <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5">
+                  <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10">
                     <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" />
                   </div>
                 </div>
@@ -727,12 +730,12 @@ const App: React.FC = () => {
                       { icon: Globe, label: 'Idioma', value: selectedOffer.language },
                       { icon: Target, label: 'Fontes', value: selectedOffer.trafficSource.join(', ') },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-4 bg-[#1a1a1a] rounded-2xl border border-white/5">
+                      <div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2">
                         <div className="flex items-center gap-3">
                           <item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" />
-                          <span className="text-gray-500 text-[10px] font-black uppercase">{item.label}</span>
+                          <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span>
                         </div>
-                        <span className="text-white text-sm font-black uppercase italic tracking-tight text-right line-clamp-1">{item.value}</span>
+                        <span className="text-white text-sm font-black uppercase italic tracking-tight whitespace-normal break-words leading-relaxed">{item.value}</span>
                       </div>
                     ))}
                   </div>
@@ -742,7 +745,7 @@ const App: React.FC = () => {
 
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
-                 <ImageIcon className="text-[#D4AF37] w-6 h-6" /> ARSENAL DE CRIATIVOS HÍBRIDOS
+                 <ImageIcon className="text-[#D4AF37] w-6 h-6" /> CRIATIVOS
                </h3>
                
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -912,10 +915,56 @@ const App: React.FC = () => {
         );
 
       case 'creatives':
+        if (!activeNicheModule) {
+          const uniqueNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
+          return (
+            <div className="animate-in fade-in duration-700">
+               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
+                 <Palette className="text-[#D4AF37]" /> ARSENAL POR NICHO
+               </h2>
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                  {uniqueNiches.map(niche => (
+                    <div 
+                      key={niche} 
+                      onClick={() => setActiveNicheModule(niche)}
+                      className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center relative overflow-hidden"
+                    >
+                       <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
+                          <ImageIcon size={80} />
+                       </div>
+                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                         <Tag size={32} />
+                       </div>
+                       <h3 className="text-white font-black uppercase text-xl italic group-hover:text-[#D4AF37] transition-colors">{niche}</h3>
+                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest">
+                         {offers.filter(o => o.niche === niche).length} Ofertas Mapeadas
+                       </p>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          );
+        }
+
+        const nicheOffers = offers.filter(o => o.niche === activeNicheModule);
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
+             <button 
+               onClick={() => setActiveNicheModule(null)}
+               className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
+             >
+               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                 <ChevronRight className="rotate-180" size={16} />
+               </div>
+               Voltar para Nichos
+             </button>
+             
+             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
+               CRIATIVOS: <span className="text-[#D4AF37]">{activeNicheModule}</span>
+             </h2>
+
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                {filtered.map(offer => (
+                {nicheOffers.map(offer => (
                   <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
                       <div className="relative aspect-video">
                           <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
@@ -928,10 +977,7 @@ const App: React.FC = () => {
                       </div>
                       <div className="p-4 bg-[#1a1a1a]">
                           <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
-                          <div className="flex items-center gap-2">
-                             {offer.trafficSource.slice(0, 1).map((s, i) => <TrafficIcon key={i} source={s} />)}
-                             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acessar Arsenal</p>
-                          </div>
+                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acessar Arsenal</p>
                       </div>
                   </div>
                 ))}
@@ -942,22 +988,19 @@ const App: React.FC = () => {
       case 'pages':
         return (
           <div className="animate-in fade-in duration-700">
+             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
+               <Monitor className="text-[#D4AF37]" /> FUNIS E PÁGINAS DE VENDA
+             </h2>
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filtered.map(offer => (
-                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
-                    <div className="relative aspect-video">
-                        <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                            <div className="p-3 bg-[#0a0a0a]/40 rounded-full backdrop-blur-sm group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                                <Monitor size={24} />
-                            </div>
-                        </div>
+                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl group cursor-pointer">
+                    <div className="w-full aspect-square bg-[#1a1a1a] rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                      <Monitor size={64} className="opacity-20 group-hover:opacity-100" />
                     </div>
-                    <div className="p-4 bg-[#1a1a1a]">
-                        <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
-                        <div className="flex items-center justify-between gap-2">
-                           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acessar Página</p>
-                           <ExternalLink size={12} className="text-gray-600" />
+                    <div className="text-center">
+                        <p className="text-white font-black uppercase text-sm italic mb-2 tracking-tighter line-clamp-2">{offer.title}</p>
+                        <div className="flex items-center justify-center gap-2">
+                           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{offer.niche}</p>
                         </div>
                     </div>
                 </div>
@@ -967,25 +1010,58 @@ const App: React.FC = () => {
         );
 
       case 'ads_library':
-        return (
-          <div className="animate-in fade-in duration-700">
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {filtered.map(offer => (
-                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
-                    <div className="relative aspect-video">
-                        <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                            <div className="p-3 bg-[#0a0a0a]/40 rounded-full backdrop-blur-sm group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                                <Library size={24} />
-                            </div>
-                        </div>
+        if (!activeLanguageModule) {
+          const uniqueLangs = Array.from(new Set(offers.map(o => o.language))).sort();
+          return (
+            <div className="animate-in fade-in duration-700">
+               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
+                 <Library className="text-[#D4AF37]" /> BIBLIOTECA POR IDIOMA
+               </h2>
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                  {uniqueLangs.map(lang => (
+                    <div 
+                      key={lang} 
+                      onClick={() => setActiveLanguageModule(lang)}
+                      className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center"
+                    >
+                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                         <Globe size={32} />
+                       </div>
+                       <h3 className="text-white font-black uppercase text-xl italic group-hover:text-[#D4AF37] transition-colors">{lang}</h3>
+                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest">
+                         Explorar Inteligência
+                       </p>
                     </div>
-                    <div className="p-4 bg-[#1a1a1a]">
-                        <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
-                        <div className="flex items-center justify-between gap-2">
-                           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Anúncios Ativos</p>
-                           <Facebook size={12} className="text-blue-500" />
-                        </div>
+                  ))}
+               </div>
+            </div>
+          );
+        }
+
+        const langOffers = offers.filter(o => o.language === activeLanguageModule);
+        return (
+          <div className="animate-in fade-in duration-700 space-y-12">
+             <button 
+               onClick={() => setActiveLanguageModule(null)}
+               className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
+             >
+               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                 <ChevronRight className="rotate-180" size={16} />
+               </div>
+               Voltar para Idiomas
+             </button>
+             
+             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
+               INTELIGÊNCIA: <span className="text-[#D4AF37]">{activeLanguageModule}</span>
+             </h2>
+
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+              {langOffers.map(offer => (
+                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] p-6 rounded-2xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer">
+                    <p className="text-white font-black uppercase text-sm italic mb-4 truncate">{offer.title}</p>
+                    <div className="flex items-center justify-between gap-2">
+                       <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest italic">{offer.productType}</p>
+                       <ExternalLink size={14} className="text-gray-600 group-hover:text-[#D4AF37]" />
                     </div>
                 </div>
               ))}
@@ -1081,9 +1157,9 @@ const App: React.FC = () => {
           <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
           <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} onClick={() => { setCurrentPage('offers'); setSelectedOffer(null); }} />
           <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); }} />
-          <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); }} />
+          <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); setActiveNicheModule(null); }} />
           <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); }} />
-          <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => { setCurrentPage('ads_library'); setSelectedOffer(null); }} />
+          <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => { setCurrentPage('ads_library'); setSelectedOffer(null); setActiveLanguageModule(null); }} />
         </div>
       </nav>
 
