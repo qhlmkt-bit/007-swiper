@@ -354,7 +354,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligência que transforma dados em resultados escaláveis.
       </p>
 
-      {/* Demo Video Section - Restored */}
+      {/* Demo Video Section */}
       <section className="w-full max-w-4xl aspect-video bg-[#121212] rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center group cursor-pointer transition-all hover:border-[#D4AF37]/40 mx-auto mb-32">
         <div className="bg-[#D4AF37] p-6 rounded-full shadow-[0_0_40px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-500 mb-6 flex items-center justify-center">
           <Play size={40} fill="black" className="text-black ml-1" />
@@ -365,7 +365,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#D4AF37]/5 to-transparent h-[1px] w-full animate-pulse top-1/3"></div>
       </section>
 
-      {/* PLAN CARDS SECTION - CENTERED */}
+      {/* PLAN CARDS SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 px-4 justify-center justify-items-center items-stretch mx-auto">
         {/* Monthly Plan (Dark) */}
         <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col w-full shadow-[0_0_40px_rgba(0,0,0,0.5)]">
@@ -429,7 +429,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         </div>
       </div>
 
-      {/* GUARANTEE SECTION - CENTERED */}
+      {/* GUARANTEE SECTION */}
       <section className="w-full max-w-7xl px-4 md:px-8 mb-32 flex justify-center mx-auto text-center">
         <div className="w-full max-w-4xl bg-[#121212] p-10 md:p-16 rounded-[40px] border border-[#D4AF37]/20 flex flex-col md:flex-row items-center gap-10 md:gap-16 shadow-2xl mx-auto">
           <div className="w-32 h-32 md:w-48 md:h-48 shrink-0 flex items-center justify-center border-4 border-[#D4AF37] rounded-full relative mx-auto md:mx-0 shadow-[0_0_30px_rgba(212,175,55,0.1)]">
@@ -485,9 +485,11 @@ const App: React.FC = () => {
   const [selectedTraffic, setSelectedTraffic] = useState<string>('Todos');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('Todos');
 
-  // Sub-navigation states
+  // Sub-navigation modules states
   const [activeNicheModule, setActiveNicheModule] = useState<string | null>(null);
+  const [activeVslModule, setActiveVslModule] = useState<string | null>(null);
   const [activeLanguageModule, setActiveLanguageModule] = useState<string | null>(null);
+  const [activePageModule, setActivePageModule] = useState<string | null>(null);
 
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -695,10 +697,11 @@ const App: React.FC = () => {
               )}
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
-              <div className="w-full lg:w-[60%] space-y-6">
-                <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden">
-                  <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide">
+            {/* SYMMETRICAL ALIGNMENT: 62% Player / 38% Info */}
+            <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+              <div className="w-full lg:w-[62%] space-y-6">
+                <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
+                  <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">
                     {selectedOffer.vslLinks.map((link, idx) => (
                       <button
                         key={idx}
@@ -711,18 +714,18 @@ const App: React.FC = () => {
                       </button>
                     ))}
                   </div>
-                  <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10">
+                  <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1">
                     <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" />
                   </div>
                 </div>
               </div>
 
-              <div className="w-full lg:w-[40%] space-y-4">
-                <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full">
-                  <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic">
+              <div className="w-full lg:w-[38%]">
+                <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full flex flex-col">
+                  <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0">
                     <ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO
                   </h3>
-                  <div className="grid grid-cols-1 gap-4 md:gap-6">
+                  <div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">
                     {[
                       { icon: Tag, label: 'Nicho', value: selectedOffer.niche },
                       { icon: Lock, label: 'Tipo', value: selectedOffer.productType },
@@ -730,7 +733,7 @@ const App: React.FC = () => {
                       { icon: Globe, label: 'Idioma', value: selectedOffer.language },
                       { icon: Target, label: 'Fontes', value: selectedOffer.trafficSource.join(', ') },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2">
+                      <div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0">
                         <div className="flex items-center gap-3">
                           <item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" />
                           <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span>
@@ -888,10 +891,53 @@ const App: React.FC = () => {
         );
 
       case 'vsl':
+        if (!activeVslModule) {
+          const uniqueNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
+          return (
+            <div className="animate-in fade-in duration-700">
+               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
+                 <Video className="text-[#D4AF37]" /> VSL POR TEMA
+               </h2>
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                  {uniqueNiches.map(niche => (
+                    <div 
+                      key={niche} 
+                      onClick={() => setActiveVslModule(niche)}
+                      className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center relative overflow-hidden"
+                    >
+                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                         <Play size={32} />
+                       </div>
+                       <h3 className="text-white font-black uppercase text-xl italic group-hover:text-[#D4AF37] transition-colors">{niche}</h3>
+                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest italic">
+                         {offers.filter(o => o.niche === niche).length} Operações
+                       </p>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          );
+        }
+
+        const vslOffers = offers.filter(o => o.niche === activeVslModule);
         return (
-          <div className="animate-in fade-in duration-700">
+          <div className="animate-in fade-in duration-700 space-y-12">
+             <button 
+               onClick={() => setActiveVslModule(null)}
+               className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
+             >
+               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                 <ChevronRight className="rotate-180" size={16} />
+               </div>
+               Voltar para Temas
+             </button>
+             
+             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
+               VSLs: <span className="text-[#D4AF37]">{activeVslModule}</span>
+             </h2>
+
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {filtered.map(offer => (
+              {vslOffers.map(offer => (
                 <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
                     <div className="relative aspect-video">
                         <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="" />
@@ -920,7 +966,7 @@ const App: React.FC = () => {
           return (
             <div className="animate-in fade-in duration-700">
                <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                 <Palette className="text-[#D4AF37]" /> ARSENAL POR NICHO
+                 <Palette className="text-[#D4AF37]" /> Criativos
                </h2>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {uniqueNiches.map(niche => (
@@ -956,7 +1002,7 @@ const App: React.FC = () => {
                <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
                  <ChevronRight className="rotate-180" size={16} />
                </div>
-               Voltar para Nichos
+               Voltar para Criativos
              </button>
              
              <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
@@ -986,22 +1032,64 @@ const App: React.FC = () => {
         );
 
       case 'pages':
+        if (!activePageModule) {
+          const uniqueNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
+          return (
+            <div className="animate-in fade-in duration-700">
+               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
+                 <Monitor className="text-[#D4AF37]" /> Páginas
+               </h2>
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                  {uniqueNiches.map(niche => (
+                    <div 
+                      key={niche} 
+                      onClick={() => setActivePageModule(niche)}
+                      className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center"
+                    >
+                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                         <Monitor size={32} />
+                       </div>
+                       <h3 className="text-white font-black uppercase text-xl italic group-hover:text-[#D4AF37] transition-colors">{niche}</h3>
+                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest italic">
+                         Explorar Funis
+                       </p>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          );
+        }
+
+        const pageOffers = offers.filter(o => o.niche === activePageModule);
         return (
-          <div className="animate-in fade-in duration-700">
-             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-               <Monitor className="text-[#D4AF37]" /> FUNIS E PÁGINAS DE VENDA
+          <div className="animate-in fade-in duration-700 space-y-12">
+             <button 
+               onClick={() => setActivePageModule(null)}
+               className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
+             >
+               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                 <ChevronRight className="rotate-180" size={16} />
+               </div>
+               Voltar para Páginas
+             </button>
+             
+             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
+               PÁGINAS: <span className="text-[#D4AF37]">{activePageModule}</span>
              </h2>
+
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {filtered.map(offer => (
-                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl group cursor-pointer">
+              {pageOffers.map(offer => (
+                <div 
+                  key={offer.id} 
+                  onClick={() => window.open(offer.pageUrl, '_blank')} 
+                  className="bg-[#121212] p-6 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl group cursor-pointer"
+                >
                     <div className="w-full aspect-square bg-[#1a1a1a] rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                      <Monitor size={64} className="opacity-20 group-hover:opacity-100" />
+                      <ExternalLink size={64} className="opacity-20 group-hover:opacity-100" />
                     </div>
                     <div className="text-center">
                         <p className="text-white font-black uppercase text-sm italic mb-2 tracking-tighter line-clamp-2">{offer.title}</p>
-                        <div className="flex items-center justify-center gap-2">
-                           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{offer.niche}</p>
-                        </div>
+                        <p className="text-[9px] text-[#D4AF37] font-black uppercase tracking-[0.2em] italic">ABRIR PÁGINA</p>
                     </div>
                 </div>
               ))}
@@ -1015,7 +1103,7 @@ const App: React.FC = () => {
           return (
             <div className="animate-in fade-in duration-700">
                <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                 <Library className="text-[#D4AF37]" /> BIBLIOTECA POR IDIOMA
+                 <Library className="text-[#D4AF37]" /> Biblioteca
                </h2>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {uniqueLangs.map(lang => (
@@ -1028,7 +1116,7 @@ const App: React.FC = () => {
                          <Globe size={32} />
                        </div>
                        <h3 className="text-white font-black uppercase text-xl italic group-hover:text-[#D4AF37] transition-colors">{lang}</h3>
-                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest">
+                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest italic">
                          Explorar Inteligência
                        </p>
                     </div>
@@ -1048,20 +1136,24 @@ const App: React.FC = () => {
                <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
                  <ChevronRight className="rotate-180" size={16} />
                </div>
-               Voltar para Idiomas
+               Voltar para Biblioteca
              </button>
              
              <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
-               INTELIGÊNCIA: <span className="text-[#D4AF37]">{activeLanguageModule}</span>
+               BIBLIOTECA: <span className="text-[#D4AF37]">{activeLanguageModule}</span>
              </h2>
 
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {langOffers.map(offer => (
-                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] p-6 rounded-2xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer">
+                <div 
+                  key={offer.id} 
+                  onClick={() => window.open(offer.facebookUrl, '_blank')} 
+                  className="bg-[#121212] p-6 rounded-2xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer"
+                >
                     <p className="text-white font-black uppercase text-sm italic mb-4 truncate">{offer.title}</p>
                     <div className="flex items-center justify-between gap-2">
                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest italic">{offer.productType}</p>
-                       <ExternalLink size={14} className="text-gray-600 group-hover:text-[#D4AF37]" />
+                       <ExternalLink size={14} className="text-[#D4AF37]" />
                     </div>
                 </div>
               ))}
@@ -1156,9 +1248,9 @@ const App: React.FC = () => {
         <div className="pt-8 pb-4">
           <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
           <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} onClick={() => { setCurrentPage('offers'); setSelectedOffer(null); }} />
-          <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); }} />
+          <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); setActiveVslModule(null); }} />
           <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); setActiveNicheModule(null); }} />
-          <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); }} />
+          <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); setActivePageModule(null); }} />
           <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => { setCurrentPage('ads_library'); setSelectedOffer(null); setActiveLanguageModule(null); }} />
         </div>
       </nav>
