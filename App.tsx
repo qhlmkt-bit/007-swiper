@@ -493,15 +493,12 @@ const App: React.FC = () => {
 
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // -- ADDED HELPER FUNCTIONS AND DERIVED STATE --
-  
-  // Available filter options derived from current offers
+  // Derivations
   const availableNiches = ['Todos', ...Array.from(new Set(offers.map(o => o.niche))).sort()];
   const availableTypes = ['Todos', ...Array.from(new Set(offers.map(o => o.productType))).sort()];
   const availableTrafficSources = ['Todos', ...Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort()];
   const availableLanguages = ['Todos', ...Array.from(new Set(offers.map(o => o.language))).sort()];
 
-  // Filter application logic
   const applyEliteFilters = useCallback((offersToFilter: Offer[]) => {
     return offersToFilter.filter(offer => {
       const searchLower = searchQuery.toLowerCase();
@@ -519,13 +516,11 @@ const App: React.FC = () => {
     });
   }, [searchQuery, selectedNiche, selectedType, selectedTraffic, selectedLanguage]);
 
-  // Handle support email copy
   const handleCopyEmail = () => {
     navigator.clipboard.writeText('qhl.mkt@gmail.com');
     alert('E-mail copiado para a área de transferência!');
   };
 
-  // Determine when to show filters
   const showFilters = (currentPage === 'home' || currentPage === 'offers' || currentPage === 'favorites') && !selectedOffer;
 
   // NAVIGATION SYNC WITH HISTORY API
@@ -604,6 +599,21 @@ const App: React.FC = () => {
   const closeOffer = () => {
     setSelectedOffer(null);
     pushNavState({ selectedOfferId: null });
+  };
+
+  // Added toggleFavorite function to handle adding/removing offers from favorites
+  const toggleFavorite = (offerId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setFavorites(prev => {
+      const isFav = prev.includes(offerId);
+      const newFavs = isFav 
+        ? prev.filter(id => id !== offerId) 
+        : [...prev, offerId];
+      localStorage.setItem('007_favs', JSON.stringify(newFavs));
+      return newFavs;
+    });
   };
 
   const selectModule = (moduleType: 'niche' | 'vsl' | 'language' | 'page', val: string | null) => {
@@ -686,20 +696,10 @@ const App: React.FC = () => {
     if (password === 'AGENTE007') {
       setIsLoggedIn(true);
       setIsSuccess(false);
-      // Initialize state in history
       window.history.replaceState({ currentPage: 'home', selectedOfferId: null, activeNicheModule: null, activeVslModule: null, activeLanguageModule: null, activePageModule: null }, '');
     } else if (password !== null) {
       alert('ACESSO NEGADO ❌');
     }
-  };
-
-  const toggleFavorite = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    const newFavs = favorites.includes(id) 
-      ? favorites.filter(f => f !== id) 
-      : [...favorites, id];
-    setFavorites(newFavs);
-    localStorage.setItem('007_favs', JSON.stringify(newFavs));
   };
 
   const renderContent = () => {
@@ -792,11 +792,11 @@ const App: React.FC = () => {
                   </h3>
                   <div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">
                     {[
+                      { icon: Info, label: 'Nome', value: selectedOffer.description || 'Informação confidencial' },
                       { icon: Tag, label: 'Nicho', value: selectedOffer.niche },
                       { icon: Lock, label: 'Tipo', value: selectedOffer.productType },
-                      { icon: Info, label: 'Briefing', value: selectedOffer.description || 'Briefing confidencial' },
                       { icon: Globe, label: 'Idioma', value: selectedOffer.language },
-                      { icon: Target, label: 'Fontes', value: selectedOffer.trafficSource.join(', ') },
+                      { icon: Target, label: 'Fonte', value: selectedOffer.trafficSource.join(', ') },
                     ].map((item, idx) => (
                       <div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0">
                         <div className="flex items-center gap-3">
