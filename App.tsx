@@ -310,8 +310,8 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
             <ShieldCheck size={28} className="text-black" />
           </div>
           <div>
-            <h2 className="text-[#D4AF37] font-black uppercase text-lg md:text-2xl tracking-tighter italic">ACESSO À INTELIGÊNCIA LIBERADO!</h2>
-            <p className="text-gray-400 text-[10px] md:text-sm font-bold uppercase tracking-tight">Sua chave é única e confidencial. SENHA: <span className="text-[#D4AF37] font-black">AGENTE007</span></p>
+            <h2 className="text-[#D4AF37] font-black uppercase text-lg md:text-2xl tracking-tighter italic leading-none mb-1">ACESSO À INTELIGÊNCIA LIBERADO!</h2>
+            <p className="text-gray-400 text-[10px] md:text-sm font-bold uppercase tracking-tight leading-none">Sua chave é única e confidencial. SENHA: <span className="text-[#D4AF37] font-black">AGENTE007</span></p>
           </div>
         </div>
         <button onClick={onLogin} className="w-full md:w-auto px-8 py-3 bg-[#D4AF37] text-black font-black rounded-xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter">ENTRAR NO ARSENAL</button>
@@ -339,7 +339,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
       </div>
     </nav>
     
-    <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative mx-auto">
+    <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 relative mx-auto">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#D4AF37]/10 via-transparent to-transparent -z-10 pointer-events-none opacity-40"></div>
       
       <div className="inline-block px-5 py-2 mb-10 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mx-auto">
@@ -350,9 +350,20 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         ACESSE SEM LIMITES AS OFERTAS MAIS LUCRATIVAS E ESCALADAS DO MERCADO DE RESPOSTA DIRETA <span className="text-[#D4AF37]">ANTES DA CONCORRÊNCIA.</span>
       </h1>
       
-      <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-24 italic leading-relaxed px-2 mx-auto text-center">
+      <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed px-2 mx-auto text-center">
         Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligência que transforma dados em resultados escaláveis.
       </p>
+
+      {/* Demo Video Section - Restored */}
+      <section className="w-full max-w-4xl aspect-video bg-[#121212] rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center group cursor-pointer transition-all hover:border-[#D4AF37]/40 mx-auto mb-32">
+        <div className="bg-[#D4AF37] p-6 rounded-full shadow-[0_0_40px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-500 mb-6 flex items-center justify-center">
+          <Play size={40} fill="black" className="text-black ml-1" />
+        </div>
+        <p className="text-white font-black uppercase text-[10px] md:text-xs tracking-[0.25em] italic max-w-md px-8 leading-relaxed text-center">
+          Descubra como rastreamos e organizamos ofertas escaladas em tempo real
+        </p>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#D4AF37]/5 to-transparent h-[1px] w-full animate-pulse top-1/3"></div>
+      </section>
 
       {/* PLAN CARDS SECTION - CENTERED */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 px-4 justify-center justify-items-center items-stretch mx-auto">
@@ -494,7 +505,7 @@ const App: React.FC = () => {
             return null;
           }
 
-          /* Fixed duplicate 'trend' property to resolve line 508 error */
+          /* Correctly parsed offer object with no duplicate keys */
           return {
             id: values[0] || String(idx),
             title: values[1],
