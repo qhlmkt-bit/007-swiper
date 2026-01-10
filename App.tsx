@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Home as HomeIcon, 
   Star, 
@@ -493,6 +493,128 @@ const App: React.FC = () => {
 
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // -- ADDED HELPER FUNCTIONS AND DERIVED STATE --
+  
+  // Available filter options derived from current offers
+  const availableNiches = ['Todos', ...Array.from(new Set(offers.map(o => o.niche))).sort()];
+  const availableTypes = ['Todos', ...Array.from(new Set(offers.map(o => o.productType))).sort()];
+  const availableTrafficSources = ['Todos', ...Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort()];
+  const availableLanguages = ['Todos', ...Array.from(new Set(offers.map(o => o.language))).sort()];
+
+  // Filter application logic
+  const applyEliteFilters = useCallback((offersToFilter: Offer[]) => {
+    return offersToFilter.filter(offer => {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = 
+        offer.title.toLowerCase().includes(searchLower) || 
+        offer.niche.toLowerCase().includes(searchLower) ||
+        (offer.description && offer.description.toLowerCase().includes(searchLower));
+
+      const matchesNiche = selectedNiche === 'Todos' || offer.niche === selectedNiche;
+      const matchesType = selectedType === 'Todos' || offer.productType === selectedType;
+      const matchesTraffic = selectedTraffic === 'Todos' || offer.trafficSource.includes(selectedTraffic);
+      const matchesLanguage = selectedLanguage === 'Todos' || offer.language === selectedLanguage;
+
+      return matchesSearch && matchesNiche && matchesType && matchesTraffic && matchesLanguage;
+    });
+  }, [searchQuery, selectedNiche, selectedType, selectedTraffic, selectedLanguage]);
+
+  // Handle support email copy
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText('qhl.mkt@gmail.com');
+    alert('E-mail copiado para a área de transferência!');
+  };
+
+  // Determine when to show filters
+  const showFilters = (currentPage === 'home' || currentPage === 'offers' || currentPage === 'favorites') && !selectedOffer;
+
+  // NAVIGATION SYNC WITH HISTORY API
+  const pushNavState = useCallback((params: any) => {
+    const newState = {
+      currentPage,
+      selectedOfferId: selectedOffer?.id || null,
+      activeNicheModule,
+      activeVslModule,
+      activeLanguageModule,
+      activePageModule,
+      ...params
+    };
+    window.history.pushState(newState, '');
+  }, [currentPage, selectedOffer, activeNicheModule, activeVslModule, activeLanguageModule, activePageModule]);
+
+  // Handle Back Button
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state) {
+        const { 
+          currentPage: cp, 
+          selectedOfferId: sid, 
+          activeNicheModule: anm, 
+          activeVslModule: avm, 
+          activeLanguageModule: alm, 
+          activePageModule: apm 
+        } = event.state;
+
+        setCurrentPage(cp || 'home');
+        setActiveNicheModule(anm || null);
+        setActiveVslModule(avm || null);
+        setActiveLanguageModule(alm || null);
+        setActivePageModule(apm || null);
+        
+        if (sid) {
+          const found = offers.find(o => o.id === sid);
+          setSelectedOffer(found || null);
+        } else {
+          setSelectedOffer(null);
+        }
+      } else {
+        // Default state
+        setCurrentPage('home');
+        setSelectedOffer(null);
+        setActiveNicheModule(null);
+        setActiveVslModule(null);
+        setActiveLanguageModule(null);
+        setActivePageModule(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [offers]);
+
+  // Helper navigation wrappers
+  const navigateToPage = (page: string) => {
+    setCurrentPage(page);
+    setSelectedOffer(null);
+    setActiveNicheModule(null);
+    setActiveVslModule(null);
+    setActiveLanguageModule(null);
+    setActivePageModule(null);
+    pushNavState({ currentPage: page, selectedOfferId: null, activeNicheModule: null, activeVslModule: null, activeLanguageModule: null, activePageModule: null });
+  };
+
+  const openOffer = (offer: Offer) => {
+    const newViewed = [offer.id, ...recentlyViewed.filter(id => id !== offer.id)].slice(0, 8);
+    setRecentlyViewed(newViewed);
+    localStorage.setItem('007_viewed', JSON.stringify(newViewed));
+    setSelectedOffer(offer);
+    pushNavState({ selectedOfferId: offer.id });
+  };
+
+  const closeOffer = () => {
+    setSelectedOffer(null);
+    pushNavState({ selectedOfferId: null });
+  };
+
+  const selectModule = (moduleType: 'niche' | 'vsl' | 'language' | 'page', val: string | null) => {
+    const updates: any = {};
+    if (moduleType === 'niche') { setActiveNicheModule(val); updates.activeNicheModule = val; }
+    if (moduleType === 'vsl') { setActiveVslModule(val); updates.activeVslModule = val; }
+    if (moduleType === 'language') { setActiveLanguageModule(val); updates.activeLanguageModule = val; }
+    if (moduleType === 'page') { setActivePageModule(val); updates.activePageModule = val; }
+    pushNavState(updates);
+  };
+
   // Fetch Data from Google Sheets
   useEffect(() => {
     const fetchOffers = async () => {
@@ -534,7 +656,6 @@ const App: React.FC = () => {
           };
         }).filter((o): o is Offer => o !== null);
 
-        // REVERSE CHRONOLOGICAL ORDER: Last line of spreadsheet first in app
         setOffers([...parsedData].reverse());
       } catch (error) {
         console.error('Error fetching intelligence database:', error);
@@ -565,6 +686,8 @@ const App: React.FC = () => {
     if (password === 'AGENTE007') {
       setIsLoggedIn(true);
       setIsSuccess(false);
+      // Initialize state in history
+      window.history.replaceState({ currentPage: 'home', selectedOfferId: null, activeNicheModule: null, activeVslModule: null, activeLanguageModule: null, activePageModule: null }, '');
     } else if (password !== null) {
       alert('ACESSO NEGADO ❌');
     }
@@ -577,63 +700,6 @@ const App: React.FC = () => {
       : [...favorites, id];
     setFavorites(newFavs);
     localStorage.setItem('007_favs', JSON.stringify(newFavs));
-  };
-
-  const trackView = (offer: Offer) => {
-    const newViewed = [offer.id, ...recentlyViewed.filter(id => id !== offer.id)].slice(0, 8);
-    setRecentlyViewed(newViewed);
-    localStorage.setItem('007_viewed', JSON.stringify(newViewed));
-    setSelectedOffer(offer);
-  };
-
-  const applyEliteFilters = (offersList: Offer[]) => {
-    return offersList.filter(o => {
-      const q = searchQuery.toLowerCase().trim();
-      const matchesSearch = q === '' || o.title.toLowerCase().includes(q) || o.description.toLowerCase().includes(q);
-      const matchesNiche = selectedNiche === 'Todos' || o.niche.toLowerCase() === selectedNiche.toLowerCase();
-      const matchesType = selectedType === 'Todos' || o.productType.toLowerCase() === selectedType.toLowerCase();
-      const matchesLanguage = selectedLanguage === 'Todos' || o.language.toLowerCase() === selectedLanguage.toLowerCase();
-      const matchesTraffic = selectedTraffic === 'Todos' || o.trafficSource.some(ts => ts.toLowerCase() === selectedTraffic.toLowerCase());
-      return matchesSearch && matchesNiche && matchesType && matchesLanguage && matchesTraffic;
-    });
-  };
-
-  const getUniqueValues = (key: keyof Offer) => {
-    const valuesSet = new Set<string>();
-    offers.forEach(o => {
-      const val = o[key];
-      if (Array.isArray(val)) {
-        val.forEach(v => {
-          const trimmed = String(v).trim();
-          if (trimmed && trimmed.toLowerCase() !== 'undefined') valuesSet.add(trimmed);
-        });
-      } else if (typeof val === 'string') {
-        const trimmed = val.trim();
-        if (trimmed && trimmed.toLowerCase() !== 'undefined') valuesSet.add(trimmed);
-      }
-    });
-
-    const caseMap = new Map<string, string>();
-    Array.from(valuesSet).forEach(v => {
-      const lower = v.toLowerCase();
-      if (!caseMap.has(lower)) {
-        caseMap.set(lower, v);
-      }
-    });
-
-    return ['Todos', ...Array.from(caseMap.values()).sort((a, b) => a.localeCompare(b))];
-  };
-
-  const availableNiches = getUniqueValues('niche');
-  const availableLanguages = getUniqueValues('language');
-  const availableTypes = getUniqueValues('productType');
-  const availableTrafficSources = getUniqueValues('trafficSource');
-
-  const showFilters = ['home', 'offers'].includes(currentPage) && !selectedOffer;
-
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText('qhl.mkt@gmail.com');
-    alert('E-mail copiado para a área de transferência! 📋');
   };
 
   const renderContent = () => {
@@ -651,13 +717,13 @@ const App: React.FC = () => {
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <button 
-              onClick={() => { setSelectedOffer(null); setActiveVslIndex(0); }}
+              onClick={closeOffer}
               className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
             >
               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
                 <ChevronRight className="rotate-180" size={16} />
               </div>
-              Voltar para Base
+              Voltar
             </button>
             
             <div className="flex flex-wrap items-center gap-3">
@@ -697,7 +763,6 @@ const App: React.FC = () => {
               )}
             </div>
 
-            {/* SYMMETRICAL ALIGNMENT: 62% Player / 38% Info */}
             <div className="flex flex-col lg:flex-row gap-8 items-stretch">
               <div className="w-full lg:w-[62%] space-y-6">
                 <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
@@ -808,12 +873,6 @@ const App: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-12 py-6 bg-[#D4AF37] text-black font-black text-xl md:text-2xl rounded-[24px] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(212,175,55,0.25)] uppercase tracking-tighter flex items-center gap-4 italic group"
-                  onClick={(e) => {
-                    if (!selectedOffer.creativeZipUrl || selectedOffer.creativeZipUrl === '#') {
-                      e.preventDefault();
-                      alert('Link do Arsenal ZIP não configurado nesta oferta.');
-                    }
-                  }}
                 >
                   <div className="p-2 bg-black/10 rounded-xl group-hover:bg-black/20 transition-colors">
                     <Zap size={24} fill="currentColor" className="md:w-8 md:h-8" />
@@ -846,7 +905,7 @@ const App: React.FC = () => {
                     offer={offer} 
                     isFavorite={favorites.includes(offer.id)}
                     onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                    onClick={() => trackView(offer)}
+                    onClick={() => openOffer(offer)}
                     />
                 ))}
                 </div>
@@ -863,7 +922,7 @@ const App: React.FC = () => {
                     offer={offer} 
                     isFavorite={favorites.includes(offer.id)}
                     onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                    onClick={() => trackView(offer)}
+                    onClick={() => openOffer(offer)}
                     />
                 ))}
                 {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic px-2">Nenhuma atividade registrada.</p>}
@@ -882,11 +941,10 @@ const App: React.FC = () => {
                   offer={offer} 
                   isFavorite={favorites.includes(offer.id)}
                   onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                  onClick={() => trackView(offer)}
+                  onClick={() => openOffer(offer)}
                 />
               ))}
             </div>
-            {filtered.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center">Nenhuma inteligência encontrada para estes filtros.</p>}
           </div>
         );
 
@@ -902,7 +960,7 @@ const App: React.FC = () => {
                   {uniqueNiches.map(niche => (
                     <div 
                       key={niche} 
-                      onClick={() => setActiveVslModule(niche)}
+                      onClick={() => selectModule('vsl', niche)}
                       className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center relative overflow-hidden"
                     >
                        <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
@@ -923,7 +981,7 @@ const App: React.FC = () => {
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
              <button 
-               onClick={() => setActiveVslModule(null)}
+               onClick={() => selectModule('vsl', null)}
                className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
              >
                <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
@@ -954,7 +1012,7 @@ const App: React.FC = () => {
                              <Download size={14} /> BAIXAR VSL
                            </a>
                            <button 
-                             onClick={() => trackView(offer)}
+                             onClick={() => openOffer(offer)}
                              className="flex items-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"
                            >
                              <Eye size={14} /> VER OFERTA COMPLETA
@@ -979,7 +1037,7 @@ const App: React.FC = () => {
                   {uniqueNiches.map(niche => (
                     <div 
                       key={niche} 
-                      onClick={() => setActiveNicheModule(niche)}
+                      onClick={() => selectModule('niche', niche)}
                       className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center relative overflow-hidden"
                     >
                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
@@ -1003,7 +1061,7 @@ const App: React.FC = () => {
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
              <button 
-               onClick={() => setActiveNicheModule(null)}
+               onClick={() => selectModule('niche', null)}
                className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
              >
                <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
@@ -1022,7 +1080,7 @@ const App: React.FC = () => {
                       <div className="flex items-center justify-between border-b border-white/5 pb-4 px-2">
                         <h3 className="text-white font-black uppercase text-xl italic tracking-tighter">{offer.title}</h3>
                         <button 
-                          onClick={() => trackView(offer)}
+                          onClick={() => openOffer(offer)}
                           className="px-4 py-1.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black transition-all italic border border-[#D4AF37]/30"
                         >
                           Ver oferta completa
@@ -1065,7 +1123,7 @@ const App: React.FC = () => {
                   {uniqueNiches.map(niche => (
                     <div 
                       key={niche} 
-                      onClick={() => setActivePageModule(niche)}
+                      onClick={() => selectModule('page', niche)}
                       className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center"
                     >
                        <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
@@ -1086,7 +1144,7 @@ const App: React.FC = () => {
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
              <button 
-               onClick={() => setActivePageModule(null)}
+               onClick={() => selectModule('page', null)}
                className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
              >
                <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
@@ -1131,7 +1189,7 @@ const App: React.FC = () => {
                   {uniqueLangs.map(lang => (
                     <div 
                       key={lang} 
-                      onClick={() => setActiveLanguageModule(lang)}
+                      onClick={() => selectModule('language', lang)}
                       className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center"
                     >
                        <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
@@ -1152,7 +1210,7 @@ const App: React.FC = () => {
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
              <button 
-               onClick={() => setActiveLanguageModule(null)}
+               onClick={() => selectModule('language', null)}
                className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
              >
                <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
@@ -1195,11 +1253,10 @@ const App: React.FC = () => {
                   offer={offer} 
                   isFavorite={true}
                   onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                  onClick={() => trackView(offer)}
+                  onClick={() => openOffer(offer)}
                 />
               ))}
             </div>
-            {filteredFavs.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center">Nenhum favorito encontrado.</p>}
           </div>
         );
 
@@ -1263,17 +1320,17 @@ const App: React.FC = () => {
       </div>
       
       <nav className="space-y-2">
-        <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => { setCurrentPage('home'); setSelectedOffer(null); }} />
-        <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => { setCurrentPage('favorites'); setSelectedOffer(null); }} />
-        <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => { setCurrentPage('settings'); setSelectedOffer(null); }} />
+        <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => navigateToPage('home')} />
+        <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => navigateToPage('favorites')} />
+        <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
         
         <div className="pt-8 pb-4">
           <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
-          <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} onClick={() => { setCurrentPage('offers'); setSelectedOffer(null); }} />
-          <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); setActiveVslModule(null); }} />
-          <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); setActiveNicheModule(null); }} />
-          <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); setActivePageModule(null); }} />
-          <SidebarItem icon={Library} label="BIBLIOTECA DE ANÚNCIOS" active={currentPage === 'ads_library'} onClick={() => { setCurrentPage('ads_library'); setSelectedOffer(null); setActiveLanguageModule(null); }} />
+          <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} onClick={() => navigateToPage('offers')} />
+          <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => navigateToPage('vsl')} />
+          <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => navigateToPage('creatives')} />
+          <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
+          <SidebarItem icon={Library} label="BIBLIOTECA DE ANÚNCIOS" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
         </div>
       </nav>
 
