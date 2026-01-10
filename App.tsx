@@ -320,7 +320,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
     
     <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
       <div className="flex items-center space-x-3">
-        <div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20">
+        <div className="bg-[#D4AF37] p-2 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20">
           <Eye className="text-black" size={28} />
         </div>
         <span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span>
@@ -601,7 +601,6 @@ const App: React.FC = () => {
     pushNavState({ selectedOfferId: null });
   };
 
-  // Added toggleFavorite function to handle adding/removing offers from favorites
   const toggleFavorite = (offerId: string, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
@@ -753,15 +752,13 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
-            <div className="flex flex-col gap-3 mb-8">
-              <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">{selectedOffer.title}</h2>
-              {selectedOffer.views && selectedOffer.views.trim() !== '' && (
-                <div className="flex items-center gap-3 bg-[#121212]/50 px-4 py-2 rounded-xl border border-[#D4AF37]/30 w-fit">
-                  <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-bounce" />
-                  <span className="text-[#D4AF37] font-black uppercase text-sm md:text-base italic tracking-widest">{selectedOffer.views}</span>
-                </div>
-              )}
-            </div>
+            {/* Status Badge only - Main Title removed for clean look */}
+            {selectedOffer.views && selectedOffer.views.trim() !== '' && (
+              <div className="flex items-center gap-3 bg-[#121212]/50 px-4 py-2 rounded-xl border border-[#D4AF37]/30 w-fit">
+                <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-bounce" />
+                <span className="text-[#D4AF37] font-black uppercase text-sm md:text-base italic tracking-widest">{selectedOffer.views}</span>
+              </div>
+            )}
 
             <div className="flex flex-col lg:flex-row gap-8 items-stretch">
               <div className="w-full lg:w-[62%] space-y-6">
