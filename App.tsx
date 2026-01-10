@@ -896,7 +896,7 @@ const App: React.FC = () => {
           return (
             <div className="animate-in fade-in duration-700">
                <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                 <Video className="text-[#D4AF37]" /> VSL POR TEMA
+                 <Video className="text-[#D4AF37]" /> VSL
                </h2>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {uniqueNiches.map(niche => (
@@ -936,22 +936,29 @@ const App: React.FC = () => {
                VSLs: <span className="text-[#D4AF37]">{activeVslModule}</span>
              </h2>
 
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
               {vslOffers.map(offer => (
-                <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
-                    <div className="relative aspect-video">
-                        <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-14 h-14 bg-[#D4AF37] text-black rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
-                                <Play fill="currentColor" size={24} />
-                            </div>
-                        </div>
+                <div key={offer.id} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 shadow-2xl flex flex-col gap-6">
+                    <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-xl">
+                        <VideoPlayer url={offer.vslLinks[0]?.url} title={offer.title} />
                     </div>
-                    <div className="p-4 bg-[#1a1a1a]">
-                        <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
-                        <div className="flex items-center gap-2">
-                           {offer.trafficSource.slice(0, 2).map((s, i) => <TrafficIcon key={i} source={s} />)}
-                           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{offer.productType}</p>
+                    <div className="space-y-4">
+                        <h3 className="text-white font-black uppercase text-lg italic truncate">{offer.title}</h3>
+                        <div className="flex flex-wrap items-center gap-3">
+                           <a 
+                             href={offer.vslDownloadUrl} 
+                             target="_blank" 
+                             rel="noopener noreferrer" 
+                             className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg italic"
+                           >
+                             <Download size={14} /> BAIXAR VSL
+                           </a>
+                           <button 
+                             onClick={() => trackView(offer)}
+                             className="flex items-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"
+                           >
+                             <Eye size={14} /> VER OFERTA COMPLETA
+                           </button>
                         </div>
                     </div>
                 </div>
@@ -1009,21 +1016,36 @@ const App: React.FC = () => {
                CRIATIVOS: <span className="text-[#D4AF37]">{activeNicheModule}</span>
              </h2>
 
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+             <div className="space-y-16">
                 {nicheOffers.map(offer => (
-                  <div key={offer.id} onClick={() => trackView(offer)} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl">
-                      <div className="relative aspect-video">
-                          <img src={getDriveDirectLink(offer.coverImage)} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" alt={offer.title} />
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                              <ImageIcon className="text-[#D4AF37] group-hover:scale-125 transition-all" size={32} />
-                              <p className="text-[10px] text-white font-black uppercase tracking-widest bg-black/60 px-3 py-1 rounded-full shadow-lg border border-white/10">
-                                {offer.creativeEmbedUrls.length} {offer.creativeEmbedUrls.length === 1 ? 'VÍDEO' : 'VÍDEOS'}
-                              </p>
-                          </div>
+                  <div key={offer.id} className="space-y-6">
+                      <div className="flex items-center justify-between border-b border-white/5 pb-4 px-2">
+                        <h3 className="text-white font-black uppercase text-xl italic tracking-tighter">{offer.title}</h3>
+                        <button 
+                          onClick={() => trackView(offer)}
+                          className="px-4 py-1.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black transition-all italic border border-[#D4AF37]/30"
+                        >
+                          Ver oferta completa
+                        </button>
                       </div>
-                      <div className="p-4 bg-[#1a1a1a]">
-                          <p className="text-white font-black uppercase text-sm italic mb-1 truncate">{offer.title}</p>
-                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acessar Arsenal</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {offer.creativeEmbedUrls.slice(0, 3).map((embedUrl, i) => (
+                          <div key={i} className="flex flex-col gap-3">
+                            <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+                              <VideoPlayer url={embedUrl} title={`${offer.title} - Creative ${i + 1}`} />
+                            </div>
+                            <div className="flex items-center justify-center">
+                               <a 
+                                 href={offer.creativeDownloadUrls[i] || '#'} 
+                                 target="_blank" 
+                                 rel="noopener noreferrer" 
+                                 className="flex items-center gap-2 text-[8px] font-black uppercase text-gray-600 hover:text-[#D4AF37] transition-colors tracking-widest"
+                               >
+                                 <Download size={12} /> Baixar este arquivo
+                               </a>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                   </div>
                 ))}
@@ -1103,7 +1125,7 @@ const App: React.FC = () => {
           return (
             <div className="animate-in fade-in duration-700">
                <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                 <Library className="text-[#D4AF37]" /> Biblioteca
+                 <Library className="text-[#D4AF37]" /> Biblioteca de Anúncios
                </h2>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {uniqueLangs.map(lang => (
@@ -1140,7 +1162,7 @@ const App: React.FC = () => {
              </button>
              
              <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
-               BIBLIOTECA: <span className="text-[#D4AF37]">{activeLanguageModule}</span>
+               BIBLIOTECA DE ANÚNCIOS: <span className="text-[#D4AF37]">{activeLanguageModule}</span>
              </h2>
 
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
@@ -1251,7 +1273,7 @@ const App: React.FC = () => {
           <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => { setCurrentPage('vsl'); setSelectedOffer(null); setActiveVslModule(null); }} />
           <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => { setCurrentPage('creatives'); setSelectedOffer(null); setActiveNicheModule(null); }} />
           <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => { setCurrentPage('pages'); setSelectedOffer(null); setActivePageModule(null); }} />
-          <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => { setCurrentPage('ads_library'); setSelectedOffer(null); setActiveLanguageModule(null); }} />
+          <SidebarItem icon={Library} label="BIBLIOTECA DE ANÚNCIOS" active={currentPage === 'ads_library'} onClick={() => { setCurrentPage('ads_library'); setSelectedOffer(null); setActiveLanguageModule(null); }} />
         </div>
       </nav>
 
