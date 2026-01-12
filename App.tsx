@@ -22,7 +22,6 @@ import {
   ExternalLink, 
   ImageIcon, 
   Layout, 
-  MousePointer2, 
   TrendingUp, 
   ShieldCheck, 
   CheckCircle, 
@@ -39,7 +38,8 @@ import {
   Info, 
   Files, 
   Copy, 
-  Flame
+  Flame,
+  ArrowLeft
 } from 'lucide-react';
 
 /** 
@@ -319,7 +319,7 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => 
                 <Copy size={20} />
               </button>
             </div>
-            <p className="text-red-500/60 text-[9px] font-bold uppercase mt-6 tracking-widest italic">NÃO COMPARTILHE ESTE TOKEN. ELE É SUA CHAVE DE ACESSO INDIVIDUAL.</p>
+            <p className="text-red-500/60 text-[9px] font-bold uppercase mt-6 tracking-widest italic">NÃO COMPARTILHE ESTE ID. ELE É SUA CHAVE DE ACESSO INDIVIDUAL.</p>
           </div>
 
           <button 
@@ -417,62 +417,48 @@ const App: React.FC = () => {
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Missing states fixed:
+  const [selectedNiche, setSelectedNiche] = useState('Todos');
+  const [selectedLanguage, setSelectedLanguage] = useState('Todos');
+  const [showFilters, setShowFilters] = useState(true);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-
-  const [selectedNiche, setSelectedNiche] = useState<string>('Todos');
-  const [selectedType, setSelectedType] = useState<string>('Todos');
-  const [selectedTraffic, setSelectedTraffic] = useState<string>('Todos');
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('Todos');
-
-  const [activeNicheModule, setActiveNicheModule] = useState<string | null>(null);
-  const [activeVslModule, setActiveVslModule] = useState<string | null>(null);
-  const [activeLanguageModule, setActiveLanguageModule] = useState<string | null>(null);
-  const [activePageModule, setActivePageModule] = useState<string | null>(null);
-
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
+  
+  // Categorization States
+  const [activeNicheSelection, setActiveNicheSelection] = useState<string | null>(null);
+  const [activeLanguageSelection, setActiveLanguageSelection] = useState<string | null>(null);
 
   // Storage Keys per Agent
   const getFavKey = (id: string) => `favs_${id}`;
   const getViewedKey = (id: string) => `viewed_${id}`;
 
   // Derivations
-  const availableNiches = ['Todos', ...Array.from(new Set(offers.map(o => o.niche))).sort()];
-  const availableTypes = ['Todos', ...Array.from(new Set(offers.map(o => o.productType))).sort()];
-  const availableTrafficSources = ['Todos', ...Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort()];
-  const availableLanguages = ['Todos', ...Array.from(new Set(offers.map(o => o.language))).sort()];
+  const allNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
+  const allLanguages = Array.from(new Set(offers.map(o => o.language))).sort();
 
-  const applyEliteFilters = useCallback((offersToFilter: Offer[]) => {
-    return offersToFilter.filter(offer => {
-      const searchLower = searchQuery.toLowerCase();
-      const matchesSearch = offer.title.toLowerCase().includes(searchLower) || 
-                           offer.niche.toLowerCase().includes(searchLower) ||
-                           (offer.description && offer.description.toLowerCase().includes(searchLower));
+  // Missing function fixed:
+  const applyEliteFilters = useCallback((data: Offer[]) => {
+    return data.filter(offer => {
+      const matchesSearch = offer.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           (offer.description && offer.description.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesNiche = selectedNiche === 'Todos' || offer.niche === selectedNiche;
-      const matchesType = selectedType === 'Todos' || offer.productType === selectedType;
-      const matchesTraffic = selectedTraffic === 'Todos' || offer.trafficSource.includes(selectedTraffic);
       const matchesLanguage = selectedLanguage === 'Todos' || offer.language === selectedLanguage;
-      return matchesSearch && matchesNiche && matchesType && matchesTraffic && matchesLanguage;
+      return matchesSearch && matchesNiche && matchesLanguage;
     });
-  }, [searchQuery, selectedNiche, selectedType, selectedTraffic, selectedLanguage]);
-
-  const showFilters = (currentPage === 'home' || currentPage === 'offers' || currentPage === 'favorites' || currentPage === 'vsl' || currentPage === 'creatives' || currentPage === 'pages' || currentPage === 'ads_library') && !selectedOffer;
+  }, [searchQuery, selectedNiche, selectedLanguage]);
 
   const pushNavState = useCallback((params: any) => {
-    const newState = { cp: currentPage, sid: selectedOffer?.id || null, anm: activeNicheModule, avm: activeVslModule, alm: activeLanguageModule, apm: activePageModule, ...params };
+    const newState = { cp: currentPage, sid: selectedOffer?.id || null, ans: activeNicheSelection, als: activeLanguageSelection, ...params };
     window.history.pushState(newState, '');
-  }, [currentPage, selectedOffer, activeNicheModule, activeVslModule, activeLanguageModule, activePageModule]);
+  }, [currentPage, selectedOffer, activeNicheSelection, activeLanguageSelection]);
 
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       if (e.state) {
-        const { cp, sid, anm, avm, alm, apm } = e.state;
+        const { cp, sid, ans, als } = e.state;
         setCurrentPage(cp || 'home');
-        setActiveNicheModule(anm || null);
-        setActiveVslModule(avm || null);
-        setActiveLanguageModule(alm || null);
-        setActivePageModule(apm || null);
+        setActiveNicheSelection(ans || null);
+        setActiveLanguageSelection(als || null);
         if (sid) {
           const found = offers.find(o => o.id === sid);
           setSelectedOffer(found || null);
@@ -501,11 +487,9 @@ const App: React.FC = () => {
   const navigateToPage = (page: string) => {
     setCurrentPage(page);
     setSelectedOffer(null);
-    setActiveNicheModule(null);
-    setActiveVslModule(null);
-    setActiveLanguageModule(null);
-    setActivePageModule(null);
-    pushNavState({ cp: page, sid: null });
+    setActiveNicheSelection(null);
+    setActiveLanguageSelection(null);
+    pushNavState({ cp: page, sid: null, ans: null, als: null });
     setIsMobileMenuOpen(false);
   };
 
@@ -521,14 +505,11 @@ const App: React.FC = () => {
 
   // INITIAL LOAD
   useEffect(() => {
-    // 1. Success URL Check (Modal has priority)
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       setIsSuccess(true);
-      const newId = generateAgentId();
-      setNewlyGeneratedId(newId);
+      setNewlyGeneratedId(generateAgentId());
     } else {
-      // 2. Load Existing Session only if not in success state
       const savedId = localStorage.getItem('agente_token');
       if (savedId) {
         setAgentId(savedId);
@@ -540,7 +521,6 @@ const App: React.FC = () => {
       }
     }
 
-    // 3. Fetch Data
     const fetchOffers = async () => {
       try {
         setLoading(true);
@@ -564,6 +544,9 @@ const App: React.FC = () => {
     };
     fetchOffers();
   }, []);
+
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
 
   const handleLogin = () => {
     const inputId = window.prompt("🕵️‍♂️ ACESSO À CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE (ex: AGENTE-12345):");
@@ -591,10 +574,8 @@ const App: React.FC = () => {
 
   const dismissSuccess = () => {
     setIsSuccess(false);
-    // URL Cleanup
     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({ path: newUrl }, '', newUrl);
-    // Finish session setup
     const cleanId = newlyGeneratedId;
     setAgentId(cleanId);
     setIsLoggedIn(true);
@@ -602,6 +583,40 @@ const App: React.FC = () => {
     setFavorites([]);
     setRecentlyViewed([]);
   };
+
+  /**
+   * SELECTION UI FOR NICHES/LANGUAGES
+   */
+  const renderSelectionGrid = (items: string[], setter: (val: string) => void, icon: any, label: string) => (
+    <div className="animate-in fade-in duration-500">
+      <div className="flex flex-col mb-12">
+        <h2 className="text-3xl font-black text-white uppercase italic flex items-center gap-4">{React.createElement(icon, { className: "text-[#D4AF37]", size: 32 })} {label}</h2>
+        <p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 italic">Selecione uma categoria para infiltrar nos dados</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {items.map((item, idx) => (
+          <button 
+            key={idx} 
+            onClick={() => {
+              setter(item);
+              pushNavState({ [items === allNiches ? 'ans' : 'als']: item });
+            }}
+            className="group bg-[#121212] border border-white/5 hover:border-[#D4AF37]/50 p-8 rounded-[32px] text-left transition-all hover:scale-[1.02] shadow-xl flex flex-col justify-between h-48 relative overflow-hidden"
+          >
+            <div className="absolute -right-4 -bottom-4 text-white/5 group-hover:text-[#D4AF37]/10 transition-colors">
+              {React.createElement(icon, { size: 120 })}
+            </div>
+            <p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest italic mb-2">Categoria 00{idx + 1}</p>
+            <span className="text-white text-2xl font-black uppercase italic tracking-tighter leading-none group-hover:text-[#D4AF37] transition-colors relative z-10">{item}</span>
+            <div className="flex items-center gap-2 mt-auto relative z-10">
+              <span className="text-gray-500 text-[9px] font-black uppercase tracking-widest group-hover:text-white transition-colors italic">Infiltrar</span>
+              <ChevronRight size={14} className="text-[#D4AF37] group-hover:translate-x-1 transition-transform" />
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   const renderContent = () => {
     if (loading) return (
@@ -616,7 +631,7 @@ const App: React.FC = () => {
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <button onClick={closeOffer} className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group">
-              <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ChevronRight className="rotate-180" size={16} /></div>
+              <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ArrowLeft size={16} /></div>
               Voltar
             </button>
             <div className="flex flex-wrap items-center gap-3">
@@ -672,20 +687,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-6">
-               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><ImageIcon className="text-[#D4AF37] w-6 h-6" /> CRIATIVOS</h3>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {selectedOffer.creativeEmbedUrls.slice(0, 3).map((embedUrl, i) => (
-                    <div key={i} className="flex flex-col gap-4">
-                      <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl group/player">
-                        <VideoPlayer url={embedUrl} title={`Creative ${i + 1}`} />
-                      </div>
-                      <a href={selectedOffer.creativeDownloadUrls[i] || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1a1a1a] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 italic"><Download size={14} /> BAIXAR CRIATIVO</a>
-                    </div>
-                  ))}
-               </div>
-            </div>
-
+            {/* Structure Links */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -728,7 +730,7 @@ const App: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {recentlyHome.map(o => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
               </div>
-              {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic">Nenhuma atividade recente registrada neste ID.</p>}
+              {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic">Nenhuma atividade recente registrada.</p>}
             </div>
           </div>
         );
@@ -739,20 +741,29 @@ const App: React.FC = () => {
           </div>
         );
       case 'vsl':
+        if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, Video, "CENTRAL DE VSL");
         return (
-          <div className="animate-in fade-in duration-700 space-y-12">
-            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Video className="text-[#D4AF37]" /> CENTRAL DE VSL</h2>
+          <div className="animate-in slide-in-from-right duration-500 space-y-12">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button>
+                <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">VSL:</span> {activeNicheSelection}</h2>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {filtered.filter(o => o.vslLinks.length > 0).map(o => (
-                <div key={o.id} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 flex flex-col gap-6">
-                  <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl">
+              {offers.filter(o => o.niche === activeNicheSelection && o.vslLinks.length > 0).map(o => (
+                <div key={o.id} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 flex flex-col gap-6 shadow-2xl group">
+                  <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl group-hover:border-[#D4AF37]/30 border border-transparent transition-all">
                     <VideoPlayer url={o.vslLinks[0].url} title={o.title} />
                   </div>
                   <div className="flex flex-col gap-4">
-                    <h3 className="text-white font-black uppercase text-lg italic">{o.title}</h3>
-                    <div className="flex gap-2">
-                      <a href={o.vslDownloadUrl} target="_blank" rel="noopener noreferrer" className="flex-1 py-3 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all"><Download size={14} className="inline mr-2" /> Baixar VSL</a>
-                      <button onClick={() => openOffer(o)} className="flex-1 py-3 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta</button>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-white font-black uppercase text-lg italic tracking-tight">{o.title}</h3>
+                      <button onClick={(e) => toggleFavorite(o.id, e)} className={`p-2 rounded-xl ${favorites.includes(o.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={16} fill={favorites.includes(o.id) ? "currentColor" : "none"} /></button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <a href={o.vslDownloadUrl} target="_blank" rel="noopener noreferrer" className="py-3.5 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg shadow-[#D4AF37]/10"><Download size={14} className="inline mr-2" /> Baixar VSL</a>
+                      <button onClick={() => openOffer(o)} className="py-3.5 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button>
                     </div>
                   </div>
                 </div>
@@ -761,18 +772,28 @@ const App: React.FC = () => {
           </div>
         );
       case 'creatives':
+        if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, Palette, "ARSENAL DE CRIATIVOS");
         return (
-          <div className="animate-in fade-in duration-700 space-y-12">
-            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Palette className="text-[#D4AF37]" /> ARSENAL DE CRIATIVOS</h2>
+          <div className="animate-in slide-in-from-right duration-500 space-y-12">
+            <div className="flex items-center gap-4">
+              <button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button>
+              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">CRIATIVOS:</span> {activeNicheSelection}</h2>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.filter(o => o.creativeEmbedUrls.length > 0).flatMap(o => o.creativeEmbedUrls.slice(0, 1).map((embed, idx) => (
-                <div key={`${o.id}-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 flex flex-col gap-4 group">
+              {offers.filter(o => o.niche === activeNicheSelection && o.creativeEmbedUrls.length > 0).flatMap(o => o.creativeEmbedUrls.slice(0, 1).map((embed, idx) => (
+                <div key={`${o.id}-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 flex flex-col gap-5 group shadow-xl hover:border-[#D4AF37]/50 transition-all">
                   <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-xl border border-white/5">
                     <VideoPlayer url={embed} title={`Creative ${o.title}`} />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white font-black uppercase text-[11px] italic truncate max-w-[150px]">{o.title}</span>
-                    <a href={o.creativeDownloadUrls[idx] || '#'} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-[#1a1a1a] text-[#D4AF37] rounded-xl hover:bg-[#D4AF37] hover:text-black transition-all"><Download size={16} /></a>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white font-black uppercase text-xs italic truncate flex-1 mr-4">{o.title}</span>
+                      <div className="flex gap-2">
+                        <button onClick={(e) => toggleFavorite(o.id, e)} className={`p-2 rounded-lg ${favorites.includes(o.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={14} fill={favorites.includes(o.id) ? "currentColor" : "none"} /></button>
+                        <a href={o.creativeDownloadUrls[idx] || '#'} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#D4AF37] text-black rounded-lg hover:scale-110 transition-transform"><Download size={14} /></a>
+                      </div>
+                    </div>
+                    <button onClick={() => openOffer(o)} className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20">Ver Oferta Completa</button>
                   </div>
                 </div>
               )))}
@@ -780,21 +801,31 @@ const App: React.FC = () => {
           </div>
         );
       case 'pages':
+        if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, FileText, "PÁGINAS DE ALTA CONVERSÃO");
         return (
-          <div className="animate-in fade-in duration-700 space-y-12">
-            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><FileText className="text-[#D4AF37]" /> PÁGINAS DE ALTA CONVERSÃO</h2>
+          <div className="animate-in slide-in-from-right duration-500 space-y-12">
+            <div className="flex items-center gap-4">
+              <button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button>
+              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">PÁGINAS:</span> {activeNicheSelection}</h2>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filtered.filter(o => o.pageUrl && o.pageUrl !== '#').map(o => (
-                <div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden border border-white/5 group hover:border-[#D4AF37]/50 transition-all flex flex-col">
+              {offers.filter(o => o.niche === activeNicheSelection && o.pageUrl && o.pageUrl !== '#').map(o => (
+                <div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden border border-white/5 group hover:border-[#D4AF37]/50 transition-all flex flex-col shadow-2xl h-full">
                   <div className="aspect-[4/3] bg-black relative">
                     <img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="p-4 bg-[#D4AF37] text-black rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 shadow-2xl"><Monitor size={24} /></a>
+                      <a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="p-5 bg-[#D4AF37] text-black rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 shadow-2xl"><Monitor size={28} /></a>
                     </div>
                   </div>
-                  <div className="p-5 flex-1 flex flex-col justify-between">
-                    <h3 className="text-white font-black uppercase text-xs italic mb-4">{o.title}</h3>
-                    <a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-white hover:text-black transition-all">Acessar Página</a>
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div className="mb-6">
+                      <h3 className="text-white font-black uppercase text-sm italic mb-2 tracking-tight group-hover:text-[#D4AF37] transition-colors">{o.title}</h3>
+                      <p className="text-gray-500 text-[10px] font-bold uppercase italic truncate">{o.pageUrl}</p>
+                    </div>
+                    <div className="space-y-2">
+                       <a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg block">Acessar Link Externo</a>
+                       <button onClick={() => openOffer(o)} className="w-full py-3 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -802,21 +833,31 @@ const App: React.FC = () => {
           </div>
         );
       case 'ads_library':
+        if (!activeLanguageSelection) return renderSelectionGrid(allLanguages, setActiveLanguageSelection, Library, "BIBLIOTECA DE ANÚNCIOS");
         return (
-          <div className="animate-in fade-in duration-700 space-y-12">
-            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Library className="text-[#D4AF37]" /> BIBLIOTECA DE ANÚNCIOS</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filtered.filter(o => o.facebookUrl && o.facebookUrl !== '#').map(o => (
-                <a key={o.id} href={o.facebookUrl} target="_blank" rel="noopener noreferrer" className="bg-[#121212] p-8 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
-                  <div className="flex items-center gap-5">
-                    <div className="p-4 bg-[#1a1a1a] rounded-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-xl"><Facebook size={28} /></div>
-                    <div>
-                      <p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest mb-1 italic">FACEBOOK ADS LIBRARY</p>
-                      <h3 className="text-white font-black uppercase text-xl italic">{o.title}</h3>
+          <div className="animate-in slide-in-from-right duration-500 space-y-12">
+            <div className="flex items-center gap-4">
+              <button onClick={() => setActiveLanguageSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button>
+              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">IDIOMA:</span> {activeLanguageSelection}</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {offers.filter(o => o.language === activeLanguageSelection && o.facebookUrl && o.facebookUrl !== '#').map(o => (
+                <div key={o.id} className="bg-[#121212] p-8 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex flex-col gap-8 shadow-2xl group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-5">
+                      <div className="p-5 bg-[#1a1a1a] rounded-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-xl"><Facebook size={32} /></div>
+                      <div>
+                        <p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest mb-1 italic">FACEBOOK ADS LIBRARY</p>
+                        <h3 className="text-white font-black uppercase text-xl italic tracking-tight">{o.title}</h3>
+                      </div>
                     </div>
+                    <button onClick={(e) => toggleFavorite(o.id, e)} className={`p-3 rounded-xl ${favorites.includes(o.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={20} fill={favorites.includes(o.id) ? "currentColor" : "none"} /></button>
                   </div>
-                  <div className="p-3 bg-[#1a1a1a] rounded-xl text-gray-600 group-hover:text-[#D4AF37] group-hover:bg-white/5 transition-all"><ExternalLink size={20} /></div>
-                </a>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a href={o.facebookUrl} target="_blank" rel="noopener noreferrer" className="py-4 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-2"><ExternalLink size={16} /> Acessar Link Externo</a>
+                    <button onClick={() => openOffer(o)} className="py-4 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -904,10 +945,8 @@ const App: React.FC = () => {
               {showFilters && (
                 <div className="animate-in fade-in slide-in-from-top-2 duration-500 flex flex-wrap items-center gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
                   {[
-                    { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: availableNiches },
-                    { label: 'Tipo de Produto', value: selectedType, setter: setSelectedType, options: availableTypes },
-                    { label: 'Tráfego', value: selectedTraffic, setter: setSelectedTraffic, options: availableTrafficSources },
-                    { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: availableLanguages }
+                    { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] },
+                    { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }
                   ].map((f, i) => (
                     <div key={i} className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                       <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label>
