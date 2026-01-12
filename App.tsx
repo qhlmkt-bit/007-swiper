@@ -162,9 +162,9 @@ const getEmbedUrl = (url: string) => {
   return trimmed;
 };
 
-const generateAgentToken = () => {
-  const randomNum = Math.floor(10000 + Math.random() * 90000);
-  return `AGENTE-${randomNum}`;
+const generateAgentId = () => {
+  const randomNum = Math.floor(1000 + Math.random() * 9000);
+  return `AG-${randomNum}`;
 };
 
 /**
@@ -290,41 +290,44 @@ const OfferCard: React.FC<{
 /**
  * LANDING PAGE / WELCOME MODAL
  */
-const LandingPage = ({ onLogin, isSuccess, successToken, onDismissSuccess }: any) => (
+const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => (
   <div className="w-full bg-[#0a0a0a] flex flex-col items-center justify-center min-h-screen selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
     <style dangerouslySetInnerHTML={{ __html: STYLES }} />
 
-    {/* Welcome Success Modal */}
+    {/* Golden Welcome Modal */}
     {isSuccess && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500">
-        <div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.15)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div>
-          <div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]">
-            <ShieldCheck size={48} className="text-black" />
+        <div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.2)] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-600 via-[#D4AF37] to-yellow-600"></div>
+          <div className="bg-[#D4AF37] w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(212,175,55,0.5)] border-4 border-[#121212]">
+            <Trophy size={48} className="text-black" />
           </div>
-          <h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO À INTELIGÊNCIA LIBERADO!</h2>
-          <p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10">Sua operação de rastreio de elite começa agora.</p>
+          <h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-5xl tracking-tighter italic mb-4 leading-none">BEM-VINDO, AGENTE!</h2>
+          <p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10 leading-relaxed px-4">Esta é sua credencial única. Use-a para acessar seus favoritos e histórico exclusivos em qualquer dispositivo.</p>
           
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-12">
-            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">SUA CREDENCIAL EXCLUSIVA</p>
-            <div className="flex items-center justify-center gap-4">
-              <span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic selection:bg-[#D4AF37] selection:text-black">{successToken}</span>
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-8 mb-12 shadow-inner">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] mb-4">ID DO AGENTE</p>
+            <div className="flex items-center justify-center gap-6">
+              <span className="text-white text-4xl md:text-6xl font-black tracking-tighter italic selection:bg-[#D4AF37] selection:text-black">{agentId}</span>
               <button 
                 onClick={() => {
-                  navigator.clipboard.writeText(successToken);
-                  alert('CREDENTIAL COPIADA!');
+                  navigator.clipboard.writeText(agentId);
+                  alert('ID COPIADO COM SUCESSO! 🛡️');
                 }}
-                className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"
+                className="p-4 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-2xl text-gray-400 group"
               >
-                <Copy size={20} />
+                <Copy size={24} className="group-active:scale-90 transition-transform" />
               </button>
             </div>
-            <p className="text-red-500/60 text-[9px] font-bold uppercase mt-6 tracking-widest italic">NÃO COMPARTILHE ESTE TOKEN. ELE É SUA CHAVE PRIVADA.</p>
+            <div className="mt-8 flex items-center justify-center gap-2 text-yellow-600">
+               <ShieldCheck size={14} />
+               <p className="text-[9px] font-black uppercase tracking-widest italic">Acesso Restrito e Criptografado</p>
+            </div>
           </div>
 
           <button 
             onClick={onDismissSuccess} 
-            className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter animate-btn-pulse"
+            className="w-full py-6 bg-[#D4AF37] text-black font-black rounded-3xl uppercase hover:scale-[1.03] active:scale-95 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] italic tracking-tighter text-xl animate-btn-pulse"
           >
             [ACESSAR PLATAFORMA]
           </button>
@@ -334,7 +337,7 @@ const LandingPage = ({ onLogin, isSuccess, successToken, onDismissSuccess }: any
     
     <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
       <div className="flex items-center space-x-3">
-        <div className="bg-[#D4AF37] p-2 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div>
+        <div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div>
         <span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span>
       </div>
       <div className="flex items-center gap-4">
@@ -407,7 +410,7 @@ const LandingPage = ({ onLogin, isSuccess, successToken, onDismissSuccess }: any
  */
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [agentToken, setAgentToken] = useState<string>('');
+  const [agentId, setAgentId] = useState<string>('');
   const [currentPage, setCurrentPage] = useState('home');
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -431,11 +434,11 @@ const App: React.FC = () => {
   const [activePageModule, setActivePageModule] = useState<string | null>(null);
 
   const [isSuccess, setIsSuccess] = useState(false);
-  const [newlyGeneratedToken, setNewlyGeneratedToken] = useState<string>('');
+  const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
 
   // Storage Keys per Agent
-  const getFavKey = (token: string) => `favs_${token}`;
-  const getViewedKey = (token: string) => `viewed_${token}`;
+  const getFavKey = (id: string) => `favs_${id}`;
+  const getViewedKey = (id: string) => `viewed_${id}`;
 
   // Derivations
   const availableNiches = ['Todos', ...Array.from(new Set(offers.map(o => o.niche))).sort()];
@@ -488,7 +491,7 @@ const App: React.FC = () => {
   const openOffer = (offer: Offer) => {
     const newViewed = [offer.id, ...recentlyViewed.filter(id => id !== offer.id)].slice(0, 8);
     setRecentlyViewed(newViewed);
-    if (agentToken) localStorage.setItem(getViewedKey(agentToken), JSON.stringify(newViewed));
+    if (agentId) localStorage.setItem(getViewedKey(agentId), JSON.stringify(newViewed));
     setSelectedOffer(offer);
     pushNavState({ sid: offer.id });
   };
@@ -514,34 +517,33 @@ const App: React.FC = () => {
     setFavorites(prev => {
       const isFav = prev.includes(id);
       const next = isFav ? prev.filter(f => f !== id) : [...prev, id];
-      if (agentToken) localStorage.setItem(getFavKey(agentToken), JSON.stringify(next));
+      if (agentId) localStorage.setItem(getFavKey(agentId), JSON.stringify(next));
       return next;
     });
   };
 
   // INITIAL LOAD
   useEffect(() => {
-    // 1. Success URL Check
+    // Detect Success URL
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       setIsSuccess(true);
-      const token = generateAgentToken();
-      setNewlyGeneratedToken(token);
-      localStorage.setItem('agente_token', token);
+      const newId = generateAgentId();
+      setNewlyGeneratedId(newId);
+      localStorage.setItem('agente_token', newId);
     }
 
-    // 2. Load Session (Always check localStorage)
-    const savedToken = localStorage.getItem('agente_token');
-    if (savedToken) {
-      setAgentToken(savedToken);
+    // Load Session
+    const savedId = localStorage.getItem('agente_token');
+    if (savedId) {
+      setAgentId(savedId);
       setIsLoggedIn(true);
-      const favs = localStorage.getItem(getFavKey(savedToken));
+      const favs = localStorage.getItem(getFavKey(savedId));
       if (favs) setFavorites(JSON.parse(favs));
-      const viewed = localStorage.getItem(getViewedKey(savedToken));
+      const viewed = localStorage.getItem(getViewedKey(savedId));
       if (viewed) setRecentlyViewed(JSON.parse(viewed));
     }
 
-    // 3. Fetch Data
     const fetchOffers = async () => {
       try {
         setLoading(true);
@@ -567,25 +569,24 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = () => {
-    const tokenInput = window.prompt("🕵️‍♂️ ACESSO RESTRITO\nDigite seu Token de Agente (ex: AGENTE-12345):");
-    if (tokenInput && tokenInput.trim().toUpperCase().startsWith('AGENTE-')) {
-      const cleanToken = tokenInput.trim().toUpperCase();
-      setAgentToken(cleanToken);
+    const inputId = window.prompt("🕵️‍♂️ ACESSO À CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE (ex: AG-1234):");
+    if (inputId && inputId.trim().toUpperCase().startsWith('AG-')) {
+      const cleanId = inputId.trim().toUpperCase();
+      setAgentId(cleanId);
       setIsLoggedIn(true);
-      localStorage.setItem('agente_token', cleanToken);
-      // Load this specific user's data
-      const favs = localStorage.getItem(getFavKey(cleanToken));
+      localStorage.setItem('agente_token', cleanId);
+      const favs = localStorage.getItem(getFavKey(cleanId));
       setFavorites(favs ? JSON.parse(favs) : []);
-      const viewed = localStorage.getItem(getViewedKey(cleanToken));
+      const viewed = localStorage.getItem(getViewedKey(cleanId));
       setRecentlyViewed(viewed ? JSON.parse(viewed) : []);
-    } else if (tokenInput !== null) {
-      alert('TOKEN INVÁLIDO ❌\nUse o formato AGENTE-XXXXX.');
+    } else if (inputId !== null) {
+      alert('IDENTIDADE NÃO RECONHECIDA ❌\nUse o formato AG-XXXX.');
     }
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setAgentToken('');
+    setAgentId('');
     localStorage.removeItem('agente_token');
     setFavorites([]);
     setRecentlyViewed([]);
@@ -593,11 +594,11 @@ const App: React.FC = () => {
 
   const dismissSuccess = () => {
     setIsSuccess(false);
-    // Cleanup URL
+    // URL Cleanup without reload
     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({ path: newUrl }, '', newUrl);
-    // Auto-login after token generation
-    setAgentToken(newlyGeneratedToken);
+    // Finish session setup
+    setAgentId(newlyGeneratedId);
     setIsLoggedIn(true);
   };
 
@@ -605,7 +606,7 @@ const App: React.FC = () => {
     if (loading) return (
       <div className="flex flex-col items-center justify-center py-40 gap-4 animate-pulse">
         <Loader2 className="text-[#D4AF37] animate-spin" size={48} />
-        <p className="text-[#D4AF37] font-black uppercase text-xs tracking-widest italic">Infiltrando nos Servidores...</p>
+        <p className="text-[#D4AF37] font-black uppercase text-xs tracking-widest italic">Interceptando pacotes de dados...</p>
       </div>
     );
 
@@ -627,11 +628,11 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
-            {/* Status Badge Preserve - Title Removed as requested */}
+            {/* Header: Clean status badge, title removed */}
             {selectedOffer.views && selectedOffer.views.trim() !== '' && (
-              <div className="flex items-center gap-3 bg-[#121212]/50 px-4 py-2 rounded-xl border border-[#D4AF37]/30 w-fit">
-                <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-bounce" />
-                <span className="text-[#D4AF37] font-black uppercase text-sm md:text-base italic tracking-widest">{selectedOffer.views}</span>
+              <div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-[#D4AF37]/40 w-fit shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-pulse" />
+                <span className="text-[#D4AF37] font-black uppercase text-sm md:text-base italic tracking-[0.1em]">{selectedOffer.views} ANÚNCIOS ATIVOS</span>
               </div>
             )}
 
@@ -645,7 +646,7 @@ const App: React.FC = () => {
                       </button>
                     ))}
                   </div>
-                  <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1">
+                  <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl">
                     <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" />
                   </div>
                 </div>
@@ -655,11 +656,11 @@ const App: React.FC = () => {
                   <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0"><ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO</h3>
                   <div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">
                     {[
-                      { icon: Info, label: 'Nome', value: selectedOffer.description || selectedOffer.title }, // Map Name to Description/Briefing
-                      { icon: Tag, label: 'Nicho', value: selectedOffer.niche },
-                      { icon: Lock, label: 'Tipo', value: selectedOffer.productType },
-                      { icon: Globe, label: 'Idioma', value: selectedOffer.language },
-                      { icon: Target, label: 'Fonte', value: selectedOffer.trafficSource.join(', ') },
+                      { icon: Info, label: 'NOME', value: selectedOffer.description || selectedOffer.title },
+                      { icon: Tag, label: 'NICHO', value: selectedOffer.niche },
+                      { icon: Lock, label: 'TIPO', value: selectedOffer.productType },
+                      { icon: Globe, label: 'IDIOMA', value: selectedOffer.language },
+                      { icon: Target, label: 'FONTE', value: selectedOffer.trafficSource.join(', ') },
                     ].map((item, idx) => (
                       <div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0">
                         <div className="flex items-center gap-3"><item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" /><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span></div>
@@ -676,7 +677,9 @@ const App: React.FC = () => {
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {selectedOffer.creativeEmbedUrls.slice(0, 3).map((embedUrl, i) => (
                     <div key={i} className="flex flex-col gap-4">
-                      <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl"><VideoPlayer url={embedUrl} title={`Creative ${i + 1}`} /></div>
+                      <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl group/player">
+                        <VideoPlayer url={embedUrl} title={`Creative ${i + 1}`} />
+                      </div>
                       <a href={selectedOffer.creativeDownloadUrls[i] || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1a1a1a] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 italic"><Download size={14} /> BAIXAR CRIATIVO</a>
                     </div>
                   ))}
@@ -686,14 +689,14 @@ const App: React.FC = () => {
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                 <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
+                 <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl">
                    <div className="flex items-center gap-4">
                       <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Monitor size={20} /></div>
                       <div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p></div>
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" />
                  </a>
-                 <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
+                 <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl">
                    <div className="flex items-center gap-4">
                       <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Facebook size={20} /></div>
                       <div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">BIBLIOTECA DE ANÚNCIOS</p></div>
@@ -731,7 +734,7 @@ const App: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {recentlyHome.map(o => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
               </div>
-              {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic">Nenhuma atividade recente registrada para este agente.</p>}
+              {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic">Nenhuma atividade recente registrada neste ID.</p>}
             </div>
           </div>
         );
@@ -757,17 +760,20 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10">
             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Settings className="text-[#D4AF37]" /> Painel do Agente</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-[#121212] p-6 rounded-[24px] border border-white/5 shadow-2xl">
-                <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic">Sua Identidade Operacional</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center pb-3 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">TOKEN</span><span className="text-white font-black uppercase italic text-sm">{agentToken}</span></div>
-                  <div className="flex justify-between items-center pb-3 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">STATUS</span><span className="bg-[#D4AF37] text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest italic">AGENTE ATIVO</span></div>
+              <div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl">
+                <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 italic">Identidade Operacional</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">ID DO AGENTE</span><span className="text-white font-black uppercase italic text-lg">{agentId}</span></div>
+                  <div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">STATUS SESSÃO</span><span className="bg-[#D4AF37] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic shadow-lg shadow-[#D4AF37]/20">ATIVO / PRIVADO</span></div>
+                  <div className="flex justify-between items-center"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">BANCO DE DADOS</span><span className="text-white font-black uppercase italic text-sm">ISOLADO</span></div>
                 </div>
               </div>
-              <div className="bg-[#121212] p-6 rounded-[24px] border border-white/5 shadow-2xl flex flex-col justify-between">
-                <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">Suporte Estratégico</h3>
-                <span className="text-white font-black text-xl italic mb-6">qhl.mkt@gmail.com</span>
-                <button onClick={() => { navigator.clipboard.writeText('qhl.mkt@gmail.com'); alert('E-MAIL COPIADO!'); }} className="w-full py-3.5 bg-[#1a1a1a] rounded-xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={16} /> Copiar E-mail</button>
+              <div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between">
+                <div>
+                  <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">Suporte Estratégico</h3>
+                  <span className="text-white font-black text-xl italic mb-8 block">qhl.mkt@gmail.com</span>
+                </div>
+                <button onClick={() => { navigator.clipboard.writeText('qhl.mkt@gmail.com'); alert('CANAL DE SUPORTE COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button>
               </div>
             </div>
           </div>
@@ -841,7 +847,7 @@ const App: React.FC = () => {
           </main>
         </>
       ) : (
-        <LandingPage onLogin={handleLogin} isSuccess={isSuccess} successToken={newlyGeneratedToken} onDismissSuccess={dismissSuccess} />
+        <LandingPage onLogin={handleLogin} isSuccess={isSuccess} agentId={newlyGeneratedId} onDismissSuccess={dismissSuccess} />
       )}
     </div>
   );
