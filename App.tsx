@@ -457,7 +457,7 @@ const App: React.FC = () => {
     });
   }, [searchQuery, selectedNiche, selectedType, selectedTraffic, selectedLanguage]);
 
-  const showFilters = (currentPage === 'home' || currentPage === 'offers' || currentPage === 'favorites') && !selectedOffer;
+  const showFilters = (currentPage === 'home' || currentPage === 'offers' || currentPage === 'favorites' || currentPage === 'vsl' || currentPage === 'creatives' || currentPage === 'pages' || currentPage === 'ads_library') && !selectedOffer;
 
   const pushNavState = useCallback((params: any) => {
     const newState = { cp: currentPage, sid: selectedOffer?.id || null, anm: activeNicheModule, avm: activeVslModule, alm: activeLanguageModule, apm: activePageModule, ...params };
@@ -629,7 +629,6 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
-            {/* Clean Status Badge - Giant Title hidden as requested */}
             {selectedOffer.views && selectedOffer.views.trim() !== '' && (
               <div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-[#D4AF37]/40 w-fit shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
                 <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-pulse" />
@@ -737,6 +736,89 @@ const App: React.FC = () => {
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 animate-in fade-in duration-700">
             {filtered.map(o => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+          </div>
+        );
+      case 'vsl':
+        return (
+          <div className="animate-in fade-in duration-700 space-y-12">
+            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Video className="text-[#D4AF37]" /> CENTRAL DE VSL</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {filtered.filter(o => o.vslLinks.length > 0).map(o => (
+                <div key={o.id} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 flex flex-col gap-6">
+                  <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl">
+                    <VideoPlayer url={o.vslLinks[0].url} title={o.title} />
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <h3 className="text-white font-black uppercase text-lg italic">{o.title}</h3>
+                    <div className="flex gap-2">
+                      <a href={o.vslDownloadUrl} target="_blank" rel="noopener noreferrer" className="flex-1 py-3 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all"><Download size={14} className="inline mr-2" /> Baixar VSL</a>
+                      <button onClick={() => openOffer(o)} className="flex-1 py-3 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'creatives':
+        return (
+          <div className="animate-in fade-in duration-700 space-y-12">
+            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Palette className="text-[#D4AF37]" /> ARSENAL DE CRIATIVOS</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.filter(o => o.creativeEmbedUrls.length > 0).flatMap(o => o.creativeEmbedUrls.slice(0, 1).map((embed, idx) => (
+                <div key={`${o.id}-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 flex flex-col gap-4 group">
+                  <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-xl border border-white/5">
+                    <VideoPlayer url={embed} title={`Creative ${o.title}`} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-black uppercase text-[11px] italic truncate max-w-[150px]">{o.title}</span>
+                    <a href={o.creativeDownloadUrls[idx] || '#'} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-[#1a1a1a] text-[#D4AF37] rounded-xl hover:bg-[#D4AF37] hover:text-black transition-all"><Download size={16} /></a>
+                  </div>
+                </div>
+              )))}
+            </div>
+          </div>
+        );
+      case 'pages':
+        return (
+          <div className="animate-in fade-in duration-700 space-y-12">
+            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><FileText className="text-[#D4AF37]" /> PÁGINAS DE ALTA CONVERSÃO</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {filtered.filter(o => o.pageUrl && o.pageUrl !== '#').map(o => (
+                <div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden border border-white/5 group hover:border-[#D4AF37]/50 transition-all flex flex-col">
+                  <div className="aspect-[4/3] bg-black relative">
+                    <img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="p-4 bg-[#D4AF37] text-black rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 shadow-2xl"><Monitor size={24} /></a>
+                    </div>
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <h3 className="text-white font-black uppercase text-xs italic mb-4">{o.title}</h3>
+                    <a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-white hover:text-black transition-all">Acessar Página</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'ads_library':
+        return (
+          <div className="animate-in fade-in duration-700 space-y-12">
+            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Library className="text-[#D4AF37]" /> BIBLIOTECA DE ANÚNCIOS</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {filtered.filter(o => o.facebookUrl && o.facebookUrl !== '#').map(o => (
+                <a key={o.id} href={o.facebookUrl} target="_blank" rel="noopener noreferrer" className="bg-[#121212] p-8 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
+                  <div className="flex items-center gap-5">
+                    <div className="p-4 bg-[#1a1a1a] rounded-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-xl"><Facebook size={28} /></div>
+                    <div>
+                      <p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest mb-1 italic">FACEBOOK ADS LIBRARY</p>
+                      <h3 className="text-white font-black uppercase text-xl italic">{o.title}</h3>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-[#1a1a1a] rounded-xl text-gray-600 group-hover:text-[#D4AF37] group-hover:bg-white/5 transition-all"><ExternalLink size={20} /></div>
+                </a>
+              ))}
+            </div>
           </div>
         );
       case 'favorites':
