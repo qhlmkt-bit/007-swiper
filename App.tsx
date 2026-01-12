@@ -909,7 +909,7 @@ const App: React.FC = () => {
               <div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl">
                 <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 italic">Identidade Operacional</h3>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">ID DO AGENTE</span><span className="text-white font-black uppercase italic text-lg">{agentId}</span></div>
+                  <div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SENHA</span><span className="text-white font-black uppercase italic text-lg">{agentId}</span></div>
                   <div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SESSÃO</span><span className="bg-[#D4AF37] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic">INDIVIDUAL / PRIVADA</span></div>
                 </div>
               </div>
@@ -949,15 +949,6 @@ const App: React.FC = () => {
       </nav>
       
       <div className="mt-8 space-y-3">
-        <SidebarItem 
-          icon={LifeBuoy} 
-          label="Suporte ao Agente" 
-          active={false} 
-          variant="gold" 
-          onClick={() => {
-            window.open(`mailto:${SUPPORT_EMAIL}`, '_blank');
-          }} 
-        />
         <SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" />
       </div>
     </div>
