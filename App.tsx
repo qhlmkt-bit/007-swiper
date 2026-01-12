@@ -163,8 +163,8 @@ const getEmbedUrl = (url: string) => {
 };
 
 const generateAgentId = () => {
-  const randomNum = Math.floor(1000 + Math.random() * 9000);
-  return `AG-${randomNum}`;
+  const randomNum = Math.floor(10000 + Math.random() * 90000);
+  return `AGENTE-${randomNum}`;
 };
 
 /**
@@ -294,42 +294,39 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => 
   <div className="w-full bg-[#0a0a0a] flex flex-col items-center justify-center min-h-screen selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
     <style dangerouslySetInnerHTML={{ __html: STYLES }} />
 
-    {/* Golden Welcome Modal */}
+    {/* Welcome Success Modal */}
     {isSuccess && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500">
-        <div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.2)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-600 via-[#D4AF37] to-yellow-600"></div>
-          <div className="bg-[#D4AF37] w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(212,175,55,0.5)] border-4 border-[#121212]">
-            <Trophy size={48} className="text-black" />
+        <div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div>
+          <div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]">
+            <ShieldCheck size={48} className="text-black" />
           </div>
-          <h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-5xl tracking-tighter italic mb-4 leading-none">BEM-VINDO, AGENTE!</h2>
-          <p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10 leading-relaxed px-4">Esta é sua credencial única. Use-a para acessar seus favoritos e histórico exclusivos em qualquer dispositivo.</p>
+          <h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO À INTELIGÊNCIA LIBERADO!</h2>
+          <p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10 leading-relaxed">Sua operação de rastreio de elite começa agora. Sua credencial é única e privada.</p>
           
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-8 mb-12 shadow-inner">
-            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] mb-4">ID DO AGENTE</p>
-            <div className="flex items-center justify-center gap-6">
-              <span className="text-white text-4xl md:text-6xl font-black tracking-tighter italic selection:bg-[#D4AF37] selection:text-black">{agentId}</span>
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-12">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">ESTA É SUA CREDENCIAL ÚNICA E PRIVADA</p>
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic selection:bg-[#D4AF37] selection:text-black">{agentId}</span>
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(agentId);
-                  alert('ID COPIADO COM SUCESSO! 🛡️');
+                  alert('ID COPIADO! 🛡️');
                 }}
-                className="p-4 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-2xl text-gray-400 group"
+                className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"
               >
-                <Copy size={24} className="group-active:scale-90 transition-transform" />
+                <Copy size={20} />
               </button>
             </div>
-            <div className="mt-8 flex items-center justify-center gap-2 text-yellow-600">
-               <ShieldCheck size={14} />
-               <p className="text-[9px] font-black uppercase tracking-widest italic">Acesso Restrito e Criptografado</p>
-            </div>
+            <p className="text-red-500/60 text-[9px] font-bold uppercase mt-6 tracking-widest italic">NÃO COMPARTILHE ESTE TOKEN. ELE É SUA CHAVE DE ACESSO INDIVIDUAL.</p>
           </div>
 
           <button 
             onClick={onDismissSuccess} 
-            className="w-full py-6 bg-[#D4AF37] text-black font-black rounded-3xl uppercase hover:scale-[1.03] active:scale-95 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] italic tracking-tighter text-xl animate-btn-pulse"
+            className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter animate-btn-pulse"
           >
-            [ACESSAR PLATAFORMA]
+            [ACESSAR ARSENAL]
           </button>
         </div>
       </div>
@@ -524,26 +521,26 @@ const App: React.FC = () => {
 
   // INITIAL LOAD
   useEffect(() => {
-    // Detect Success URL
+    // 1. Success URL Check (Modal has priority)
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       setIsSuccess(true);
       const newId = generateAgentId();
       setNewlyGeneratedId(newId);
-      localStorage.setItem('agente_token', newId);
+    } else {
+      // 2. Load Existing Session only if not in success state
+      const savedId = localStorage.getItem('agente_token');
+      if (savedId) {
+        setAgentId(savedId);
+        setIsLoggedIn(true);
+        const favs = localStorage.getItem(getFavKey(savedId));
+        if (favs) setFavorites(JSON.parse(favs));
+        const viewed = localStorage.getItem(getViewedKey(savedId));
+        if (viewed) setRecentlyViewed(JSON.parse(viewed));
+      }
     }
 
-    // Load Session
-    const savedId = localStorage.getItem('agente_token');
-    if (savedId) {
-      setAgentId(savedId);
-      setIsLoggedIn(true);
-      const favs = localStorage.getItem(getFavKey(savedId));
-      if (favs) setFavorites(JSON.parse(favs));
-      const viewed = localStorage.getItem(getViewedKey(savedId));
-      if (viewed) setRecentlyViewed(JSON.parse(viewed));
-    }
-
+    // 3. Fetch Data
     const fetchOffers = async () => {
       try {
         setLoading(true);
@@ -569,8 +566,8 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = () => {
-    const inputId = window.prompt("🕵️‍♂️ ACESSO À CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE (ex: AG-1234):");
-    if (inputId && inputId.trim().toUpperCase().startsWith('AG-')) {
+    const inputId = window.prompt("🕵️‍♂️ ACESSO À CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE (ex: AGENTE-12345):");
+    if (inputId && inputId.trim().toUpperCase().startsWith('AGENTE-')) {
       const cleanId = inputId.trim().toUpperCase();
       setAgentId(cleanId);
       setIsLoggedIn(true);
@@ -580,7 +577,7 @@ const App: React.FC = () => {
       const viewed = localStorage.getItem(getViewedKey(cleanId));
       setRecentlyViewed(viewed ? JSON.parse(viewed) : []);
     } else if (inputId !== null) {
-      alert('IDENTIDADE NÃO RECONHECIDA ❌\nUse o formato AG-XXXX.');
+      alert('IDENTIDADE NÃO RECONHECIDA ❌\nUse o formato AGENTE-XXXXX.');
     }
   };
 
@@ -594,12 +591,16 @@ const App: React.FC = () => {
 
   const dismissSuccess = () => {
     setIsSuccess(false);
-    // URL Cleanup without reload
+    // URL Cleanup
     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({ path: newUrl }, '', newUrl);
     // Finish session setup
-    setAgentId(newlyGeneratedId);
+    const cleanId = newlyGeneratedId;
+    setAgentId(cleanId);
     setIsLoggedIn(true);
+    localStorage.setItem('agente_token', cleanId);
+    setFavorites([]);
+    setRecentlyViewed([]);
   };
 
   const renderContent = () => {
@@ -628,7 +629,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
-            {/* Header: Clean status badge, title removed */}
+            {/* Clean Status Badge - Giant Title hidden as requested */}
             {selectedOffer.views && selectedOffer.views.trim() !== '' && (
               <div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-[#D4AF37]/40 w-fit shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
                 <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-pulse" />
@@ -705,12 +706,6 @@ const App: React.FC = () => {
                  </a>
                </div>
             </div>
-            <div className="pt-10 md:pt-16 flex justify-center pb-8 border-t border-white/5">
-                <a href={selectedOffer.creativeZipUrl && selectedOffer.creativeZipUrl !== '#' ? selectedOffer.creativeZipUrl : '#'} target="_blank" rel="noopener noreferrer" className="px-12 py-6 bg-[#D4AF37] text-black font-black text-xl md:text-2xl rounded-[24px] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(212,175,55,0.25)] uppercase tracking-tighter flex items-center gap-4 italic group">
-                  <div className="p-2 bg-black/10 rounded-xl group-hover:bg-black/20 transition-colors"><Zap size={24} fill="currentColor" className="md:w-8 md:h-8" /></div>
-                  BAIXAR ARSENAL COMPLETO (ZIP)
-                </a>
-            </div>
           </div>
         </div>
       );
@@ -764,8 +759,7 @@ const App: React.FC = () => {
                 <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 italic">Identidade Operacional</h3>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">ID DO AGENTE</span><span className="text-white font-black uppercase italic text-lg">{agentId}</span></div>
-                  <div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">STATUS SESSÃO</span><span className="bg-[#D4AF37] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic shadow-lg shadow-[#D4AF37]/20">ATIVO / PRIVADO</span></div>
-                  <div className="flex justify-between items-center"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">BANCO DE DADOS</span><span className="text-white font-black uppercase italic text-sm">ISOLADO</span></div>
+                  <div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SESSÃO</span><span className="bg-[#D4AF37] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic">INDIVIDUAL / PRIVADA</span></div>
                 </div>
               </div>
               <div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between">
@@ -773,7 +767,7 @@ const App: React.FC = () => {
                   <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">Suporte Estratégico</h3>
                   <span className="text-white font-black text-xl italic mb-8 block">qhl.mkt@gmail.com</span>
                 </div>
-                <button onClick={() => { navigator.clipboard.writeText('qhl.mkt@gmail.com'); alert('CANAL DE SUPORTE COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button>
+                <button onClick={() => { navigator.clipboard.writeText('qhl.mkt@gmail.com'); alert('E-MAIL COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button>
               </div>
             </div>
           </div>
