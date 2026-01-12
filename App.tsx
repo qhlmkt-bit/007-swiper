@@ -84,7 +84,7 @@ export interface Offer {
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 const KIWIFY_MENSAL = 'https://pay.kiwify.com.br/mtU9l7e';
 const KIWIFY_TRIMESTRAL = 'https://pay.kiwify.com.br/ExDtrjE';
-const SUPPORT_EMAIL = 'qhl.mkt@gmail.com';
+const SUPPORT_EMAIL = 'suporte@007swiper.com';
 
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -456,9 +456,8 @@ const App: React.FC = () => {
     });
   }, [searchQuery, selectedNiche, selectedLanguage, selectedType, selectedTraffic]);
 
-  // Updated filter visibility logic
-  const isListingPage = currentPage === 'home' || currentPage === 'offers' || currentPage === 'favorites';
-  const showFilters = isListingPage && !selectedOffer;
+  // Updated filter visibility logic: only on 'offers' page and no offer selected
+  const showFilters = currentPage === 'offers' && !selectedOffer;
 
   const pushNavState = useCallback((params: any) => {
     const newState = { cp: currentPage, sid: selectedOffer?.id || null, ans: activeNicheSelection, als: activeLanguageSelection, ...params };
@@ -916,7 +915,7 @@ const App: React.FC = () => {
               </div>
               <div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between">
                 <div>
-                  <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">Suporte Estratégico</h3>
+                  <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">SUPORTE</h3>
                   <span className="text-white font-black text-xl italic mb-8 block">{SUPPORT_EMAIL}</span>
                 </div>
                 <button onClick={() => { navigator.clipboard.writeText(SUPPORT_EMAIL); alert('E-MAIL COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button>
