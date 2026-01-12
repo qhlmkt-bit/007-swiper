@@ -298,7 +298,6 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => 
   <div className="w-full bg-[#0a0a0a] flex flex-col items-center justify-center min-h-screen selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
     <style dangerouslySetInnerHTML={{ __html: STYLES }} />
 
-    {/* Welcome Success Modal */}
     {isSuccess && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500">
         <div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden">
@@ -323,7 +322,6 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => 
                 <Copy size={20} />
               </button>
             </div>
-            <p className="text-red-500/60 text-[9px] font-bold uppercase mt-6 tracking-widest italic">NÃO COMPARTILHE ESTE ID. ELE É SUA CHAVE DE ACESSO INDIVIDUAL.</p>
           </div>
 
           <button 
@@ -453,12 +451,12 @@ const App: React.FC = () => {
       const matchesNiche = selectedNiche === 'Todos' || offer.niche === selectedNiche;
       const matchesLanguage = selectedLanguage === 'Todos' || offer.language === selectedLanguage;
       const matchesType = selectedType === 'Todos' || offer.productType === selectedType;
-      const matchesTraffic = selectedTraffic === 'Todos' || offer.trafficSource.some(t => t.includes(selectedTraffic));
+      const matchesTraffic = selectedTraffic === 'Todos' || offer.trafficSource.some(t => t.toLowerCase().includes(selectedTraffic.toLowerCase()));
       return matchesSearch && matchesNiche && matchesLanguage && matchesType && matchesTraffic;
     });
   }, [searchQuery, selectedNiche, selectedLanguage, selectedType, selectedTraffic]);
 
-  // Logic to show filters only on listing pages and not in details or categorized modules
+  // Updated filter visibility logic
   const isListingPage = currentPage === 'home' || currentPage === 'offers' || currentPage === 'favorites';
   const showFilters = isListingPage && !selectedOffer;
 
@@ -549,10 +547,10 @@ const App: React.FC = () => {
           if (!v[1] || v[1].toLowerCase() === 'undefined') return null;
           return {
             id: v[0] || String(i), title: v[1], niche: v[2] || 'Geral', productType: v[3] || 'Geral', description: v[4] || '',
-            coverImage: v[5] || '', views: v[7] || '', vslLinks: [{ label: 'VSL Principal', url: v[8] || '' }], vslDownloadUrl: v[9] || '#',
-            trend: (v[6] as Trend) || 'Estável', transcriptionUrl: v[10] || '#', creativeEmbedUrls: (v[11] || '').split(',').filter(Boolean),
-            creativeDownloadUrls: (v[12] || '').split(',').filter(Boolean), facebookUrl: v[13] || '#', pageUrl: v[14] || '#',
-            language: v[15] || 'Português', trafficSource: (v[16] || '').split(',').filter(Boolean), creativeZipUrl: v[17] || '#', creativeImages: [], 
+            coverImage: v[5] || '', views: v[7] || '', vslLinks: (v[8] || '').split(',').map(u => ({ label: 'VSL Principal', url: u.trim() })).filter(link => link.url), vslDownloadUrl: v[9] || '#',
+            trend: (v[6] as Trend) || 'Estável', transcriptionUrl: v[10] || '#', creativeEmbedUrls: (v[11] || '').split(',').map(s => s.trim()).filter(Boolean),
+            creativeDownloadUrls: (v[12] || '').split(',').map(s => s.trim()).filter(Boolean), facebookUrl: v[13] || '#', pageUrl: v[14] || '#',
+            language: v[15] || 'Português', trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), creativeZipUrl: v[17] || '#', creativeImages: [], 
           };
         }).filter((o): o is Offer => o !== null);
         setOffers([...parsed].reverse());
@@ -670,7 +668,7 @@ const App: React.FC = () => {
                   <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">
                     {selectedOffer.vslLinks.map((link, idx) => (
                       <button key={idx} onClick={() => setActiveVslIndex(idx)} className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'}`}>
-                        <Video size={12} /> {link.label}
+                        <Video size={12} /> {link.label || `VSL ${idx + 1}`}
                       </button>
                     ))}
                   </div>
@@ -700,14 +698,13 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Creative Grid in details */}
             {selectedOffer.creativeEmbedUrls.length > 0 && (
               <div className="space-y-6">
                 <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><ImageIcon className="text-[#D4AF37] w-6 h-6" /> CRIATIVOS</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {selectedOffer.creativeEmbedUrls.map((url, i) => (
-                    <div key={i} className="bg-[#121212] p-4 rounded-2xl border border-white/5 flex flex-col gap-4">
-                      <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-lg">
+                    <div key={i} className="bg-[#121212] p-4 rounded-2xl border border-white/5 flex flex-col gap-4 shadow-xl">
+                      <div className="aspect-video bg-black rounded-xl overflow-hidden">
                         <VideoPlayer url={url} title={`Creative ${i + 1}`} />
                       </div>
                       <a href={selectedOffer.creativeDownloadUrls[i] || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 flex items-center justify-center gap-2"><Download size={14} /> Download Criativo {i + 1}</a>
@@ -717,7 +714,6 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Structure Links */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -775,30 +771,30 @@ const App: React.FC = () => {
         if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, Video, "CENTRAL DE VSL");
         return (
           <div className="animate-in slide-in-from-right duration-500 space-y-12">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button>
-                <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">VSL:</span> {activeNicheSelection}</h2>
-              </div>
+            <div className="flex items-center gap-4">
+              <button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button>
+              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">VSL:</span> {activeNicheSelection}</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {offers.filter(o => o.niche === activeNicheSelection && o.vslLinks.length > 0).map(o => (
-                <div key={o.id} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 flex flex-col gap-6 shadow-2xl group">
-                  <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl group-hover:border-[#D4AF37]/30 border border-transparent transition-all">
-                    <VideoPlayer url={o.vslLinks[0].url} title={o.title} />
-                  </div>
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-white font-black uppercase text-lg italic tracking-tight">{o.title}</h3>
-                      <button onClick={(e) => toggleFavorite(o.id, e)} className={`p-2 rounded-xl ${favorites.includes(o.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={16} fill={favorites.includes(o.id) ? "currentColor" : "none"} /></button>
+              {offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => 
+                offer.vslLinks.map((link, idx) => (
+                  <div key={`${offer.id}-vsl-${idx}`} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 flex flex-col gap-6 shadow-2xl group">
+                    <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl group-hover:border-[#D4AF37]/30 border border-transparent transition-all">
+                      <VideoPlayer url={link.url} title={`${offer.title} - ${link.label}`} />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <a href={o.vslDownloadUrl} target="_blank" rel="noopener noreferrer" className="py-3.5 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg shadow-[#D4AF37]/10"><Download size={14} className="inline mr-2" /> Baixar VSL</a>
-                      <button onClick={() => openOffer(o)} className="py-3.5 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-white font-black uppercase text-lg italic tracking-tight">{offer.title} - {link.label}</h3>
+                        <button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-xl ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={16} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <a href={offer.vslDownloadUrl} target="_blank" rel="noopener noreferrer" className="py-3.5 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg"><Download size={14} className="inline mr-2" /> Baixar VSL</a>
+                        <button onClick={() => openOffer(offer)} className="py-3.5 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         );
@@ -811,23 +807,25 @@ const App: React.FC = () => {
               <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">CRIATIVOS:</span> {activeNicheSelection}</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {offers.filter(o => o.niche === activeNicheSelection && o.creativeEmbedUrls.length > 0).flatMap(o => o.creativeEmbedUrls.slice(0, 1).map((embed, idx) => (
-                <div key={`${o.id}-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 flex flex-col gap-5 group shadow-xl hover:border-[#D4AF37]/50 transition-all">
-                  <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-xl border border-white/5">
-                    <VideoPlayer url={embed} title={`Creative ${o.title}`} />
-                  </div>
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white font-black uppercase text-xs italic truncate flex-1 mr-4">{o.title}</span>
-                      <div className="flex gap-2">
-                        <button onClick={(e) => toggleFavorite(o.id, e)} className={`p-2 rounded-lg ${favorites.includes(o.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={14} fill={favorites.includes(o.id) ? "currentColor" : "none"} /></button>
-                        <a href={o.creativeDownloadUrls[idx] || '#'} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#D4AF37] text-black rounded-lg hover:scale-110 transition-transform"><Download size={14} /></a>
-                      </div>
+              {offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => 
+                offer.creativeEmbedUrls.map((embedUrl, idx) => (
+                  <div key={`${offer.id}-creative-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 flex flex-col gap-5 group shadow-xl hover:border-[#D4AF37]/50 transition-all">
+                    <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-xl border border-white/5">
+                      <VideoPlayer url={embedUrl} title={`Creative ${idx + 1} - ${offer.title}`} />
                     </div>
-                    <button onClick={() => openOffer(o)} className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20">Ver Oferta Completa</button>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-black uppercase text-xs italic truncate flex-1 mr-4">{offer.title} - #{idx + 1}</span>
+                        <div className="flex gap-2">
+                          <button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-lg ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={14} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button>
+                          <a href={offer.creativeDownloadUrls[idx] || '#'} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#D4AF37] text-black rounded-lg hover:scale-110 transition-transform"><Download size={14} /></a>
+                        </div>
+                      </div>
+                      <button onClick={() => openOffer(offer)} className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20">Ver Oferta Completa</button>
+                    </div>
                   </div>
-                </div>
-              )))}
+                ))
+              )}
             </div>
           </div>
         );
