@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Home as HomeIcon, 
@@ -313,7 +312,7 @@ const LandingPage = ({ onLogin, isSuccess, successToken, onDismissSuccess }: any
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(successToken);
-                  alert('TOKEN COPIADO!');
+                  alert('CREDENTIAL COPIADA!');
                 }}
                 className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"
               >
@@ -335,7 +334,7 @@ const LandingPage = ({ onLogin, isSuccess, successToken, onDismissSuccess }: any
     
     <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
       <div className="flex items-center space-x-3">
-        <div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div>
+        <div className="bg-[#D4AF37] p-2 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div>
         <span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span>
       </div>
       <div className="flex items-center gap-4">
@@ -372,7 +371,6 @@ const LandingPage = ({ onLogin, isSuccess, successToken, onDismissSuccess }: any
         </p>
       </section>
 
-      {/* Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 px-4 justify-center items-stretch mx-auto">
         <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)]">
           <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3>
@@ -500,12 +498,13 @@ const App: React.FC = () => {
     pushNavState({ sid: null });
   };
 
-  /**
-   * Fix: Added missing navigateToPage function
-   */
   const navigateToPage = (page: string) => {
     setCurrentPage(page);
     setSelectedOffer(null);
+    setActiveNicheModule(null);
+    setActiveVslModule(null);
+    setActiveLanguageModule(null);
+    setActivePageModule(null);
     pushNavState({ cp: page, sid: null });
     setIsMobileMenuOpen(false);
   };
@@ -522,7 +521,7 @@ const App: React.FC = () => {
 
   // INITIAL LOAD
   useEffect(() => {
-    // Detect Success URL
+    // 1. Success URL Check
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       setIsSuccess(true);
@@ -531,7 +530,7 @@ const App: React.FC = () => {
       localStorage.setItem('agente_token', token);
     }
 
-    // Load Session
+    // 2. Load Session (Always check localStorage)
     const savedToken = localStorage.getItem('agente_token');
     if (savedToken) {
       setAgentToken(savedToken);
@@ -542,6 +541,7 @@ const App: React.FC = () => {
       if (viewed) setRecentlyViewed(JSON.parse(viewed));
     }
 
+    // 3. Fetch Data
     const fetchOffers = async () => {
       try {
         setLoading(true);
@@ -567,17 +567,20 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = () => {
-    const token = window.prompt("🕵️‍♂️ ACESSO RESTRITO\nDigite seu Token de Agente (ex: AGENTE-12345):");
-    if (token && token.trim().toUpperCase().startsWith('AGENTE-')) {
-      const cleanToken = token.trim().toUpperCase();
+    const tokenInput = window.prompt("🕵️‍♂️ ACESSO RESTRITO\nDigite seu Token de Agente (ex: AGENTE-12345):");
+    if (tokenInput && tokenInput.trim().toUpperCase().startsWith('AGENTE-')) {
+      const cleanToken = tokenInput.trim().toUpperCase();
       setAgentToken(cleanToken);
       setIsLoggedIn(true);
       localStorage.setItem('agente_token', cleanToken);
+      // Load this specific user's data
       const favs = localStorage.getItem(getFavKey(cleanToken));
       setFavorites(favs ? JSON.parse(favs) : []);
       const viewed = localStorage.getItem(getViewedKey(cleanToken));
       setRecentlyViewed(viewed ? JSON.parse(viewed) : []);
-    } else if (token !== null) alert('TOKEN INVÁLIDO ❌');
+    } else if (tokenInput !== null) {
+      alert('TOKEN INVÁLIDO ❌\nUse o formato AGENTE-XXXXX.');
+    }
   };
 
   const handleLogout = () => {
@@ -590,10 +593,12 @@ const App: React.FC = () => {
 
   const dismissSuccess = () => {
     setIsSuccess(false);
-    // URL Cleanup
-    window.history.replaceState({}, document.title, window.location.pathname);
-    setIsLoggedIn(true);
+    // Cleanup URL
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+    window.history.replaceState({ path: newUrl }, '', newUrl);
+    // Auto-login after token generation
     setAgentToken(newlyGeneratedToken);
+    setIsLoggedIn(true);
   };
 
   const renderContent = () => {
@@ -622,6 +627,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
+            {/* Status Badge Preserve - Title Removed as requested */}
             {selectedOffer.views && selectedOffer.views.trim() !== '' && (
               <div className="flex items-center gap-3 bg-[#121212]/50 px-4 py-2 rounded-xl border border-[#D4AF37]/30 w-fit">
                 <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-bounce" />
@@ -649,7 +655,7 @@ const App: React.FC = () => {
                   <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0"><ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO</h3>
                   <div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">
                     {[
-                      { icon: Info, label: 'Nome', value: selectedOffer.description || 'Informação confidencial' },
+                      { icon: Info, label: 'Nome', value: selectedOffer.description || selectedOffer.title }, // Map Name to Description/Briefing
                       { icon: Tag, label: 'Nicho', value: selectedOffer.niche },
                       { icon: Lock, label: 'Tipo', value: selectedOffer.productType },
                       { icon: Globe, label: 'Idioma', value: selectedOffer.language },
@@ -664,17 +670,43 @@ const App: React.FC = () => {
                 </div>
               </div>
             </div>
-            {/* Creatives and Structure sections remain the same */}
+
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><ImageIcon className="text-[#D4AF37] w-6 h-6" /> CRIATIVOS</h3>
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {selectedOffer.creativeEmbedUrls.slice(0, 3).map((embedUrl, i) => (
                     <div key={i} className="flex flex-col gap-4">
-                      <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl"><VideoPlayer url={embedUrl} /></div>
+                      <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl"><VideoPlayer url={embedUrl} title={`Creative ${i + 1}`} /></div>
                       <a href={selectedOffer.creativeDownloadUrls[i] || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1a1a1a] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 italic"><Download size={14} /> BAIXAR CRIATIVO</a>
                     </div>
                   ))}
                </div>
+            </div>
+
+            <div className="space-y-6">
+               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                 <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
+                   <div className="flex items-center gap-4">
+                      <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Monitor size={20} /></div>
+                      <div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p></div>
+                   </div>
+                   <ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" />
+                 </a>
+                 <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
+                   <div className="flex items-center gap-4">
+                      <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Facebook size={20} /></div>
+                      <div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">BIBLIOTECA DE ANÚNCIOS</p></div>
+                   </div>
+                   <ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" />
+                 </a>
+               </div>
+            </div>
+            <div className="pt-10 md:pt-16 flex justify-center pb-8 border-t border-white/5">
+                <a href={selectedOffer.creativeZipUrl && selectedOffer.creativeZipUrl !== '#' ? selectedOffer.creativeZipUrl : '#'} target="_blank" rel="noopener noreferrer" className="px-12 py-6 bg-[#D4AF37] text-black font-black text-xl md:text-2xl rounded-[24px] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(212,175,55,0.25)] uppercase tracking-tighter flex items-center gap-4 italic group">
+                  <div className="p-2 bg-black/10 rounded-xl group-hover:bg-black/20 transition-colors"><Zap size={24} fill="currentColor" className="md:w-8 md:h-8" /></div>
+                  BAIXAR ARSENAL COMPLETO (ZIP)
+                </a>
             </div>
           </div>
         </div>
@@ -699,7 +731,7 @@ const App: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {recentlyHome.map(o => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
               </div>
-              {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic">Nenhuma atividade recente.</p>}
+              {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic">Nenhuma atividade recente registrada para este agente.</p>}
             </div>
           </div>
         );
@@ -712,9 +744,12 @@ const App: React.FC = () => {
       case 'favorites':
         const favs = offers.filter(o => favorites.includes(o.id));
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 animate-in fade-in duration-700">
-            {favs.map(o => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
-            {favs.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center col-span-full">Nenhum favorito isolado.</p>}
+          <div className="animate-in fade-in duration-700">
+            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+              {favs.map(o => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+            </div>
+            {favs.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center col-span-full">Sua lista privada de favoritos está vazia.</p>}
           </div>
         );
       case 'settings':
@@ -754,7 +789,10 @@ const App: React.FC = () => {
         <div className="pt-8 pb-4">
           <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
           <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => navigateToPage('offers')} />
-          {/* Module items omitted for brevity but they exist in code */}
+          <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => navigateToPage('vsl')} />
+          <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => navigateToPage('creatives')} />
+          <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
+          <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
         </div>
       </nav>
       <div className="mt-auto"><SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" /></div>
