@@ -39,7 +39,8 @@ import {
   Files, 
   Copy, 
   Flame,
-  ArrowLeft
+  ArrowLeft,
+  LifeBuoy
 } from 'lucide-react';
 
 /** 
@@ -83,6 +84,7 @@ export interface Offer {
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 const KIWIFY_MENSAL = 'https://pay.kiwify.com.br/mtU9l7e';
 const KIWIFY_TRIMESTRAL = 'https://pay.kiwify.com.br/ExDtrjE';
+const SUPPORT_EMAIL = 'qhl.mkt@gmail.com';
 
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -176,16 +178,18 @@ const SidebarItem: React.FC<{
   label: string;
   active: boolean;
   onClick: () => void;
-  variant?: 'default' | 'danger';
+  variant?: 'default' | 'danger' | 'gold';
 }> = ({ icon: Icon, label, active, onClick, variant = 'default' }) => (
   <button
     onClick={onClick}
     className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 ${
       active 
         ? 'bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20' 
-        : variant === 'danger' 
-          ? 'text-red-500 hover:bg-red-500/10' 
-          : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white'
+        : variant === 'gold'
+          ? 'text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black'
+          : variant === 'danger' 
+            ? 'text-red-500 hover:bg-red-500/10' 
+            : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white'
     }`}
   >
     <Icon size={20} />
@@ -417,35 +421,46 @@ const App: React.FC = () => {
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Missing states fixed:
+  // Filtering States
   const [selectedNiche, setSelectedNiche] = useState('Todos');
   const [selectedLanguage, setSelectedLanguage] = useState('Todos');
-  const [showFilters, setShowFilters] = useState(true);
+  const [selectedType, setSelectedType] = useState('Todos');
+  const [selectedTraffic, setSelectedTraffic] = useState('Todos');
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Categorization States
   const [activeNicheSelection, setActiveNicheSelection] = useState<string | null>(null);
   const [activeLanguageSelection, setActiveLanguageSelection] = useState<string | null>(null);
+
+  // Success Modal State
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
+
+  // Derived Values
+  const allNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
+  const allLanguages = Array.from(new Set(offers.map(o => o.language))).sort();
+  const allTypes = Array.from(new Set(offers.map(o => o.productType))).sort();
+  const allTrafficSources = Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort();
 
   // Storage Keys per Agent
   const getFavKey = (id: string) => `favs_${id}`;
   const getViewedKey = (id: string) => `viewed_${id}`;
 
-  // Derivations
-  const allNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
-  const allLanguages = Array.from(new Set(offers.map(o => o.language))).sort();
-
-  // Missing function fixed:
   const applyEliteFilters = useCallback((data: Offer[]) => {
     return data.filter(offer => {
-      const matchesSearch = offer.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           (offer.description && offer.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = offer.title.toLowerCase().includes(searchLower) || 
+                           (offer.description && offer.description.toLowerCase().includes(searchLower));
       const matchesNiche = selectedNiche === 'Todos' || offer.niche === selectedNiche;
       const matchesLanguage = selectedLanguage === 'Todos' || offer.language === selectedLanguage;
-      return matchesSearch && matchesNiche && matchesLanguage;
+      const matchesType = selectedType === 'Todos' || offer.productType === selectedType;
+      const matchesTraffic = selectedTraffic === 'Todos' || offer.trafficSource.some(t => t.includes(selectedTraffic));
+      return matchesSearch && matchesNiche && matchesLanguage && matchesType && matchesTraffic;
     });
-  }, [searchQuery, selectedNiche, selectedLanguage]);
+  }, [searchQuery, selectedNiche, selectedLanguage, selectedType, selectedTraffic]);
+
+  // Logic to show filters only on listing pages and not in details or categorized modules
+  const isListingPage = currentPage === 'home' || currentPage === 'offers' || currentPage === 'favorites';
+  const showFilters = isListingPage && !selectedOffer;
 
   const pushNavState = useCallback((params: any) => {
     const newState = { cp: currentPage, sid: selectedOffer?.id || null, ans: activeNicheSelection, als: activeLanguageSelection, ...params };
@@ -477,6 +492,7 @@ const App: React.FC = () => {
     if (agentId) localStorage.setItem(getViewedKey(agentId), JSON.stringify(newViewed));
     setSelectedOffer(offer);
     pushNavState({ sid: offer.id });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const closeOffer = () => {
@@ -544,9 +560,6 @@ const App: React.FC = () => {
     };
     fetchOffers();
   }, []);
-
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
 
   const handleLogin = () => {
     const inputId = window.prompt("🕵️‍♂️ ACESSO À CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE (ex: AGENTE-12345):");
@@ -687,6 +700,23 @@ const App: React.FC = () => {
               </div>
             </div>
 
+            {/* Creative Grid in details */}
+            {selectedOffer.creativeEmbedUrls.length > 0 && (
+              <div className="space-y-6">
+                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><ImageIcon className="text-[#D4AF37] w-6 h-6" /> CRIATIVOS</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {selectedOffer.creativeEmbedUrls.map((url, i) => (
+                    <div key={i} className="bg-[#121212] p-4 rounded-2xl border border-white/5 flex flex-col gap-4">
+                      <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-lg">
+                        <VideoPlayer url={url} title={`Creative ${i + 1}`} />
+                      </div>
+                      <a href={selectedOffer.creativeDownloadUrls[i] || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 flex items-center justify-center gap-2"><Download size={14} /> Download Criativo {i + 1}</a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Structure Links */}
             <div className="space-y-6">
                <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3>
@@ -738,6 +768,7 @@ const App: React.FC = () => {
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 animate-in fade-in duration-700">
             {filtered.map(o => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+            {filtered.length === 0 && <div className="col-span-full py-40 text-center text-gray-600 font-black uppercase text-sm italic">Nenhuma inteligência corresponde aos critérios aplicados.</div>}
           </div>
         );
       case 'vsl':
@@ -888,9 +919,9 @@ const App: React.FC = () => {
               <div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between">
                 <div>
                   <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">Suporte Estratégico</h3>
-                  <span className="text-white font-black text-xl italic mb-8 block">qhl.mkt@gmail.com</span>
+                  <span className="text-white font-black text-xl italic mb-8 block">{SUPPORT_EMAIL}</span>
                 </div>
-                <button onClick={() => { navigator.clipboard.writeText('qhl.mkt@gmail.com'); alert('E-MAIL COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button>
+                <button onClick={() => { navigator.clipboard.writeText(SUPPORT_EMAIL); alert('E-MAIL COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button>
               </div>
             </div>
           </div>
@@ -900,15 +931,16 @@ const App: React.FC = () => {
   };
 
   const SidebarContent = () => (
-    <div className="p-10 h-full flex flex-col">
-      <div className="flex items-center space-x-3 mb-16 px-2">
+    <div className="p-8 md:p-10 h-full flex flex-col">
+      <div className="flex items-center space-x-3 mb-12 px-2">
         <div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10"><Eye className="text-black" size={24} /></div>
         <span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span>
       </div>
-      <nav className="space-y-2">
+      <nav className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
         <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => navigateToPage('home')} />
         <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => navigateToPage('favorites')} />
         <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
+        
         <div className="pt-8 pb-4">
           <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
           <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => navigateToPage('offers')} />
@@ -918,7 +950,19 @@ const App: React.FC = () => {
           <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
         </div>
       </nav>
-      <div className="mt-auto"><SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" /></div>
+      
+      <div className="mt-8 space-y-3">
+        <SidebarItem 
+          icon={LifeBuoy} 
+          label="Suporte ao Agente" 
+          active={false} 
+          variant="gold" 
+          onClick={() => {
+            window.open(`mailto:${SUPPORT_EMAIL}`, '_blank');
+          }} 
+        />
+        <SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" />
+      </div>
     </div>
   );
 
@@ -935,22 +979,35 @@ const App: React.FC = () => {
                 <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37] hover:bg-[#1a1a1a] transition-colors"><Menu size={24} /></button>
                 <div className="flex-1 flex items-center bg-[#121212] px-4 md:px-6 py-2.5 md:py-3 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-inner max-w-xl">
                    <Search className="text-gray-500 mr-3 md:mr-4" size={18} />
-                   <input type="text" placeholder="Pesquisar inteligência..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-transparent border-none outline-none text-xs md:text-sm w-full font-bold placeholder:text-gray-700" />
+                   <input 
+                     type="text" 
+                     placeholder="Pesquisar inteligência..." 
+                     value={searchQuery} 
+                     onChange={(e) => setSearchQuery(e.target.value)} 
+                     className="bg-transparent border-none outline-none text-xs md:text-sm w-full font-bold placeholder:text-gray-700" 
+                   />
                 </div>
                 <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0">
                     <div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div>
                     <div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p></div>
                 </div>
               </div>
+              
               {showFilters && (
                 <div className="animate-in fade-in slide-in-from-top-2 duration-500 flex flex-wrap items-center gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
                   {[
                     { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] },
-                    { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }
+                    { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] },
+                    { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] },
+                    { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] }
                   ].map((f, i) => (
                     <div key={i} className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
                       <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label>
-                      <select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
+                      <select 
+                        value={f.value} 
+                        onChange={(e) => f.setter(e.target.value)} 
+                        className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all"
+                      >
                         {f.options.map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
                     </div>
@@ -958,6 +1015,7 @@ const App: React.FC = () => {
                 </div>
               )}
             </header>
+            
             <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
           </main>
         </>
