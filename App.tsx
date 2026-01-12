@@ -141,7 +141,7 @@ const STYLES = `
 `;
 
 /**
- * UTILS - DATA NORMALIZATION
+ * UTILS
  */
 const getDriveDirectLink = (url: string) => {
   if (!url) return '';
@@ -171,6 +171,11 @@ const getEmbedUrl = (url: string) => {
   }
 
   return trimmed;
+};
+
+const generateAgentToken = () => {
+  const randomNum = Math.floor(10000 + Math.random() * 90000);
+  return `AGENTE${randomNum}`;
 };
 
 /**
@@ -297,9 +302,8 @@ const OfferCard: React.FC<{
 /**
  * LANDING PAGE COMPONENT
  */
-const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
+const LandingPage = ({ onLogin, isSuccess, successToken }: any) => (
   <div className="w-full bg-[#0a0a0a] flex flex-col items-center justify-center min-h-screen selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
-    {/* Global Styles */}
     <style dangerouslySetInnerHTML={{ __html: STYLES }} />
 
     {/* Success Access Notification */}
@@ -311,7 +315,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
           </div>
           <div>
             <h2 className="text-[#D4AF37] font-black uppercase text-lg md:text-2xl tracking-tighter italic leading-none mb-1">ACESSO À INTELIGÊNCIA LIBERADO!</h2>
-            <p className="text-gray-400 text-[10px] md:text-sm font-bold uppercase tracking-tight leading-none">Sua chave é única e confidencial. SENHA: <span className="text-[#D4AF37] font-black">AGENTE007</span></p>
+            <p className="text-gray-400 text-[10px] md:text-sm font-bold uppercase tracking-tight leading-none">Sua chave é única e confidencial. TOKEN: <span className="text-[#D4AF37] font-black">{successToken}</span></p>
           </div>
         </div>
         <button onClick={onLogin} className="w-full md:w-auto px-8 py-3 bg-[#D4AF37] text-black font-black rounded-xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter">ENTRAR NO ARSENAL</button>
@@ -320,16 +324,12 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
     
     <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
       <div className="flex items-center space-x-3">
-        <div className="bg-[#D4AF37] p-2 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20">
+        <div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20">
           <Eye className="text-black" size={28} />
         </div>
         <span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span>
       </div>
       <div className="flex items-center gap-4">
-        <div className="hidden lg:flex items-center gap-2 bg-[#121212]/50 border border-[#D4AF37]/30 px-3 py-1.5 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-            <span className="text-[10px] font-black text-[#D4AF37] uppercase tracking-widest">AGENTE ATIVO</span>
-        </div>
         <button 
           onClick={onLogin}
           className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter italic"
@@ -354,7 +354,6 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligência que transforma dados em resultados escaláveis.
       </p>
 
-      {/* Demo Video Section */}
       <section className="w-full max-w-4xl aspect-video bg-[#121212] rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center group cursor-pointer transition-all hover:border-[#D4AF37]/40 mx-auto mb-32">
         <div className="bg-[#D4AF37] p-6 rounded-full shadow-[0_0_40px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-500 mb-6 flex items-center justify-center">
           <Play size={40} fill="black" className="text-black ml-1" />
@@ -362,12 +361,10 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
         <p className="text-white font-black uppercase text-[10px] md:text-xs tracking-[0.25em] italic max-w-md px-8 leading-relaxed text-center">
           Descubra como rastreamos e organizamos ofertas escaladas em tempo real
         </p>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#D4AF37]/5 to-transparent h-[1px] w-full animate-pulse top-1/3"></div>
       </section>
 
-      {/* PLAN CARDS SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 px-4 justify-center justify-items-center items-stretch mx-auto">
-        {/* Monthly Plan (Dark) */}
+        {/* Monthly Plan */}
         <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col w-full shadow-[0_0_40px_rgba(0,0,0,0.5)]">
           <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3>
           <div className="flex items-baseline gap-2 mb-10">
@@ -375,61 +372,34 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
             <span className="text-gray-500 font-black text-sm uppercase">/mês</span>
           </div>
           <ul className="space-y-4 mb-12 flex-1">
-            {[
-              'Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 
-              'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', 
-              '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'
-            ].map((item, i) => (
+            {['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'].map((item, i) => (
               <li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic">
                 <CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}
               </li>
             ))}
           </ul>
-          <div className="flex flex-col">
-            <button 
-              onClick={() => window.open(KIWIFY_MENSAL, '_blank')}
-              className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter animate-btn-pulse shadow-xl italic"
-            >
-              QUERO ACESSO MENSAL
-            </button>
-            <p className="text-[10px] text-gray-500 font-bold uppercase mt-4 text-center italic tracking-wider">Acesso imediato enviado para o seu e-mail.</p>
-          </div>
+          <button onClick={() => window.open(KIWIFY_MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter animate-btn-pulse shadow-xl italic">QUERO ACESSO MENSAL</button>
         </div>
 
-        {/* Quarterly Plan (White) */}
+        {/* Quarterly Plan */}
         <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-[#D4AF37] w-full">
-          <div className="absolute top-6 right-8 bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
-            Economize R$ 94
-          </div>
+          <div className="absolute top-6 right-8 bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">Economize R$ 94</div>
           <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3>
           <div className="flex items-baseline gap-2 mb-10">
             <span className="text-5xl font-black italic">R$ 497</span>
             <span className="text-gray-400 font-black text-sm uppercase">/trimestre</span>
           </div>
           <ul className="space-y-4 mb-12 flex-1">
-            {[
-              'Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 
-              'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 
-              'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'
-            ].map((item, i) => (
+            {['Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'].map((item, i) => (
               <li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic">
                 <CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}
               </li>
             ))}
           </ul>
-          <div className="flex flex-col">
-            <button 
-              onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')}
-              className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter animate-btn-pulse italic"
-            >
-              ASSINAR PLANO TRIMESTRAL
-            </button>
-            <p className="text-[10px] text-gray-400 font-bold uppercase mt-4 text-center italic tracking-wider">Acesso imediato enviado para o seu e-mail.</p>
-          </div>
+          <button onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter animate-btn-pulse italic">ASSINAR PLANO TRIMESTRAL</button>
         </div>
       </div>
 
-      {/* GUARANTEE SECTION */}
       <section className="w-full max-w-7xl px-4 md:px-8 mb-32 flex justify-center mx-auto text-center">
         <div className="w-full max-w-4xl bg-[#121212] p-10 md:p-16 rounded-[40px] border border-[#D4AF37]/20 flex flex-col md:flex-row items-center gap-10 md:gap-16 shadow-2xl mx-auto">
           <div className="w-32 h-32 md:w-48 md:h-48 shrink-0 flex items-center justify-center border-4 border-[#D4AF37] rounded-full relative mx-auto md:mx-0 shadow-[0_0_30px_rgba(212,175,55,0.1)]">
@@ -438,26 +408,14 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
           </div>
           <div className="text-center md:text-left flex-1">
             <h2 className="text-white font-black text-2xl md:text-4xl uppercase italic mb-4 tracking-tighter text-center md:text-left">GARANTIA INCONDICIONAL DE 7 DIAS</h2>
-            <p className="text-gray-500 font-medium text-base mb-8 leading-relaxed italic text-center md:text-left">
-              Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você sentir que a plataforma não é para você, devolvemos 100% do seu dinheiro. Sem perguntas.
-            </p>
-            <div className="flex flex-col items-center md:items-start w-full">
-              <button 
-                onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')}
-                className="px-10 py-5 bg-[#D4AF37] text-black font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-tighter animate-btn-pulse italic w-full md:w-auto"
-              >
-                [COMEÇAR AGORA – RISCO ZERO]
-              </button>
-              <p className="text-[10px] text-gray-600 font-bold uppercase mt-4 italic tracking-wider text-center w-full md:w-auto">Acesso imediato enviado para o seu e-mail.</p>
-            </div>
+            <p className="text-gray-500 font-medium text-base mb-8 leading-relaxed italic text-center md:text-left">Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você sentir que a plataforma não é para você, devolvemos 100% do seu dinheiro. Sem perguntas.</p>
+            <button onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')} className="px-10 py-5 bg-[#D4AF37] text-black font-black text-xl rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-tighter animate-btn-pulse italic w-full md:w-auto">[COMEÇAR AGORA – RISCO ZERO]</button>
           </div>
         </div>
       </section>
 
       <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto">
-        <p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic text-center">
-          © 2024 007 SWIPER Intelligence Platform. Todos os direitos reservados.
-        </p>
+        <p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic text-center">© 2024 007 SWIPER Intelligence Platform. Todos os direitos reservados.</p>
       </footer>
     </main>
   </div>
@@ -468,6 +426,7 @@ const LandingPage = ({ onLogin, isSuccess, onCloseSuccess }: any) => (
  */
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userToken, setUserToken] = useState<string>('');
   const [currentPage, setCurrentPage] = useState('home');
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -485,13 +444,17 @@ const App: React.FC = () => {
   const [selectedTraffic, setSelectedTraffic] = useState<string>('Todos');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('Todos');
 
-  // Sub-navigation modules states
   const [activeNicheModule, setActiveNicheModule] = useState<string | null>(null);
   const [activeVslModule, setActiveVslModule] = useState<string | null>(null);
   const [activeLanguageModule, setActiveLanguageModule] = useState<string | null>(null);
   const [activePageModule, setActivePageModule] = useState<string | null>(null);
 
   const [isSuccess, setIsSuccess] = useState(false);
+  const [generatedToken, setGeneratedToken] = useState<string>('');
+
+  // Individual Storage Keys
+  const favKey = userToken ? `007_favs_${userToken}` : '007_favs';
+  const viewedKey = userToken ? `007_viewed_${userToken}` : '007_viewed';
 
   // Derivations
   const availableNiches = ['Todos', ...Array.from(new Set(offers.map(o => o.niche))).sort()];
@@ -523,7 +486,6 @@ const App: React.FC = () => {
 
   const showFilters = (currentPage === 'home' || currentPage === 'offers' || currentPage === 'favorites') && !selectedOffer;
 
-  // NAVIGATION SYNC WITH HISTORY API
   const pushNavState = useCallback((params: any) => {
     const newState = {
       currentPage,
@@ -537,47 +499,27 @@ const App: React.FC = () => {
     window.history.pushState(newState, '');
   }, [currentPage, selectedOffer, activeNicheModule, activeVslModule, activeLanguageModule, activePageModule]);
 
-  // Handle Back Button
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       if (event.state) {
-        const { 
-          currentPage: cp, 
-          selectedOfferId: sid, 
-          activeNicheModule: anm, 
-          activeVslModule: avm, 
-          activeLanguageModule: alm, 
-          activePageModule: apm 
-        } = event.state;
-
+        const { cp, sid, anm, avm, alm, apm } = event.state;
         setCurrentPage(cp || 'home');
         setActiveNicheModule(anm || null);
         setActiveVslModule(avm || null);
         setActiveLanguageModule(alm || null);
         setActivePageModule(apm || null);
-        
         if (sid) {
           const found = offers.find(o => o.id === sid);
           setSelectedOffer(found || null);
         } else {
           setSelectedOffer(null);
         }
-      } else {
-        // Default state
-        setCurrentPage('home');
-        setSelectedOffer(null);
-        setActiveNicheModule(null);
-        setActiveVslModule(null);
-        setActiveLanguageModule(null);
-        setActivePageModule(null);
       }
     };
-
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [offers]);
 
-  // Helper navigation wrappers
   const navigateToPage = (page: string) => {
     setCurrentPage(page);
     setSelectedOffer(null);
@@ -585,63 +527,82 @@ const App: React.FC = () => {
     setActiveVslModule(null);
     setActiveLanguageModule(null);
     setActivePageModule(null);
-    pushNavState({ currentPage: page, selectedOfferId: null, activeNicheModule: null, activeVslModule: null, activeLanguageModule: null, activePageModule: null });
+    pushNavState({ cp: page, sid: null, anm: null, avm: null, alm: null, apm: null });
   };
 
   const openOffer = (offer: Offer) => {
     const newViewed = [offer.id, ...recentlyViewed.filter(id => id !== offer.id)].slice(0, 8);
     setRecentlyViewed(newViewed);
-    localStorage.setItem('007_viewed', JSON.stringify(newViewed));
+    if (userToken) {
+      localStorage.setItem(viewedKey, JSON.stringify(newViewed));
+    }
     setSelectedOffer(offer);
-    pushNavState({ selectedOfferId: offer.id });
+    pushNavState({ sid: offer.id });
   };
 
   const closeOffer = () => {
     setSelectedOffer(null);
-    pushNavState({ selectedOfferId: null });
+    pushNavState({ sid: null });
   };
 
   const toggleFavorite = (offerId: string, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
+    if (e) e.stopPropagation();
     setFavorites(prev => {
       const isFav = prev.includes(offerId);
-      const newFavs = isFav 
-        ? prev.filter(id => id !== offerId) 
-        : [...prev, offerId];
-      localStorage.setItem('007_favs', JSON.stringify(newFavs));
+      const newFavs = isFav ? prev.filter(id => id !== offerId) : [...prev, offerId];
+      if (userToken) {
+        localStorage.setItem(favKey, JSON.stringify(newFavs));
+      }
       return newFavs;
     });
   };
 
   const selectModule = (moduleType: 'niche' | 'vsl' | 'language' | 'page', val: string | null) => {
     const updates: any = {};
-    if (moduleType === 'niche') { setActiveNicheModule(val); updates.activeNicheModule = val; }
-    if (moduleType === 'vsl') { setActiveVslModule(val); updates.activeVslModule = val; }
-    if (moduleType === 'language') { setActiveLanguageModule(val); updates.activeLanguageModule = val; }
-    if (moduleType === 'page') { setActivePageModule(val); updates.activePageModule = val; }
+    if (moduleType === 'niche') { setActiveNicheModule(val); updates.anm = val; }
+    if (moduleType === 'vsl') { setActiveVslModule(val); updates.avm = val; }
+    if (moduleType === 'language') { setActiveLanguageModule(val); updates.alm = val; }
+    if (moduleType === 'page') { setActivePageModule(val); updates.apm = val; }
     pushNavState(updates);
   };
 
-  // Fetch Data from Google Sheets
+  // INITIAL SETUP: Tokens & Data
   useEffect(() => {
+    // 1. Handle URL Token Generation
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true') {
+      setIsSuccess(true);
+      let existingToken = localStorage.getItem('007_last_generated_token');
+      if (!existingToken) {
+        existingToken = generateAgentToken();
+        localStorage.setItem('007_last_generated_token', existingToken);
+      }
+      setGeneratedToken(existingToken);
+    }
+
+    // 2. Resume session if token exists
+    const savedActiveToken = localStorage.getItem('007_active_token');
+    if (savedActiveToken) {
+      setUserToken(savedActiveToken);
+      setIsLoggedIn(true);
+      // Load user data
+      const savedFavs = localStorage.getItem(`007_favs_${savedActiveToken}`);
+      if (savedFavs) setFavorites(JSON.parse(savedFavs));
+      const savedViewed = localStorage.getItem(`007_viewed_${savedActiveToken}`);
+      if (savedViewed) setRecentlyViewed(JSON.parse(savedViewed));
+    }
+
+    // 3. Data Fetching
     const fetchOffers = async () => {
       try {
         setLoading(true);
         const response = await fetch(CSV_URL);
         const text = await response.text();
-        
         const lines = text.split(/\r?\n/).filter(l => l.trim());
-        if (lines.length < 2) throw new Error("Database file is missing expected headers.");
-
+        if (lines.length < 2) return;
         const parsedData: Offer[] = lines.slice(2).map((line, idx) => {
           const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, '').trim());
-          
-          if (!values[1] || values[1].toLowerCase() === 'undefined' || values[1] === '') {
-            return null;
-          }
-
+          if (!values[1] || values[1].toLowerCase() === 'undefined' || values[1] === '') return null;
           return {
             id: values[0] || String(idx),
             title: values[1],
@@ -664,26 +625,10 @@ const App: React.FC = () => {
             creativeImages: [], 
           };
         }).filter((o): o is Offer => o !== null);
-
         setOffers([...parsedData].reverse());
-      } catch (error) {
-        console.error('Error fetching intelligence database:', error);
-      } finally {
-        setLoading(false);
-      }
+      } catch (e) { console.error(e); } finally { setLoading(false); }
     };
-
     fetchOffers();
-
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('success') === 'true') {
-      setIsSuccess(true);
-    }
-    const savedFavs = localStorage.getItem('007_favs');
-    if (savedFavs) setFavorites(JSON.parse(savedFavs));
-
-    const savedViewed = localStorage.getItem('007_viewed');
-    if (savedViewed) setRecentlyViewed(JSON.parse(savedViewed));
   }, []);
 
   useEffect(() => {
@@ -691,87 +636,74 @@ const App: React.FC = () => {
   }, [currentPage, selectedOffer]);
 
   const handleLogin = () => {
-    const password = window.prompt("🕵️‍♂️ ACESSO RESTRITO\nDigite a senha de agente VIP:");
-    if (password === 'AGENTE007') {
+    const lastToken = localStorage.getItem('007_last_generated_token') || '';
+    const token = window.prompt("🕵️‍♂️ ACESSO AO ARSENAL\nDigite seu Token de Agente VIP:", lastToken);
+    
+    if (token && token.trim().startsWith('AGENTE')) {
+      const cleanToken = token.trim();
+      setUserToken(cleanToken);
       setIsLoggedIn(true);
+      localStorage.setItem('007_active_token', cleanToken);
+      
+      // Load individual user data
+      const savedFavs = localStorage.getItem(`007_favs_${cleanToken}`);
+      setFavorites(savedFavs ? JSON.parse(savedFavs) : []);
+      const savedViewed = localStorage.getItem(`007_viewed_${cleanToken}`);
+      setRecentlyViewed(savedViewed ? JSON.parse(savedViewed) : []);
+      
       setIsSuccess(false);
-      window.history.replaceState({ currentPage: 'home', selectedOfferId: null, activeNicheModule: null, activeVslModule: null, activeLanguageModule: null, activePageModule: null }, '');
-    } else if (password !== null) {
-      alert('ACESSO NEGADO ❌');
+      window.history.replaceState({ cp: 'home', sid: null, anm: null, avm: null, alm: null, apm: null }, '');
+    } else if (token !== null) {
+      alert('TOKEN INVÁLIDO ❌\nUse o formato AGENTE + 5 números.');
     }
   };
 
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserToken('');
+    localStorage.removeItem('007_active_token');
+    // Clear state data to prevent bleed through if another agent logs in on same browser
+    setFavorites([]);
+    setRecentlyViewed([]);
+  };
+
   const renderContent = () => {
-    if (loading) {
-      return (
-        <div className="flex flex-col items-center justify-center py-40 gap-4 animate-pulse">
-          <Loader2 className="text-[#D4AF37] animate-spin" size={48} />
-          <p className="text-[#D4AF37] font-black uppercase text-xs tracking-widest italic">Infiltrando nos Servidores...</p>
-        </div>
-      );
-    }
+    if (loading) return (
+      <div className="flex flex-col items-center justify-center py-40 gap-4 animate-pulse">
+        <Loader2 className="text-[#D4AF37] animate-spin" size={48} />
+        <p className="text-[#D4AF37] font-black uppercase text-xs tracking-widest italic">Infiltrando nos Servidores...</p>
+      </div>
+    );
 
     if (selectedOffer) {
       return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-            <button 
-              onClick={closeOffer}
-              className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
-            >
-              <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                <ChevronRight className="rotate-180" size={16} />
-              </div>
+            <button onClick={closeOffer} className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group">
+              <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ChevronRight className="rotate-180" size={16} /></div>
               Voltar
             </button>
-            
             <div className="flex flex-wrap items-center gap-3">
-              <a 
-                href={selectedOffer.vslDownloadUrl} 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg italic"
-              >
-                <Download size={16} /> BAIXAR VSL
-              </a>
-              <a 
-                href={selectedOffer.transcriptionUrl} 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"
-              >
-                <FileText size={16} /> BAIXAR TRANSCRIÇÃO
-              </a>
-              <button 
-                onClick={() => toggleFavorite(selectedOffer.id)}
-                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-[#1a1a1a] text-white border-white/5'}`}
-              >
+              <a href={selectedOffer.vslDownloadUrl} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg italic"><Download size={16} /> BAIXAR VSL</a>
+              <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"><FileText size={16} /> BAIXAR TRANSCRIÇÃO</a>
+              <button onClick={() => toggleFavorite(selectedOffer.id)} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-[#1a1a1a] text-white border-white/5'}`}>
                 <Star size={16} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'FAVORITADO' : 'FAVORITAR'}
               </button>
             </div>
           </div>
-
           <div className="space-y-12">
-            {/* Status Badge only - Main Title removed for clean look */}
             {selectedOffer.views && selectedOffer.views.trim() !== '' && (
               <div className="flex items-center gap-3 bg-[#121212]/50 px-4 py-2 rounded-xl border border-[#D4AF37]/30 w-fit">
                 <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-bounce" />
                 <span className="text-[#D4AF37] font-black uppercase text-sm md:text-base italic tracking-widest">{selectedOffer.views}</span>
               </div>
             )}
-
             <div className="flex flex-col lg:flex-row gap-8 items-stretch">
               <div className="w-full lg:w-[62%] space-y-6">
                 <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
                   <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">
                     {selectedOffer.vslLinks.map((link, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setActiveVslIndex(idx)}
-                        className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${
-                          activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'
-                        }`}
-                      >
+                      <button key={idx} onClick={() => setActiveVslIndex(idx)} className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'}`}>
                         <Video size={12} /> {link.label}
                       </button>
                     ))}
@@ -781,12 +713,9 @@ const App: React.FC = () => {
                   </div>
                 </div>
               </div>
-
               <div className="w-full lg:w-[38%]">
                 <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full flex flex-col">
-                  <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0">
-                    <ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO
-                  </h3>
+                  <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0"><ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO</h3>
                   <div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">
                     {[
                       { icon: Info, label: 'Nome', value: selectedOffer.description || 'Informação confidencial' },
@@ -796,10 +725,7 @@ const App: React.FC = () => {
                       { icon: Target, label: 'Fonte', value: selectedOffer.trafficSource.join(', ') },
                     ].map((item, idx) => (
                       <div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0">
-                        <div className="flex items-center gap-3">
-                          <item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" />
-                          <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span>
-                        </div>
+                        <div className="flex items-center gap-3"><item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" /><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span></div>
                         <span className="text-white text-sm font-black uppercase italic tracking-tight whitespace-normal break-words leading-relaxed">{item.value}</span>
                       </div>
                     ))}
@@ -807,73 +733,39 @@ const App: React.FC = () => {
                 </div>
               </div>
             </div>
-
             <div className="space-y-6">
-               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
-                 <ImageIcon className="text-[#D4AF37] w-6 h-6" /> CRIATIVOS
-               </h3>
-               
+               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><ImageIcon className="text-[#D4AF37] w-6 h-6" /> CRIATIVOS</h3>
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {selectedOffer.creativeEmbedUrls.slice(0, 3).map((embedUrl, i) => (
                     <div key={i} className="flex flex-col gap-4">
-                      <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl">
-                        <VideoPlayer url={embedUrl} title={`Creative Player ${i + 1}`} />
-                      </div>
-                      <a 
-                        href={selectedOffer.creativeDownloadUrls[i] || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-3 bg-[#1a1a1a] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 italic"
-                      >
-                        <Download size={14} /> BAIXAR ESTE CRIATIVO
-                      </a>
+                      <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl"><VideoPlayer url={embedUrl} title={`Creative ${i + 1}`} /></div>
+                      <a href={selectedOffer.creativeDownloadUrls[i] || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#1a1a1a] text-[#D4AF37] font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 italic"><Download size={14} /> BAIXAR ESTE CRIATIVO</a>
                     </div>
                   ))}
                </div>
             </div>
-
             <div className="space-y-6">
-               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2">
-                 <Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS
-               </h3>
+               <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                  <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors">
-                        <Monitor size={20} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p>
-                        <p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p>
-                      </div>
+                      <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Monitor size={20} /></div>
+                      <div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p></div>
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" />
                  </a>
                  <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group">
                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors">
-                        <Facebook size={20} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p>
-                        <p className="text-white font-black uppercase text-base md:text-lg italic">BIBLIOTECA DE ANÚNCIOS</p>
-                      </div>
+                      <div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Facebook size={20} /></div>
+                      <div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">BIBLIOTECA DE ANÚNCIOS</p></div>
                    </div>
                    <ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" />
                  </a>
                </div>
             </div>
-
             <div className="pt-10 md:pt-16 flex justify-center pb-8 border-t border-white/5">
-                <a 
-                  href={selectedOffer.creativeZipUrl && selectedOffer.creativeZipUrl !== '#' ? selectedOffer.creativeZipUrl : '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-12 py-6 bg-[#D4AF37] text-black font-black text-xl md:text-2xl rounded-[24px] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(212,175,55,0.25)] uppercase tracking-tighter flex items-center gap-4 italic group"
-                >
-                  <div className="p-2 bg-black/10 rounded-xl group-hover:bg-black/20 transition-colors">
-                    <Zap size={24} fill="currentColor" className="md:w-8 md:h-8" />
-                  </div>
+                <a href={selectedOffer.creativeZipUrl && selectedOffer.creativeZipUrl !== '#' ? selectedOffer.creativeZipUrl : '#'} target="_blank" rel="noopener noreferrer" className="px-12 py-6 bg-[#D4AF37] text-black font-black text-xl md:text-2xl rounded-[24px] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(212,175,55,0.25)] uppercase tracking-tighter flex items-center gap-4 italic group">
+                  <div className="p-2 bg-black/10 rounded-xl group-hover:bg-black/20 transition-colors"><Zap size={24} fill="currentColor" className="md:w-8 md:h-8" /></div>
                   BAIXAR ARSENAL COMPLETO (ZIP)
                 </a>
             </div>
@@ -888,39 +780,21 @@ const App: React.FC = () => {
       case 'home':
         const scalingHome = offers.filter(o => o.trend.trim().toLowerCase() === 'escalando').slice(0, 4);
         const recentlyHome = offers.filter(o => recentlyViewed.includes(o.id));
-
         return (
           <div className="animate-in fade-in duration-700 space-y-16 md:space-y-20">
             <div>
-                <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                  <Zap className="text-[#D4AF37]" fill="currentColor" /> OPERAÇÕES EM ESCALA
-                </h2>
+                <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Zap className="text-[#D4AF37]" fill="currentColor" /> OPERAÇÕES EM ESCALA</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                {scalingHome.map(offer => (
-                    <OfferCard 
-                    key={offer.id} 
-                    offer={offer} 
-                    isFavorite={favorites.includes(offer.id)}
-                    onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                    onClick={() => openOffer(offer)}
-                    />
-                ))}
+                  {scalingHome.map(offer => (
+                    <OfferCard key={offer.id} offer={offer} isFavorite={favorites.includes(offer.id)} onToggleFavorite={(e) => toggleFavorite(offer.id, e)} onClick={() => openOffer(offer)} />
+                  ))}
                 </div>
             </div>
-
             <div>
-                <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                  <Monitor className="text-[#D4AF37]" /> VISTOS RECENTEMENTE
-                </h2>
+                <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Monitor className="text-[#D4AF37]" /> VISTOS RECENTEMENTE</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {recentlyHome.map(offer => (
-                    <OfferCard 
-                    key={offer.id} 
-                    offer={offer} 
-                    isFavorite={favorites.includes(offer.id)}
-                    onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                    onClick={() => openOffer(offer)}
-                    />
+                  <OfferCard key={offer.id} offer={offer} isFavorite={favorites.includes(offer.id)} onToggleFavorite={(e) => toggleFavorite(offer.id, e)} onClick={() => openOffer(offer)} />
                 ))}
                 {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic px-2">Nenhuma atividade registrada.</p>}
                 </div>
@@ -933,13 +807,7 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700">
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filtered.map(offer => (
-                <OfferCard 
-                  key={offer.id} 
-                  offer={offer} 
-                  isFavorite={favorites.includes(offer.id)}
-                  onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                  onClick={() => openOffer(offer)}
-                />
+                <OfferCard key={offer.id} offer={offer} isFavorite={favorites.includes(offer.id)} onToggleFavorite={(e) => toggleFavorite(offer.id, e)} onClick={() => openOffer(offer)} />
               ))}
             </div>
           </div>
@@ -950,70 +818,36 @@ const App: React.FC = () => {
           const uniqueNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
           return (
             <div className="animate-in fade-in duration-700">
-               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                 <Video className="text-[#D4AF37]" /> VSL
-               </h2>
+               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Video className="text-[#D4AF37]" /> VSL</h2>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {uniqueNiches.map(niche => (
-                    <div 
-                      key={niche} 
-                      onClick={() => selectModule('vsl', niche)}
-                      className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center relative overflow-hidden"
-                    >
-                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                         <Play size={32} />
-                       </div>
+                    <div key={niche} onClick={() => selectModule('vsl', niche)} className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center relative overflow-hidden">
+                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><Play size={32} /></div>
                        <h3 className="text-white font-black uppercase text-xl italic group-hover:text-[#D4AF37] transition-colors">{niche}</h3>
-                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest italic">
-                         {offers.filter(o => o.niche === niche).length} Operações
-                       </p>
+                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest italic">{offers.filter(o => o.niche === niche).length} Operações</p>
                     </div>
                   ))}
                </div>
             </div>
           );
         }
-
         const vslOffers = offers.filter(o => o.niche === activeVslModule);
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
-             <button 
-               onClick={() => selectModule('vsl', null)}
-               className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
-             >
-               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                 <ChevronRight className="rotate-180" size={16} />
-               </div>
+             <button onClick={() => selectModule('vsl', null)} className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group">
+               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ChevronRight className="rotate-180" size={16} /></div>
                Voltar para Temas
              </button>
-             
-             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
-               VSLs: <span className="text-[#D4AF37]">{activeVslModule}</span>
-             </h2>
-
+             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">VSLs: <span className="text-[#D4AF37]">{activeVslModule}</span></h2>
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
               {vslOffers.map(offer => (
                 <div key={offer.id} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 shadow-2xl flex flex-col gap-6">
-                    <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-xl">
-                        <VideoPlayer url={offer.vslLinks[0]?.url} title={offer.title} />
-                    </div>
+                    <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-xl"><VideoPlayer url={offer.vslLinks[0]?.url} title={offer.title} /></div>
                     <div className="space-y-4">
                         <h3 className="text-white font-black uppercase text-lg italic truncate">{offer.title}</h3>
                         <div className="flex flex-wrap items-center gap-3">
-                           <a 
-                             href={offer.vslDownloadUrl} 
-                             target="_blank" 
-                             rel="noopener noreferrer" 
-                             className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg italic"
-                           >
-                             <Download size={14} /> BAIXAR VSL
-                           </a>
-                           <button 
-                             onClick={() => openOffer(offer)}
-                             className="flex items-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"
-                           >
-                             <Eye size={14} /> VER OFERTA COMPLETA
-                           </button>
+                           <a href={offer.vslDownloadUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg italic"><Download size={14} /> BAIXAR VSL</a>
+                           <button onClick={() => openOffer(offer)} className="flex items-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"><Eye size={14} /> VER OFERTA COMPLETA</button>
                         </div>
                     </div>
                 </div>
@@ -1027,78 +861,40 @@ const App: React.FC = () => {
           const uniqueNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
           return (
             <div className="animate-in fade-in duration-700">
-               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                 <Palette className="text-[#D4AF37]" /> Criativos
-               </h2>
+               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Palette className="text-[#D4AF37]" /> Criativos</h2>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {uniqueNiches.map(niche => (
-                    <div 
-                      key={niche} 
-                      onClick={() => selectModule('niche', niche)}
-                      className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center relative overflow-hidden"
-                    >
-                       <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
-                          <ImageIcon size={80} />
-                       </div>
-                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                         <Tag size={32} />
-                       </div>
+                    <div key={niche} onClick={() => selectModule('niche', niche)} className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center relative overflow-hidden">
+                       <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity"><ImageIcon size={80} /></div>
+                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><Tag size={32} /></div>
                        <h3 className="text-white font-black uppercase text-xl italic group-hover:text-[#D4AF37] transition-colors">{niche}</h3>
-                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest">
-                         {offers.filter(o => o.niche === niche).length} Ofertas Mapeadas
-                       </p>
+                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest">{offers.filter(o => o.niche === niche).length} Ofertas Mapeadas</p>
                     </div>
                   ))}
                </div>
             </div>
           );
         }
-
         const nicheOffers = offers.filter(o => o.niche === activeNicheModule);
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
-             <button 
-               onClick={() => selectModule('niche', null)}
-               className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
-             >
-               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                 <ChevronRight className="rotate-180" size={16} />
-               </div>
+             <button onClick={() => selectModule('niche', null)} className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group">
+               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ChevronRight className="rotate-180" size={16} /></div>
                Voltar para Criativos
              </button>
-             
-             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
-               CRIATIVOS: <span className="text-[#D4AF37]">{activeNicheModule}</span>
-             </h2>
-
+             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">CRIATIVOS: <span className="text-[#D4AF37]">{activeNicheModule}</span></h2>
              <div className="space-y-16">
                 {nicheOffers.map(offer => (
                   <div key={offer.id} className="space-y-6">
                       <div className="flex items-center justify-between border-b border-white/5 pb-4 px-2">
                         <h3 className="text-white font-black uppercase text-xl italic tracking-tighter">{offer.title}</h3>
-                        <button 
-                          onClick={() => openOffer(offer)}
-                          className="px-4 py-1.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black transition-all italic border border-[#D4AF37]/30"
-                        >
-                          Ver oferta completa
-                        </button>
+                        <button onClick={() => openOffer(offer)} className="px-4 py-1.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black transition-all italic border border-[#D4AF37]/30">Ver oferta completa</button>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {offer.creativeEmbedUrls.slice(0, 3).map((embedUrl, i) => (
                           <div key={i} className="flex flex-col gap-3">
-                            <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl">
-                              <VideoPlayer url={embedUrl} title={`${offer.title} - Creative ${i + 1}`} />
-                            </div>
-                            <div className="flex items-center justify-center">
-                               <a 
-                                 href={offer.creativeDownloadUrls[i] || '#'} 
-                                 target="_blank" 
-                                 rel="noopener noreferrer" 
-                                 className="flex items-center gap-2 text-[8px] font-black uppercase text-gray-600 hover:text-[#D4AF37] transition-colors tracking-widest"
-                               >
-                                 <Download size={12} /> Baixar este arquivo
-                               </a>
-                            </div>
+                            <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-xl"><VideoPlayer url={embedUrl} title={`Creative ${i + 1}`} /></div>
+                            <div className="flex items-center justify-center"><a href={offer.creativeDownloadUrls[i] || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[8px] font-black uppercase text-gray-600 hover:text-[#D4AF37] transition-colors tracking-widest"><Download size={12} /> Baixar este arquivo</a></div>
                           </div>
                         ))}
                       </div>
@@ -1113,61 +909,32 @@ const App: React.FC = () => {
           const uniqueNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
           return (
             <div className="animate-in fade-in duration-700">
-               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                 <Monitor className="text-[#D4AF37]" /> Páginas
-               </h2>
+               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Monitor className="text-[#D4AF37]" /> Páginas</h2>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {uniqueNiches.map(niche => (
-                    <div 
-                      key={niche} 
-                      onClick={() => selectModule('page', niche)}
-                      className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center"
-                    >
-                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                         <Monitor size={32} />
-                       </div>
+                    <div key={niche} onClick={() => selectModule('page', niche)} className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center">
+                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-2xl flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><Monitor size={32} /></div>
                        <h3 className="text-white font-black uppercase text-xl italic group-hover:text-[#D4AF37] transition-colors">{niche}</h3>
-                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest italic">
-                         Explorar Funis
-                       </p>
+                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest italic">Explorar Funis</p>
                     </div>
                   ))}
                </div>
             </div>
           );
         }
-
         const pageOffers = offers.filter(o => o.niche === activePageModule);
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
-             <button 
-               onClick={() => selectModule('page', null)}
-               className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
-             >
-               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                 <ChevronRight className="rotate-180" size={16} />
-               </div>
+             <button onClick={() => selectModule('page', null)} className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group">
+               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ChevronRight className="rotate-180" size={16} /></div>
                Voltar para Páginas
              </button>
-             
-             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
-               PÁGINAS: <span className="text-[#D4AF37]">{activePageModule}</span>
-             </h2>
-
+             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">PÁGINAS: <span className="text-[#D4AF37]">{activePageModule}</span></h2>
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {pageOffers.map(offer => (
-                <div 
-                  key={offer.id} 
-                  onClick={() => window.open(offer.pageUrl, '_blank')} 
-                  className="bg-[#121212] p-6 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl group cursor-pointer"
-                >
-                    <div className="w-full aspect-square bg-[#1a1a1a] rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                      <ExternalLink size={64} className="opacity-20 group-hover:opacity-100" />
-                    </div>
-                    <div className="text-center">
-                        <p className="text-white font-black uppercase text-sm italic mb-2 tracking-tighter line-clamp-2">{offer.title}</p>
-                        <p className="text-[9px] text-[#D4AF37] font-black uppercase tracking-[0.2em] italic">ABRIR PÁGINA</p>
-                    </div>
+                <div key={offer.id} onClick={() => window.open(offer.pageUrl, '_blank')} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all shadow-xl group cursor-pointer">
+                    <div className="w-full aspect-square bg-[#1a1a1a] rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ExternalLink size={64} className="opacity-20 group-hover:opacity-100" /></div>
+                    <div className="text-center"><p className="text-white font-black uppercase text-sm italic mb-2 tracking-tighter line-clamp-2">{offer.title}</p><p className="text-[9px] text-[#D4AF37] font-black uppercase tracking-[0.2em] italic">ABRIR PÁGINA</p></div>
                 </div>
               ))}
             </div>
@@ -1179,59 +946,32 @@ const App: React.FC = () => {
           const uniqueLangs = Array.from(new Set(offers.map(o => o.language))).sort();
           return (
             <div className="animate-in fade-in duration-700">
-               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4">
-                 <Library className="text-[#D4AF37]" /> Biblioteca de Anúncios
-               </h2>
+               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Library className="text-[#D4AF37]" /> Biblioteca de Anúncios</h2>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {uniqueLangs.map(lang => (
-                    <div 
-                      key={lang} 
-                      onClick={() => selectModule('language', lang)}
-                      className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center"
-                    >
-                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                         <Globe size={32} />
-                       </div>
+                    <div key={lang} onClick={() => selectModule('language', lang)} className="bg-[#121212] p-8 rounded-3xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer text-center">
+                       <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#D4AF37] mx-auto mb-6 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><Globe size={32} /></div>
                        <h3 className="text-white font-black uppercase text-xl italic group-hover:text-[#D4AF37] transition-colors">{lang}</h3>
-                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest italic">
-                         Explorar Inteligência
-                       </p>
+                       <p className="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-widest italic">Explorar Inteligência</p>
                     </div>
                   ))}
                </div>
             </div>
           );
         }
-
         const langOffers = offers.filter(o => o.language === activeLanguageModule);
         return (
           <div className="animate-in fade-in duration-700 space-y-12">
-             <button 
-               onClick={() => selectModule('language', null)}
-               className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"
-             >
-               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
-                 <ChevronRight className="rotate-180" size={16} />
-               </div>
+             <button onClick={() => selectModule('language', null)} className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group">
+               <div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ChevronRight className="rotate-180" size={16} /></div>
                Voltar para Biblioteca
              </button>
-             
-             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">
-               BIBLIOTECA DE ANÚNCIOS: <span className="text-[#D4AF37]">{activeLanguageModule}</span>
-             </h2>
-
+             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8">BIBLIOTECA DE ANÚNCIOS: <span className="text-[#D4AF37]">{activeLanguageModule}</span></h2>
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {langOffers.map(offer => (
-                <div 
-                  key={offer.id} 
-                  onClick={() => window.open(offer.facebookUrl, '_blank')} 
-                  className="bg-[#121212] p-6 rounded-2xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer"
-                >
+                <div key={offer.id} onClick={() => window.open(offer.facebookUrl, '_blank')} className="bg-[#121212] p-6 rounded-2xl border border-white/5 hover:border-[#D4AF37]/50 transition-all group cursor-pointer">
                     <p className="text-white font-black uppercase text-sm italic mb-4 truncate">{offer.title}</p>
-                    <div className="flex items-center justify-between gap-2">
-                       <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest italic">{offer.productType}</p>
-                       <ExternalLink size={14} className="text-[#D4AF37]" />
-                    </div>
+                    <div className="flex items-center justify-between gap-2"><p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest italic">{offer.productType}</p><ExternalLink size={14} className="text-[#D4AF37]" /></div>
                 </div>
               ))}
             </div>
@@ -1245,58 +985,32 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700">
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {filteredFavs.map(offer => (
-                <OfferCard 
-                  key={offer.id} 
-                  offer={offer} 
-                  isFavorite={true}
-                  onToggleFavorite={(e) => toggleFavorite(offer.id, e)}
-                  onClick={() => openOffer(offer)}
-                />
+                <OfferCard key={offer.id} offer={offer} isFavorite={true} onToggleFavorite={(e) => toggleFavorite(offer.id, e)} onClick={() => openOffer(offer)} />
               ))}
             </div>
+            {filteredFavs.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center">Nenhum favorito encontrado.</p>}
           </div>
         );
 
       case 'settings':
         return (
           <div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10">
-            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4">
-              <Settings className="text-[#D4AF37]" /> Painel do Agente
-            </h2>
-            
+            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Settings className="text-[#D4AF37]" /> Painel do Agente</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-[#121212] p-6 rounded-[24px] border border-white/5 shadow-2xl">
                 <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic">Identificação do Operador</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center pb-3 border-b border-white/5">
-                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Agente</span>
-                    <span className="text-white font-black uppercase italic text-sm">Operador 007</span>
-                  </div>
-                  <div className="flex justify-between items-center pb-3 border-b border-white/5">
-                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Plano</span>
-                    <span className="bg-[#D4AF37] text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest italic shadow-lg shadow-[#D4AF37]/10">Operação VIP</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Acesso</span>
-                    <span className="text-white font-black uppercase italic text-sm">Ilimitado</span>
-                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Agente ID</span><span className="text-white font-black uppercase italic text-sm">{userToken}</span></div>
+                  <div className="flex justify-between items-center pb-3 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Plano</span><span className="bg-[#D4AF37] text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest italic shadow-lg shadow-[#D4AF37]/10">Operação VIP</span></div>
+                  <div className="flex justify-between items-center"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Acesso</span><span className="text-white font-black uppercase italic text-sm">Ilimitado</span></div>
                 </div>
               </div>
-
               <div className="bg-[#121212] p-6 rounded-[24px] border border-white/5 shadow-2xl flex flex-col justify-between">
                 <div>
                   <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic">Suporte e Contatos</h3>
-                  <div className="flex flex-col gap-1.5 mb-6">
-                    <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic">E-mail de Comando</span>
-                    <span className="text-white font-black text-lg md:text-xl italic">qhl.mkt@gmail.com</span>
-                  </div>
+                  <div className="flex flex-col gap-1.5 mb-6"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic">E-mail de Comando</span><span className="text-white font-black text-lg md:text-xl italic">qhl.mkt@gmail.com</span></div>
                 </div>
-                <button 
-                  onClick={handleCopyEmail}
-                  className="w-full py-3.5 bg-[#1a1a1a] rounded-xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"
-                >
-                  <Copy size={16} /> Copiar E-mail
-                </button>
+                <button onClick={handleCopyEmail} className="w-full py-3.5 bg-[#1a1a1a] rounded-xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={16} /> Copiar E-mail</button>
               </div>
             </div>
           </div>
@@ -1310,29 +1024,24 @@ const App: React.FC = () => {
   const SidebarContent = () => (
     <div className="p-10 h-full flex flex-col">
       <div className="flex items-center space-x-3 mb-16 px-2">
-        <div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10">
-          <Eye className="text-black" size={24} />
-        </div>
+        <div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10"><Eye className="text-black" size={24} /></div>
         <span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span>
       </div>
-      
       <nav className="space-y-2">
         <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => navigateToPage('home')} />
         <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => navigateToPage('favorites')} />
         <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
-        
         <div className="pt-8 pb-4">
           <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
-          <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers' || (selectedOffer !== null && currentPage === 'offers')} onClick={() => navigateToPage('offers')} />
+          <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => navigateToPage('offers')} />
           <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => navigateToPage('vsl')} />
           <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => navigateToPage('creatives')} />
           <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
           <SidebarItem icon={Library} label="BIBLIOTECA DE ANÚNCIOS" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
         </div>
       </nav>
-
       <div className="mt-auto">
-        <SidebarItem icon={LogOut} label="Sair" active={false} onClick={() => setIsLoggedIn(false)} variant="danger" />
+        <SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" />
       </div>
     </div>
   );
@@ -1342,92 +1051,47 @@ const App: React.FC = () => {
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
       {isLoggedIn ? (
         <>
-          {isMobileMenuOpen && (
-            <div 
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-          )}
-          
-          <aside className={`w-72 bg-[#121212] border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-            <SidebarContent />
-          </aside>
-
+          {isMobileMenuOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300" onClick={() => setIsMobileMenuOpen(false)} />}
+          <aside className={`w-72 bg-[#121212] border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}><SidebarContent /></aside>
           <main className="flex-1 lg:ml-72 relative w-full">
             <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4 md:gap-6">
               <div className="flex items-center justify-between gap-4">
-                <button 
-                  onClick={() => setIsMobileMenuOpen(true)}
-                  className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37] hover:bg-[#1a1a1a] transition-colors"
-                >
-                  <Menu size={24} />
-                </button>
-
+                <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37] hover:bg-[#1a1a1a] transition-colors"><Menu size={24} /></button>
                 <div className="flex-1 flex items-center bg-[#121212] px-4 md:px-6 py-2.5 md:py-3 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-inner max-w-xl">
                    <Search className="text-gray-500 mr-3 md:mr-4" size={18} />
-                   <input 
-                      type="text" 
-                      placeholder="Pesquisar inteligência..." 
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="bg-transparent border-none outline-none text-xs md:text-sm w-full font-bold placeholder:text-gray-700" 
-                   />
+                   <input type="text" placeholder="Pesquisar inteligência..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-transparent border-none outline-none text-xs md:text-sm w-full font-bold placeholder:text-gray-700" />
                 </div>
-
                 <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0">
                     <div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div>
-                    <div className="hidden sm:block">
-                      <p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p>
-                    </div>
+                    <div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p></div>
                 </div>
               </div>
-
               {showFilters && (
                 <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-                  <button 
-                    onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                    className="lg:hidden w-full flex items-center justify-center gap-2 py-3 bg-[#121212] border border-[#D4AF37]/20 rounded-xl text-[#D4AF37] font-black uppercase text-[10px] tracking-widest hover:bg-[#1a1a1a] transition-all"
-                  >
-                    <Filter size={14} /> {isFiltersOpen ? 'FECHAR FILTROS' : 'FILTRAR RESULTADOS'}
-                  </button>
-
+                  <button onClick={() => setIsFiltersOpen(!isFiltersOpen)} className="lg:hidden w-full flex items-center justify-center gap-2 py-3 bg-[#121212] border border-[#D4AF37]/20 rounded-xl text-[#D4AF37] font-black uppercase text-[10px] tracking-widest hover:bg-[#1a1a1a] transition-all"><Filter size={14} /> {isFiltersOpen ? 'FECHAR FILTROS' : 'FILTRAR RESULTADOS'}</button>
                   <div className={`${isFiltersOpen ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-3 md:gap-4 mt-4 lg:mt-0 overflow-x-auto pb-2 scrollbar-hide`}>
-                    <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
-                      <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Nicho</label>
-                      <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
-                        {availableNiches.map(n => <option key={n} value={n}>{n}</option>)}
-                      </select>
-                    </div>
-                    <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
-                      <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tipo de Produto</label>
-                      <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
-                        {availableTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    </div>
-                    <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
-                      <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Tráfego</label>
-                      <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
-                        {availableTrafficSources.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    </div>
-                    <div className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
-                      <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
-                      <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
-                        {availableLanguages.map(l => <option key={l} value={l}>{l}</option>)}
-                      </select>
-                    </div>
+                    {[
+                      { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: availableNiches },
+                      { label: 'Tipo de Produto', value: selectedType, setter: setSelectedType, options: availableTypes },
+                      { label: 'Tráfego', value: selectedTraffic, setter: setSelectedTraffic, options: availableTrafficSources },
+                      { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: availableLanguages }
+                    ].map((f, i) => (
+                      <div key={i} className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
+                        <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label>
+                        <select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">
+                          {f.options.map(n => <option key={n} value={n}>{n}</option>)}
+                        </select>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
             </header>
-
-            <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">
-              {renderContent()}
-            </div>
+            <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
           </main>
         </>
       ) : (
-        <LandingPage onLogin={handleLogin} isSuccess={isSuccess} onCloseSuccess={() => setIsSuccess(false)} />
+        <LandingPage onLogin={handleLogin} isSuccess={isSuccess} successToken={generatedToken} />
       )}
     </div>
   );
