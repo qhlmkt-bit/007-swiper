@@ -253,11 +253,6 @@ const OfferCard: React.FC<{
             <TrendingUp size={12} className="w-3 h-3" /> Em Alta
           </div>
         )}
-        {offer.views && offer.views.trim() !== '' && (
-          <div className="px-2.5 py-1 bg-[#0a0a0a]/90 backdrop-blur-xl text-[#D4AF37] text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-[#D4AF37]/30">
-            <Flame size={12} fill="currentColor" className="text-[#D4AF37] animate-pulse" /> {offer.views.trim()}
-          </div>
-        )}
       </div>
       <div className="absolute top-3 right-3">
         <button 
@@ -654,13 +649,6 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
-            {selectedOffer.views && selectedOffer.views.trim() !== '' && (
-              <div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-[#D4AF37]/40 w-fit shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                <Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-pulse" />
-                <span className="text-[#D4AF37] font-black uppercase text-sm md:text-base italic tracking-[0.1em]">{selectedOffer.views} ANÚNCIOS ATIVOS</span>
-              </div>
-            )}
-
             <div className="flex flex-col lg:flex-row gap-8 items-stretch">
               <div className="w-full lg:w-[62%] space-y-6">
                 <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
