@@ -173,6 +173,28 @@ const generateAgentId = () => {
  * UI COMPONENTS
  */
 
+const UpdateBadge: React.FC<{ index: number }> = ({ index }) => {
+  if (index < 5) {
+    return (
+      <div className="px-2.5 py-1 bg-[#D4AF37] text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
+        <Clock size={10} fill="currentColor" /> NOVO: ADICIONADO HOJE
+      </div>
+    );
+  } else if (index < 10) {
+    return (
+      <div className="px-2.5 py-1 bg-[#1a1a1a] text-gray-300 text-[10px] font-black rounded border border-[#D4AF37]/40 uppercase flex items-center gap-1 shadow-2xl">
+        <Clock size={10} /> ADICIONADO ONTEM
+      </div>
+    );
+  } else {
+    return (
+      <div className="px-2.5 py-1 bg-[#1a1a1a] text-gray-500 text-[10px] font-black rounded border border-white/10 uppercase flex items-center gap-1 shadow-2xl">
+        <Clock size={10} /> ADICIONADO ESTA SEMANA
+      </div>
+    );
+  }
+};
+
 const SidebarItem: React.FC<{
   icon: any;
   label: string;
@@ -228,10 +250,11 @@ const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
 
 const OfferCard: React.FC<{
   offer: Offer;
+  index: number;
   isFavorite: boolean;
   onToggleFavorite: (e: React.MouseEvent) => void;
   onClick: () => void;
-}> = ({ offer, isFavorite, onToggleFavorite, onClick }) => (
+}> = ({ offer, index, isFavorite, onToggleFavorite, onClick }) => (
   <div 
     onClick={onClick}
     className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl"
@@ -243,6 +266,7 @@ const OfferCard: React.FC<{
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
       />
       <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+        <UpdateBadge index={index} />
         {offer.trend.trim().toLowerCase() === 'escalando' && (
           <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
             <Zap size={10} fill="currentColor" /> Escalando
@@ -632,6 +656,8 @@ const App: React.FC = () => {
     );
 
     if (selectedOffer) {
+      // Find the relative index of the selected offer to display correct update badge
+      const offerIndex = offers.findIndex(o => o.id === selectedOffer.id);
       return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -649,6 +675,13 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-12">
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center gap-4">
+                <UpdateBadge index={offerIndex} />
+                <h1 className="text-white text-3xl font-black uppercase italic tracking-tighter">{selectedOffer.title}</h1>
+              </div>
+            </div>
+
             <div className="flex flex-col lg:flex-row gap-8 items-stretch">
               <div className="w-full lg:w-[62%] space-y-6">
                 <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
@@ -735,13 +768,19 @@ const App: React.FC = () => {
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Zap className="text-[#D4AF37]" fill="currentColor" /> OPERAÇÕES EM ESCALA</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                {scalingHome.map(o => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+                {scalingHome.map((o, idx) => {
+                  const realIndex = offers.findIndex(orig => orig.id === o.id);
+                  return <OfferCard key={o.id} index={realIndex} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />;
+                })}
               </div>
             </div>
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Monitor className="text-[#D4AF37]" /> VISTOS RECENTEMENTE</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                {recentlyHome.map(o => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+                {recentlyHome.map((o, idx) => {
+                  const realIndex = offers.findIndex(orig => orig.id === o.id);
+                  return <OfferCard key={o.id} index={realIndex} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />;
+                })}
               </div>
               {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic">Nenhuma atividade recente registrada.</p>}
             </div>
@@ -750,7 +789,11 @@ const App: React.FC = () => {
       case 'offers':
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 animate-in fade-in duration-700">
-            {filtered.map(o => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+            {filtered.map((o, idx) => {
+               // We need the index from the ORIGINAL 'offers' array to show correct time labels
+               const originalIndex = offers.findIndex(orig => orig.id === o.id);
+               return <OfferCard key={o.id} index={originalIndex} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />;
+            })}
             {filtered.length === 0 && <div className="col-span-full py-40 text-center text-gray-600 font-black uppercase text-sm italic">Nenhuma inteligência corresponde aos critérios aplicados.</div>}
           </div>
         );
@@ -884,7 +927,10 @@ const App: React.FC = () => {
           <div className="animate-in fade-in duration-700">
             <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {favs.map(o => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+              {favs.map((o, idx) => {
+                 const realIndex = offers.findIndex(orig => orig.id === o.id);
+                 return <OfferCard key={o.id} index={realIndex} offer={o} isFavorite={true} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />;
+              })}
             </div>
             {favs.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center col-span-full">Sua lista privada de favoritos está vazia.</p>}
           </div>
