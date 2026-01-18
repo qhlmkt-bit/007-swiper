@@ -40,7 +40,8 @@ import {
   Copy, 
   Flame,
   ArrowLeft,
-  LifeBuoy
+  LifeBuoy,
+  Cpu
 } from 'lucide-react';
 
 /** 
@@ -797,6 +798,47 @@ const App: React.FC = () => {
             {filtered.length === 0 && <div className="col-span-full py-40 text-center text-gray-600 font-black uppercase text-sm italic">Nenhuma inteligência corresponde aos critérios aplicados.</div>}
           </div>
         );
+      case 'scanner':
+        return (
+          <div className="animate-in fade-in duration-700 max-w-4xl mx-auto space-y-12">
+            <div className="text-center space-y-6">
+              <div className="bg-[#D4AF37]/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto border border-[#D4AF37]/30 shadow-[0_0_50px_rgba(212,175,55,0.1)]">
+                <Cpu size={48} className="text-[#D4AF37]" />
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter">007 SCANNER - <span className="text-[#D4AF37]">FERRAMENTA DE EXTRAÇÃO</span></h2>
+              <p className="text-gray-400 font-bold uppercase text-sm md:text-base tracking-widest italic max-w-2xl mx-auto">Sua extensão exclusiva para baixar criativos direto da Biblioteca de Anúncios.</p>
+              
+              <div className="pt-8">
+                <button 
+                  onClick={() => window.open('#', '_blank')}
+                  className="px-12 py-6 bg-[#D4AF37] text-black font-black text-xl rounded-3xl hover:scale-105 transition-all shadow-[0_0_40px_rgba(212,175,55,0.3)] uppercase tracking-tighter italic flex items-center gap-4 mx-auto animate-btn-pulse"
+                >
+                  <Download size={28} /> BAIXAR AGORA (.ZIP)
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-[#121212] border border-[#D4AF37]/20 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+              <h3 className="text-white font-black uppercase text-xl italic mb-8 flex items-center gap-3">
+                <CheckCircle className="text-[#D4AF37]" size={24} /> GUIA DE INSTALAÇÃO RÁPIDA
+              </h3>
+              <div className="space-y-6">
+                {[
+                  "Baixe e extraia a pasta .zip em seu computador.",
+                  "No Chrome, acesse: chrome://extensions/",
+                  "Ative o Modo do Desenvolvedor (canto superior direito).",
+                  "Clique em Carregar sem compactação e selecione a pasta extraída."
+                ].map((step, i) => (
+                  <div key={i} className="flex gap-5 items-start">
+                    <div className="w-8 h-8 bg-[#1a1a1a] border border-white/5 rounded-lg flex items-center justify-center shrink-0 font-black text-[#D4AF37] text-sm">0{i+1}</div>
+                    <p className="text-gray-400 font-bold text-base italic leading-relaxed pt-1">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
       case 'vsl':
         if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, Video, "CENTRAL DE VSL");
         return (
@@ -979,6 +1021,7 @@ const App: React.FC = () => {
           <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => navigateToPage('creatives')} />
           <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
           <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
+          <SidebarItem icon={Cpu} label="EXTENSÃO SCANNER" active={currentPage === 'scanner'} onClick={() => navigateToPage('scanner')} />
         </div>
       </nav>
       
