@@ -41,7 +41,8 @@ import {
   Flame,
   ArrowLeft,
   LifeBuoy,
-  Cpu
+  Cpu,
+  Ghost
 } from 'lucide-react';
 
 /** 
@@ -86,6 +87,21 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8J
 const KIWIFY_MENSAL = 'https://pay.kiwify.com.br/mtU9l7e';
 const KIWIFY_TRIMESTRAL = 'https://pay.kiwify.com.br/ExDtrjE';
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
+
+const SPY_NICHES = [
+  { name: 'Emagrecimento', query: 'emagrecimento' },
+  { name: 'Renda Extra', query: 'renda extra' },
+  { name: 'Estética', query: 'estetica' },
+  { name: 'Investimentos', query: 'investimentos' },
+  { name: 'Saúde Masculina', query: 'saude masculina' },
+  { name: 'Relacionamento', query: 'relacionamento' },
+  { name: 'Beleza', query: 'beleza' },
+  { name: 'Desenvolvimento Pessoal', query: 'desenvolvimento pessoal' },
+  { name: 'Cursos Online', query: 'curso online' },
+  { name: 'Dropshipping', query: 'dropshipping' },
+  { name: 'Idiomas', query: 'idiomas' },
+  { name: 'Concursos', query: 'concursos' }
+];
 
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -798,6 +814,43 @@ const App: React.FC = () => {
             {filtered.length === 0 && <div className="col-span-full py-40 text-center text-gray-600 font-black uppercase text-sm italic">Nenhuma inteligência corresponde aos critérios aplicados.</div>}
           </div>
         );
+      case 'spy_mode':
+        return (
+          <div className="animate-in fade-in duration-700 max-w-6xl mx-auto space-y-12">
+            <div className="bg-[#D4AF37]/5 border border-[#D4AF37]/30 p-6 rounded-3xl text-center shadow-xl">
+              <p className="text-white font-black text-base md:text-lg italic uppercase tracking-tight">
+                ⚠️ Certifique-se de que a Extensão <span className="text-[#D4AF37]">007 Scanner</span> está ativa para liberar os filtros de escala nesta busca.
+              </p>
+            </div>
+            
+            <div className="flex flex-col mb-12">
+              <h2 className="text-3xl font-black text-white uppercase italic flex items-center gap-4">
+                <Ghost className="text-[#D4AF37]" size={32} /> MODO ESPIONAGEM
+              </h2>
+              <p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 italic">Acesso direto às bibliotecas de anúncios de alta escala</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {SPY_NICHES.map((niche, idx) => (
+                <button 
+                  key={idx} 
+                  onClick={() => window.open(`https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&q=${encodeURIComponent(niche.query)}`, '_blank')}
+                  className="group bg-[#121212] border border-white/5 hover:border-[#D4AF37]/50 p-8 rounded-[32px] text-left transition-all hover:scale-[1.02] shadow-xl flex flex-col justify-between h-48 relative overflow-hidden"
+                >
+                  <div className="absolute -right-4 -bottom-4 text-white/5 group-hover:text-[#D4AF37]/10 transition-colors">
+                    <Search size={120} />
+                  </div>
+                  <p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest italic mb-2">Espionagem 00{idx + 1}</p>
+                  <span className="text-white text-2xl font-black uppercase italic tracking-tighter leading-none group-hover:text-[#D4AF37] transition-colors relative z-10">{niche.name}</span>
+                  <div className="flex items-center gap-2 mt-auto relative z-10">
+                    <span className="text-gray-500 text-[9px] font-black uppercase tracking-widest group-hover:text-white transition-colors italic">Iniciar Infiltração</span>
+                    <ExternalLink size={14} className="text-[#D4AF37] group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
       case 'scanner':
         return (
           <div className="animate-in fade-in duration-700 max-w-4xl mx-auto space-y-12">
@@ -1022,6 +1075,7 @@ const App: React.FC = () => {
           <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
           <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
           <SidebarItem icon={Cpu} label="EXTENSÃO SCANNER" active={currentPage === 'scanner'} onClick={() => navigateToPage('scanner')} />
+          <SidebarItem icon={Ghost} label="MODO ESPIONAGEM" active={currentPage === 'spy_mode'} onClick={() => navigateToPage('spy_mode')} />
         </div>
       </nav>
       
