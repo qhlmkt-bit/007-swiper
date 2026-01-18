@@ -43,8 +43,7 @@ import {
   LifeBuoy
 } from 'lucide-react';
 
-/** 
- * TYPE DEFINITIONS
+/** * TYPE DEFINITIONS
  */
 export type ProductType = string;
 export type Niche = string;
@@ -78,8 +77,7 @@ export interface Offer {
   isFavorite?: boolean;
 }
 
-/** 
- * CONSTANTS 
+/** * CONSTANTS 
  */
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 const KIWIFY_MENSAL = 'https://pay.kiwify.com.br/mtU9l7e';
@@ -295,7 +293,7 @@ const OfferCard: React.FC<{
  * LANDING PAGE / WELCOME MODAL
  */
 const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => (
-  <div className="w-full bg-[#0a0a0a] flex flex-col items-center justify-center min-h-screen selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
+  <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
     <style dangerouslySetInnerHTML={{ __html: STYLES }} />
 
     {isSuccess && (
@@ -361,7 +359,7 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => 
       </h1>
       
       <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed px-2 mx-auto text-center">
-        Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. Para produtores, afiliados e e-commerces que não querem mais atirar no escuro: 007 Swiper é a plataforma de inteligência que transforma dados em resultados escaláveis.
+        Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. O fim do "achismo" na sua escala digital.
       </p>
 
       <section className="w-full max-w-4xl aspect-video bg-[#121212] rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center group cursor-pointer transition-all hover:border-[#D4AF37]/40 mx-auto mb-32">
@@ -394,6 +392,34 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => 
             ))}
           </ul>
           <button onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter animate-btn-pulse italic">ASSINAR PLANO TRIMESTRAL</button>
+        </div>
+      </div>
+
+      {/* GUARANTEE SECTION - RECONSTRUCTED TO PRINT 1 */}
+      <div className="w-full max-w-5xl mx-auto mb-40 px-4">
+        <div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]">
+          <div className="flex flex-col items-center shrink-0">
+            <div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative shadow-[0_0_40px_rgba(212,175,55,0.2)]">
+              <span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span>
+            </div>
+            <div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] -mt-5 relative z-10 shadow-xl">
+              DIAS
+            </div>
+          </div>
+          <div className="flex-1 text-center md:text-left space-y-6">
+            <h2 className="text-white text-3xl md:text-5xl font-black italic uppercase tracking-tighter">
+              GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span>
+            </h2>
+            <p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">
+              Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investimento. Sem perguntas.
+            </p>
+            <button 
+              onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')}
+              className="w-full md:w-auto px-12 py-6 bg-[#D4AF37] text-black font-black text-xl rounded-2xl hover:scale-105 transition-all shadow-2xl italic tracking-tighter uppercase"
+            >
+              [COMEÇAR AGORA – RISCO ZERO]
+            </button>
+          </div>
         </div>
       </div>
 
@@ -456,7 +482,6 @@ const App: React.FC = () => {
     });
   }, [searchQuery, selectedNiche, selectedLanguage, selectedType, selectedTraffic]);
 
-  // Updated filter visibility logic: only on 'offers' page and no offer selected
   const showFilters = currentPage === 'offers' && !selectedOffer;
 
   const pushNavState = useCallback((params: any) => {
