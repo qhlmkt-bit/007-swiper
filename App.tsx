@@ -225,76 +225,89 @@ const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
 };
 
 const OfferCard: React.FC<{
- offer: Offer;
- index: number;
- isFavorite: boolean;
- onToggleFavorite: (e: React.MouseEvent) => void;
- onClick: () => void;
-}> = ({ offer, index, isFavorite, onToggleFavorite, onClick }) => (
- <div 
-   onClick={onClick}
-   className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl"
- >
-   <div className="relative aspect-video overflow-hidden">
-     <img 
-       src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} 
-       alt={offer.title} 
-       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-     />
-     <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-       {/* MARCAÇÃO DE NOVIDADE: 10 PRIMEIROS DO CSV INVERTIDO */}
-       {index < 10 && (
-         <div className="px-2.5 py-1 bg-[#D4AF37] text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl animate-pulse">
-           <Clock size={10} fill="currentColor" /> NOVO: ADICIONADO HOJE
-         </div>
-       )}
-       {offer.trend.trim().toLowerCase() === 'escalando' && (
-         <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
-           <Zap size={10} fill="currentColor" /> Escalando
-         </div>
-       )}
-       {offer.trend.trim().toLowerCase() === 'em alta' && (
-         <div className="px-2.5 py-1 bg-[#D4AF37] text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
-           <TrendingUp size={12} className="w-3 h-3" /> Em Alta
-         </div>
-       )}
-       {offer.views && offer.views.trim() !== '' && (
-         <div className="px-2.5 py-1 bg-[#0a0a0a]/90 backdrop-blur-xl text-[#D4AF37] text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-[#D4AF37]/30">
-           <Flame size={12} fill="currentColor" className="text-[#D4AF37] animate-pulse" /> {offer.views.trim()}
-         </div>
-       )}
-     </div>
-     <div className="absolute top-3 right-3">
-       <button 
-         onClick={onToggleFavorite}
-         className={`p-2.5 rounded-xl backdrop-blur-xl transition-all duration-300 ${
-           isFavorite ? 'bg-[#D4AF37] text-black scale-110' : 'bg-[#D4AF37]/20 text-white hover:bg-[#D4AF37] hover:text-black'
-         }`}
-       >
-         <Star size={18} fill={isFavorite ? "currentColor" : "none"} />
-       </button>
-     </div>
-     <div className="absolute bottom-3 left-3">
-       <div className="px-2 py-0.5 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase shadow-lg">
-         {offer.niche}
-       </div>
-     </div>
-   </div>
-   <div className="p-5">
-     <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors italic">{offer.title}</h3>
-     <div className="flex items-center justify-between border-t border-white/5 pt-4">
-       <div className="flex flex-wrap items-center gap-2">
-         {offer.trafficSource.slice(0, 2).map((source, idx) => (
-           <div key={idx} className="flex items-center gap-1.5 text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-             <TrafficIcon source={source} />
-           </div>
-         ))}
-         <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{offer.productType}</span>
-       </div>
-     </div>
-   </div>
- </div>
-);
+  offer: Offer;
+  index: number;
+  isFavorite: boolean;
+  onToggleFavorite: (e: React.MouseEvent) => void;
+  onClick: () => void;
+}> = ({ offer, index, isFavorite, onToggleFavorite, onClick }) => {
+  
+  // LÓGICA DE TEXTO DO SELO BASEADO NA POSIÇÃO (INDEX)
+  const getBadgeText = (idx: number) => {
+    if (idx === 0) return "ADICIONADO: HOJE";
+    if (idx === 1) return "ADICIONADO: HÁ 1 DIA";
+    if (idx >= 2 && idx <= 7) return `ADICIONADO: HÁ ${idx} DIAS`;
+    return "OFERTA: +7 DIAS";
+  };
+
+  return (
+    <div 
+      onClick={onClick}
+      className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl"
+    >
+      <div className="relative aspect-video overflow-hidden">
+        <img 
+          src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} 
+          alt={offer.title} 
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+        />
+        
+        {/* SELOS DE STATUS DINÂMICOS */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+          {/* SELO DE TEMPO: Dourado para até 7 dias, Cinza para o restante */}
+          <div className={`px-2.5 py-1 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${index <= 7 ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-500 border border-white/10'}`}>
+            <Clock size={10} fill={index <= 7 ? "currentColor" : "none"} /> {getBadgeText(index)}
+          </div>
+          
+          {offer.trend.trim().toLowerCase() === 'escalando' && (
+            <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
+              <Zap size={10} fill="currentColor" /> Escalando
+            </div>
+          )}
+          
+          {offer.trend.trim().toLowerCase() === 'em alta' && (
+            <div className="px-2.5 py-1 bg-[#D4AF37] text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
+              <TrendingUp size={12} className="w-3 h-3" /> Em Alta
+            </div>
+          )}
+          
+          {offer.views && offer.views.trim() !== '' && (
+            <div className="px-2.5 py-1 bg-[#0a0a0a]/90 backdrop-blur-xl text-[#D4AF37] text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-[#D4AF37]/30">
+              <Flame size={12} fill="currentColor" className="text-[#D4AF37] animate-pulse" /> {offer.views.trim()}
+            </div>
+          )}
+        </div>
+
+        <div className="absolute top-3 right-3">
+          <button 
+            onClick={onToggleFavorite}
+            className={`p-2.5 rounded-xl backdrop-blur-xl transition-all duration-300 ${
+              isFavorite ? 'bg-[#D4AF37] text-black scale-110' : 'bg-[#D4AF37]/20 text-white hover:bg-[#D4AF37] hover:text-black'
+            }`}
+          >
+            <Star size={18} fill={isFavorite ? "currentColor" : "none"} />
+          </button>
+        </div>
+        <div className="absolute bottom-3 left-3">
+          <div className="px-2 py-0.5 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase shadow-lg">
+            {offer.niche}
+          </div>
+        </div>
+      </div>
+      <div className="p-5">
+        <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors italic">{offer.title}</h3>
+        <div className="flex items-center justify-between border-t border-white/5 pt-4">
+          <div className="flex items-center gap-2">
+            {offer.trafficSource.slice(0, 2).map((source, idx) => (
+              <TrafficIcon key={idx} source={source} />
+            ))}
+            <span className="text-gray-500 text-[9px] font-bold uppercase tracking-widest">{offer.productType}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /**
  * LANDING PAGE / WELCOME MODAL
