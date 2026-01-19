@@ -74,6 +74,7 @@ export interface Offer {
  creativeEmbedUrls: string[]; 
  creativeDownloadUrls: string[]; 
  creativeZipUrl: string; 
+ addedDate: string; // DATA REAL DA PLANILHA
  isFavorite?: boolean;
 }
 
@@ -225,20 +226,33 @@ const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
 };
 
 const OfferCard: React.FC<{
-  offer: Offer;
-  index: number;
-  isFavorite: boolean;
-  onToggleFavorite: (e: React.MouseEvent) => void;
-  onClick: () => void;
-}> = ({ offer, index, isFavorite, onToggleFavorite, onClick }) => {
+ offer: Offer;
+ isFavorite: boolean;
+ onToggleFavorite: (e: React.MouseEvent) => void;
+ onClick: () => void;
+}> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
   
-  // LÓGICA DE TEXTO DO SELO BASEADO NA POSIÇÃO (INDEX)
-  const getBadgeText = (idx: number) => {
-    if (idx === 0) return "ADICIONADO: HOJE";
-    if (idx === 1) return "ADICIONADO: HÁ 1 DIA";
-    if (idx >= 2 && idx <= 7) return `ADICIONADO: HÁ ${idx} DIAS`;
-    return "OFERTA: +7 DIAS";
+  // LÓGICA DE DATA REAL COMPARANDO HOJE COM A PLANILHA
+  const getBadgeInfo = () => {
+    if (!offer.addedDate) return { text: "OFERTA: +7 DIAS", isNew: false };
+    
+    // Converte a string da planilha para objeto Date
+    // Esperado: AAAA-MM-DD (Ex: 2026-01-18)
+    const dataOferta = new Date(offer.addedDate + 'T00:00:00'); 
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    // Diferença em dias
+    const diffTempo = hoje.getTime() - dataOferta.getTime();
+    const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
+
+    if (diffDias <= 0) return { text: "ADICIONADO: HOJE", isNew: true };
+    if (diffDias === 1) return { text: "ADICIONADO: HÁ 1 DIA", isNew: true };
+    if (diffDias >= 2 && diffDias <= 7) return { text: `ADICIONADO: HÁ ${diffDias} DIAS`, isNew: true };
+    return { text: "OFERTA: +7 DIAS", isNew: false };
   };
+
+  const badge = getBadgeInfo();
 
   return (
     <div 
@@ -251,12 +265,10 @@ const OfferCard: React.FC<{
           alt={offer.title} 
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
-        
-        {/* SELOS DE STATUS DINÂMICOS */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          {/* SELO DE TEMPO: Dourado para até 7 dias, Cinza para o restante */}
-          <div className={`px-2.5 py-1 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${index <= 7 ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-500 border border-white/10'}`}>
-            <Clock size={10} fill={index <= 7 ? "currentColor" : "none"} /> {getBadgeText(index)}
+          {/* SELO DE TEMPO REAL: Dourado para até 7 dias, Cinza para o restante */}
+          <div className={`px-2.5 py-1 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-500 border border-white/10'}`}>
+            <Clock size={10} fill={badge.isNew ? "currentColor" : "none"} /> {badge.text}
           </div>
           
           {offer.trend.trim().toLowerCase() === 'escalando' && (
@@ -264,20 +276,17 @@ const OfferCard: React.FC<{
               <Zap size={10} fill="currentColor" /> Escalando
             </div>
           )}
-          
           {offer.trend.trim().toLowerCase() === 'em alta' && (
             <div className="px-2.5 py-1 bg-[#D4AF37] text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
               <TrendingUp size={12} className="w-3 h-3" /> Em Alta
             </div>
           )}
-          
           {offer.views && offer.views.trim() !== '' && (
             <div className="px-2.5 py-1 bg-[#0a0a0a]/90 backdrop-blur-xl text-[#D4AF37] text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-[#D4AF37]/30">
               <Flame size={12} fill="currentColor" className="text-[#D4AF37] animate-pulse" /> {offer.views.trim()}
             </div>
           )}
         </div>
-
         <div className="absolute top-3 right-3">
           <button 
             onClick={onToggleFavorite}
@@ -590,11 +599,26 @@ const App: React.FC = () => {
          const v = l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.trim().replace(/^"|"$/g, '').trim());
          if (!v[1] || v[1].toLowerCase() === 'undefined') return null;
          return {
-           id: v[0] || String(i), title: v[1], niche: v[2] || 'Geral', productType: v[3] || 'Geral', description: v[4] || '',
-           coverImage: v[5] || '', views: v[7] || '', vslLinks: (v[8] || '').split(',').map(u => ({ label: 'VSL Principal', url: u.trim() })).filter(link => link.url), vslDownloadUrl: v[9] || '#',
-           trend: (v[6] as Trend) || 'Estável', transcriptionUrl: v[10] || '#', creativeEmbedUrls: (v[11] || '').split(',').map(s => s.trim()).filter(Boolean),
-           creativeDownloadUrls: (v[12] || '').split(',').map(s => s.trim()).filter(Boolean), facebookUrl: v[13] || '#', pageUrl: v[14] || '#',
-           language: v[15] || 'Português', trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), creativeZipUrl: v[17] || '#', creativeImages: [], 
+           id: v[0] || String(i), 
+           title: v[1], 
+           niche: v[2] || 'Geral', 
+           productType: v[3] || 'Geral', 
+           description: v[4] || '',
+           coverImage: v[5] || '', 
+           trend: (v[6] as Trend) || 'Estável', 
+           views: v[7] || '', 
+           vslLinks: (v[8] || '').split(',').map(u => ({ label: 'VSL Principal', url: u.trim() })).filter(link => link.url), 
+           vslDownloadUrl: v[9] || '#',
+           transcriptionUrl: v[10] || '#', 
+           creativeEmbedUrls: (v[11] || '').split(',').map(s => s.trim()).filter(Boolean),
+           creativeDownloadUrls: (v[12] || '').split(',').map(s => s.trim()).filter(Boolean), 
+           facebookUrl: v[13] || '#', 
+           pageUrl: v[14] || '#',
+           language: v[15] || 'Português', 
+           trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), 
+           creativeZipUrl: v[17] || '#', 
+           addedDate: v[17] || '', // COLUNA R (ÍNDICE 17)
+           creativeImages: [], 
          };
        }).filter((o): o is Offer => o !== null);
        setOffers([...parsed].reverse());
@@ -792,13 +816,13 @@ const App: React.FC = () => {
            <div>
              <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Zap className="text-[#D4AF37]" fill="currentColor" /> OPERAÇÕES EM ESCALA</h2>
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-               {scalingHome.map((o, i) => <OfferCard key={o.id} offer={o} index={i} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+               {scalingHome.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
              </div>
            </div>
            <div>
              <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Monitor className="text-[#D4AF37]" /> VISTOS RECENTEMENTE</h2>
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-               {recentlyHome.map((o, i) => <OfferCard key={o.id} offer={o} index={i} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+               {recentlyHome.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
              </div>
              {recentlyHome.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic">Nenhuma atividade recente registrada.</p>}
            </div>
@@ -807,7 +831,7 @@ const App: React.FC = () => {
      case 'offers':
        return (
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 animate-in fade-in duration-700">
-           {filtered.map((o, i) => <OfferCard key={o.id} offer={o} index={i} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+           {filtered.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
            {filtered.length === 0 && <div className="col-span-full py-40 text-center text-gray-600 font-black uppercase text-sm italic">Nenhuma inteligência corresponde aos critérios aplicados.</div>}
          </div>
        );
@@ -882,7 +906,7 @@ const App: React.FC = () => {
              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">PÁGINAS:</span> {activeNicheSelection}</h2>
            </div>
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-             {offers.filter(o => o.niche === activeNicheSelection && o.pageUrl && o.pageUrl !== '#').map((o, i) => (
+             {offers.filter(o => o.niche === activeNicheSelection && o.pageUrl && o.pageUrl !== '#').map((o) => (
                <div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden border border-white/5 group hover:border-[#D4AF37]/50 transition-all flex flex-col shadow-2xl h-full">
                  <div className="aspect-[4/3] bg-black relative">
                    <img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" />
@@ -941,7 +965,7 @@ const App: React.FC = () => {
          <div className="animate-in fade-in duration-700">
            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2>
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-             {favs.map((o, i) => <OfferCard key={o.id} offer={o} index={i} isFavorite={true} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
+             {favs.map((o) => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}
            </div>
            {favs.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center col-span-full">Sua lista privada de favoritos está vazia.</p>}
          </div>
