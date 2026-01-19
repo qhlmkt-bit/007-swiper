@@ -74,7 +74,7 @@ export interface Offer {
  creativeEmbedUrls: string[]; 
  creativeDownloadUrls: string[]; 
  creativeZipUrl: string; 
- addedDate: string; // DATA REAL DA PLANILHA
+ addedDate: string;
  isFavorite?: boolean;
 }
 
@@ -232,17 +232,14 @@ const OfferCard: React.FC<{
  onClick: () => void;
 }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
   
-  // LÓGICA DE DATA REAL COMPARANDO HOJE COM A PLANILHA
   const getBadgeInfo = () => {
-    if (!offer.addedDate) return { text: "OFERTA: +7 DIAS", isNew: false };
+    if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false };
     
-    // Converte a string da planilha para objeto Date
-    // Esperado: AAAA-MM-DD (Ex: 2026-01-18)
+    // Converte a string da planilha (AAAA-MM-DD) para objeto Date
     const dataOferta = new Date(offer.addedDate + 'T00:00:00'); 
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     
-    // Diferença em dias
     const diffTempo = hoje.getTime() - dataOferta.getTime();
     const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
 
@@ -266,8 +263,7 @@ const OfferCard: React.FC<{
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          {/* SELO DE TEMPO REAL: Dourado para até 7 dias, Cinza para o restante */}
-          <div className={`px-2.5 py-1 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-500 border border-white/10'}`}>
+          <div className={`px-2.5 py-1 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-400 border border-white/10'}`}>
             <Clock size={10} fill={badge.isNew ? "currentColor" : "none"} /> {badge.text}
           </div>
           
@@ -424,7 +420,7 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => 
        </div>
      </div>
 
-     {/* GUARANTEE SECTION - RECONSTRUCTED TO PRINT 1 */}
+     {/* GUARANTEE SECTION */}
      <div className="w-full max-w-5xl mx-auto mb-40 px-4">
        <div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]">
          <div className="flex flex-col items-center shrink-0">
@@ -617,7 +613,7 @@ const App: React.FC = () => {
            language: v[15] || 'Português', 
            trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), 
            creativeZipUrl: v[17] || '#', 
-           addedDate: v[17] || '', // COLUNA R (ÍNDICE 17)
+           addedDate: v[18] || '', // AJUSTADO PARA COLUNA S (ÍNDICE 18)
            creativeImages: [], 
          };
        }).filter((o): o is Offer => o !== null);
