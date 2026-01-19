@@ -75,6 +75,7 @@ export interface Offer {
  creativeDownloadUrls: string[]; 
  creativeZipUrl: string; 
  addedDate: string;
+ status: string; // TRAVA DE SEGURANÇA
  isFavorite?: boolean;
 }
 
@@ -235,7 +236,6 @@ const OfferCard: React.FC<{
   const getBadgeInfo = () => {
     if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false };
     
-    // Converte a string da planilha (AAAA-MM-DD) para objeto Date
     const dataOferta = new Date(offer.addedDate + 'T00:00:00'); 
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -613,11 +613,15 @@ const App: React.FC = () => {
            language: v[15] || 'Português', 
            trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), 
            creativeZipUrl: v[17] || '#', 
-           addedDate: v[18] || '', // AJUSTADO PARA COLUNA S (ÍNDICE 18)
+           addedDate: v[18] || '', 
+           status: (v[19] || '').toUpperCase(), // LENDO COLUNA T (ÍNDICE 19)
            creativeImages: [], 
          };
        }).filter((o): o is Offer => o !== null);
-       setOffers([...parsed].reverse());
+
+       // FILTRO DE SEGURANÇA: SÓ MOSTRA O QUE FOR 'ATIVO'
+       const ofertasAtivas = parsed.filter(o => o.status === 'ATIVO');
+       setOffers([...ofertasAtivas].reverse());
      } catch (e) { console.error(e); } finally { setLoading(false); }
    };
    fetchOffers();
