@@ -1,8 +1,7 @@
-const { Resend } = require('resend');
-const { initializeApp } = require("firebase/app");
-const { getFirestore, doc, setDoc } = require("firebase/firestore");
+import { Resend } from 'resend';
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 
-// CONFIGURAÇÕES DE ELITE
 const resend = new Resend('re_PyaW24wC_3rcrXYBC1UPzjpyziR1ukS7K'); 
 
 const firebaseConfig = {
@@ -17,9 +16,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  // Garantir que apenas requisições POST sejam processadas
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Apenas POST' });
+    return res.status(405).json({ message: 'Método não permitido' });
   }
 
   const payload = req.body;
@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
     const idAgente = `AGENTE-${randomNum}`;
 
     try {
-      // 1. Criar no Firebase
+      // 1. Criar registro no Firebase
       await setDoc(doc(db, "agentes", idAgente), {
         email: emailCliente,
         nome: nomeCliente,
@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
         origem: "Hotmart Automático"
       });
 
-      // 2. Enviar E-mail
+      // 2. Enviar E-mail via Resend
       await resend.emails.send({
         from: '007 Swiper <onboarding@resend.dev>',
         to: emailCliente,
@@ -48,18 +48,23 @@ module.exports = async (req, res) => {
         html: `
           <div style="background-color: #0a0a0a; color: #ffffff; padding: 50px; font-family: sans-serif; border: 1px solid #D4AF37; border-radius: 24px; max-width: 600px; margin: auto;">
             <h1 style="color: #D4AF37; font-style: italic; text-transform: uppercase;">Acesso Liberado, Agente!</h1>
-            <p style="font-size: 16px; color: #a0a0a0;">Sua inteligência de mercado foi aprovada. Use sua credencial única:</p>
+            <p style="font-size: 16px; color: #a0a0a0;">Sua inteligência de mercado foi aprovada. Abaixo está sua credencial única:</p>
             <div style="background-color: #121212; border: 1px solid #222; padding: 30px; border-radius: 16px; text-align: center; margin: 40px 0;">
-              <span style="font-size: 36px; font-weight: bold; color: #ffffff; font-family: monospace;">${idAgente}</span>
+              <span style="font-size: 36px; font-weight: bold; color: #ffffff; font-family: monospace;">\${idAgente}</span>
             </div>
-            <p style="text-align: center;"><a href="https://007swiper.com" style="background-color: #D4AF37; color: #000; padding: 18px 30px; border-radius: 12px; text-decoration: none; font-weight: bold; display: inline-block;">[ACESSAR ARSENAL]</a></p>
-          </div>`
+            <p style="text-align: center;">
+              <a href="https://007swiper.com" style="background-color: #D4AF37; color: #000; padding: 18px 30px; border-radius: 12px; text-decoration: none; font-weight: bold; text-transform: uppercase; display: inline-block;">[ACESSAR ARSENAL]</a>
+            </p>
+          </div>
+        `
       });
 
       return res.status(200).json({ success: true, agent: idAgente });
     } catch (error) {
+      console.error("Erro interno:", error.message);
       return res.status(500).json({ error: error.message });
     }
   }
-  return res.status(200).json({ message: 'OK' });
-};
+
+  return res.status(200).json({ message: 'Evento recebido com sucesso' });
+}
