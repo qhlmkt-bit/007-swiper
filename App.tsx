@@ -440,20 +440,60 @@ const App: React.FC = () => {
          {isMobileMenuOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300" onClick={() => setIsMobileMenuOpen(false)} />}
          <aside className={`w-72 bg-[#121212] border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}><SidebarContent /></aside>
          <main className="flex-1 lg:ml-72 relative w-full">
-           <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4 md:gap-6">
-             <div className="flex items-center justify-between gap-4">
-               <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37] hover:bg-[#1a1a1a] transition-colors"><Menu size={24} /></button>
-               <div className="flex-1 flex items-center bg-[#121212] px-4 md:px-6 py-2.5 md:py-3 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-inner max-w-xl"><Search className="text-gray-500 mr-3 md:mr-4" size={18} /><input type="text" placeholder="Pesquisar inteligência..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-transparent border-none outline-none text-xs md:text-sm w-full font-bold placeholder:text-gray-700" /></div>
-               <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0"><div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div><div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p></div></div>
-             </div>
-             {showFilters && (
-               <div className="animate-in fade-in slide-in-from-top-2 duration-500 flex flex-wrap items-center gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                 {[{ label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] }, { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] }, { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }, { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] }].map((f, i) => (
-                   <div key={i} className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]"><label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label><select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all">{f.options.map(n => <option key={n} value={n}>{n}</option>)}</select></div>
-                 ))}
-               </div>
-             )}
-           </header>
+           <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4">
+              {/* LINHA 1: Botão Menu Mobile e Badge do Usuário (Topo Limpo) */}
+              <div className="flex items-center justify-between gap-4">
+                <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37] hover:bg-[#1a1a1a] transition-colors"><Menu size={24} /></button>
+                
+                {/* Espaçador para empurrar o badge para a direita */}
+                <div className="flex-1"></div>
+
+                <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0">
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div>
+                    <div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p></div>
+                </div>
+              </div>
+              
+              {/* LINHA 2: Busca e Filtros - APENAS NA ABA OFERTAS */}
+              {currentPage === 'offers' && !selectedOffer && (
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-2">
+                  
+                  {/* CAMPO DE BUSCA (Agora é a primeira coluna do Grid) */}
+                  <div className="flex flex-col gap-1.5 w-full">
+                     <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">BUSCAR</label>
+                     <div className="relative w-full">
+                         <input 
+                             type="text" 
+                             placeholder="Pesquisar..." 
+                             value={searchQuery} 
+                             onChange={(e) => setSearchQuery(e.target.value)} 
+                             className="w-full bg-[#121212] border border-white/10 rounded-xl pl-4 pr-10 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all focus:border-[#D4AF37] placeholder:text-zinc-700 h-[38px]" 
+                         />
+                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
+                     </div>
+                  </div>
+
+                  {/* FILTROS (Colunas 2 a 5 - Mesma proporção da busca) */}
+                  {[
+                    { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] },
+                    { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] },
+                    { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] },
+                    { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] }
+                  ].map((f, i) => (
+                    <div key={i} className="flex flex-col gap-1.5 w-full">
+                      <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label>
+                      <select 
+                        value={f.value} 
+                        onChange={(e) => f.setter(e.target.value)} 
+                        className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all h-[38px]"
+                      >
+                        {f.options.map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </header>
            <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
          </main>
        </>
