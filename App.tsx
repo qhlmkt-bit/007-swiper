@@ -5,28 +5,99 @@ import {
 
 // --- INTEGRAÇÃO FIREBASE OFICIAL ---
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAF94806dAwkSvPJSVHglfYMm9vE1Rnei4",
-  authDomain: "swiper-db-21c6f.firebaseapp.com",
-  projectId: "swiper-db-21c6f",
-  storageBucket: "swiper-db-21c6f.firebasestorage.app",
-  messagingSenderId: "235296129520",
-  appId: "1:235296129520:web:612a9c5444064ce5b11d35",
-  measurementId: "G-SGQY0W9CWC"
+ apiKey: "AIzaSyAF94806dAwkSvPJSVHglfYMm9vE1Rnei4",
+ authDomain: "swiper-db-21c6f.firebaseapp.com",
+ projectId: "swiper-db-21c6f",
+ storageBucket: "swiper-db-21c6f.firebasestorage.app",
+ messagingSenderId: "235296129520",
+ appId: "1:235296129520:web:612a9c5444064ce5b11d35",
+ measurementId: "G-SGQY0W9CWC"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- COMPONENTE RECUPERAR ID ---
+const RecuperarID = ({ onBack }: { onBack: () => void }) => {
+  const [email, setEmail] = useState('');
+  const [resultado, setResultado] = useState<string | null>(null);
+  const [erro, setErro] = useState('');
+
+  const buscarID = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro(''); setResultado(null);
+    try {
+      const q = query(collection(db, "agentes"), where("email", "==", email.trim()));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) { setErro('Nenhuma credencial encontrada.'); }
+      else { setResultado(querySnapshot.docs[0].id); }
+    } catch (err) { setErro('Erro na conexão.'); }
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 animate-in fade-in duration-500">
+      <button onClick={onBack} className="absolute top-10 left-10 text-[#D4AF37] flex items-center gap-2 font-black uppercase italic text-xs hover:scale-105 transition-all"><ArrowLeft size={16}/> Voltar</button>
+      <div className="max-w-md w-full border border-zinc-800 bg-zinc-950 p-8 rounded-3xl shadow-2xl">
+        <h2 className="text-2xl font-bold text-[#D4AF37] italic uppercase mb-2">Recuperar Credencial</h2>
+        <form onSubmit={buscarID} className="space-y-4 mt-6">
+          <input type="email" placeholder="seu@email.com" className="w-full bg-black border border-zinc-800 p-4 rounded-xl focus:border-[#D4AF37] outline-none transition-all" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <button className="w-full bg-[#D4AF37] text-black font-bold p-4 rounded-xl hover:bg-white transition-all uppercase tracking-widest italic">Consultar Base</button>
+        </form>
+        {resultado && <div className="mt-8 p-6 bg-zinc-900 border border-[#D4AF37] rounded-2xl text-center animate-bounce"><p className="text-xs text-zinc-500 uppercase mb-2">Sua Credencial:</p><p className="text-3xl font-mono font-black text-white">{resultado}</p></div>}
+        {erro && <p className="mt-4 text-red-500 text-center text-sm font-medium">{erro}</p>}
+      </div>
+    </div>
+  );
+};
+
+// --- COMPONENTE ADMIN ---
+const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
+  const [agentes, setAgentes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const buscar = async () => {
+      try {
+        const q = query(collection(db, "agentes"), orderBy("data_ativacao", "desc"));
+        const snap = await getDocs(q);
+        setAgentes(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) { console.error(e); } finally { setLoading(false); }
+    };
+    buscar();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-black text-white p-8 animate-in fade-in duration-500">
+      <button onClick={onBack} className="mb-8 text-[#D4AF37] flex items-center gap-2 font-black uppercase italic text-xs"><ArrowLeft size={16}/> Fechar Central</button>
+      <h1 className="text-3xl font-black mb-10 italic uppercase tracking-tighter">CENTRAL DE <span className="text-[#D4AF37]">CONTROLE 007</span></h1>
+      {loading ? <p className="animate-pulse text-[#D4AF37]">Acessando registros...</p> : (
+        <div className="overflow-x-auto border border-zinc-800 rounded-3xl bg-zinc-950">
+          <table className="w-full text-left">
+            <thead className="bg-zinc-900 text-[10px] uppercase text-zinc-500 tracking-widest">
+              <tr><th className="p-6">ID Agente</th><th className="p-6">E-mail</th><th className="p-6">Data</th></tr>
+            </thead>
+            <tbody className="text-sm">
+              {agentes.map(a => <tr key={a.id} className="border-b border-zinc-900">
+                <td className="p-6 font-mono text-[#D4AF37]">{a.id}</td>
+                <td className="p-6">{a.email}</td>
+                <td className="p-6 text-zinc-500">{a.data_ativacao?.split('T')[0]}</td>
+              </tr>)}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
 /** * TYPE DEFINITIONS */
 export type ProductType = string;
 export type Niche = string;
 export type Trend = 'Em Alta' | 'Escalando' | 'Estável' | string;
-
 export interface VslLink { label: string; url: string; }
-
 export interface Offer {
  id: string; title: string; niche: Niche; language: string; trafficSource: string[]; productType: ProductType; description: string; vslLinks: VslLink[]; vslDownloadUrl: string; trend: Trend; facebookUrl: string; pageUrl: string; coverImage: string; views: string; transcriptionUrl: string; creativeImages: string[]; creativeEmbedUrls: string[]; creativeDownloadUrls: string[]; creativeZipUrl: string; addedDate: string; status: string; isFavorite?: boolean;
 }
@@ -141,78 +212,53 @@ const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite:
   );
 };
 
-/** * LANDING PAGE / WELCOME MODAL */
-const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => (
+/** * LANDING PAGE */
+const LandingPage = ({ onLogin, onRecuperar, isSuccess, agentId, onDismissSuccess }: any) => (
  <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
   <style dangerouslySetInnerHTML={{ __html: STYLES }} />
   {isSuccess && (
    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500">
     <div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden">
-     <div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div>
      <div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]"><ShieldCheck size={48} className="text-black" /></div>
-     <h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO À INTELIGÊNCIA LIBERADO!</h2>
-     <p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10 leading-relaxed">Sua operação de rastreio de elite começa agora. Sua credencial é única e privada.</p>
+     <h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO LIBERADO!</h2>
      <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-12">
-      <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">ESTA É SUA CREDENCIAL ÚNICA E PRIVADA</p>
+      <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">SUA CREDENCIAL ÚNICA</p>
       <div className="flex items-center justify-center gap-4">
-       <span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic selection:bg-[#D4AF37] selection:text-black">{agentId}</span>
-       <button onClick={() => { navigator.clipboard.writeText(agentId); alert('ID COPIADO! 🛡️'); }} className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"><Copy size={20} /></button>
+       <span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic">{agentId}</span>
+       <button onClick={() => { navigator.clipboard.writeText(agentId); alert('COPIADO! 🛡️'); }} className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"><Copy size={20} /></button>
       </div>
      </div>
-     <button onClick={onDismissSuccess} className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter animate-btn-pulse">[ACESSAR ARSENAL]</button>
+     <button onClick={onDismissSuccess} className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all italic tracking-tighter animate-btn-pulse">[ACESSAR ARSENAL]</button>
     </div>
    </div>
   )}
   <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
-   <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div><span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
-   <div className="flex items-center gap-4"><button onClick={onLogin} className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter italic"><Lock size={14} className="inline mr-2" /> Entrar</button></div>
+   <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3"><Eye className="text-black" size={28} /></div><span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
+   <div className="flex items-center gap-6">
+     <button onClick={onRecuperar} className="text-gray-500 hover:text-[#D4AF37] text-[10px] font-black uppercase tracking-widest transition-all">Esqueci meu ID</button>
+     <button onClick={onLogin} className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter italic"><Lock size={14} className="inline mr-2" /> Entrar</button>
+   </div>
   </nav>
   <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative mx-auto">
-   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#D4AF37]/10 via-transparent to-transparent -z-10 pointer-events-none opacity-40"></div>
-   <div className="inline-block px-5 py-2 mb-10 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mx-auto">Inteligência de Mercado em Tempo Real</div>
-   <h1 className="text-4xl md:text-7xl lg:text-8xl font-black text-white mb-10 leading-[1.0] tracking-tighter uppercase italic max-w-6xl mx-auto text-center">ACESSE SEM LIMITES AS OFERTAS MAIS LUCRATIVAS E ESCALADAS DO MERCADO DE RESPOSTA DIRETA <span className="text-[#D4AF37]">ANTES DA CONCORRÊNCIA.</span></h1>
-   <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed px-2 mx-auto text-center">Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. O fim do "achismo" na sua escala digital.</p>
-   <section className="w-full max-w-4xl aspect-video bg-[#121212] rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center group cursor-pointer transition-all hover:border-[#D4AF37]/40 mx-auto mb-32">
-    <div className="bg-[#D4AF37] p-6 rounded-full shadow-[0_0_40px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-500 mb-6 flex items-center justify-center"><Play size={40} fill="black" className="text-black ml-1" /></div>
-    <p className="text-white font-black uppercase text-[10px] md:text-xs tracking-[0.25em] italic max-w-md px-8 leading-relaxed text-center">Descubra como rastreamos e organizamos ofertas escaladas em tempo real</p>
-   </section>
-   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 px-4 justify-center items-stretch mx-auto">
+   <h1 className="text-4xl md:text-7xl lg:text-8xl font-black text-white mb-10 leading-[1.0] tracking-tighter uppercase italic max-w-6xl text-center">ACESSE SEM LIMITES AS OFERTAS MAIS LUCRATIVAS <span className="text-[#D4AF37]">ANTES DA CONCORRÊNCIA.</span></h1>
+   <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed text-center">Rastreie VSLs, criativos e funis que estão gerando milhões. O fim do "achismo" na sua escala digital.</p>
+   
+   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 justify-center items-stretch mx-auto">
     <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-     <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3>
+     <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO MENSAL</h3>
      <div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black text-white italic">R$ 197</span><span className="text-gray-500 font-black text-sm uppercase">/mês</span></div>
-     <ul className="space-y-4 mb-12 flex-1">
-      {['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'].map((item, i) => (
-       <li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>
-      ))}
-     </ul>
-     <button onClick={() => window.open(KIWIFY_MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter animate-btn-pulse shadow-xl italic">QUERO ACESSO MENSAL</button>
+     <button onClick={() => window.open(KIWIFY_MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] transition-all uppercase italic tracking-tighter animate-btn-pulse">QUERO ACESSO MENSAL</button>
     </div>
     <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-[#D4AF37]">
-     <div className="absolute top-6 right-8 bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">Economize R$ 94</div>
-     <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3>
+     <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO TRIMESTRAL</h3>
      <div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black italic">R$ 497</span><span className="text-gray-400 font-black text-sm uppercase">/trimestre</span></div>
-     <ul className="space-y-4 mb-12 flex-1">
-      {['Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'].map((item, i) => (
-       <li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>
-      ))}
-     </ul>
-     <button onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter animate-btn-pulse italic">ASSINAR PLANO TRIMESTRAL</button>
+     <button onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] transition-all shadow-2xl uppercase italic tracking-tighter animate-btn-pulse">ASSINAR TRIMESTRAL</button>
     </div>
    </div>
-   <div className="w-full max-w-5xl mx-auto mb-40 px-4">
-    <div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]">
-     <div className="flex flex-col items-center shrink-0">
-      <div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative shadow-[0_0_40px_rgba(212,175,55,0.2)]"><span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span></div>
-      <div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] -mt-5 relative z-10 shadow-xl">DIAS</div>
-     </div>
-     <div className="flex-1 text-center md:text-left space-y-6">
-      <h2 className="text-white text-3xl md:text-5xl font-black italic uppercase tracking-tighter">GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span></h2>
-      <p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investimento. Sem perguntas.</p>
-      <button onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')} className="w-full md:w-auto px-12 py-6 bg-[#D4AF37] text-black font-black text-xl rounded-2xl hover:scale-105 transition-all shadow-2xl italic tracking-tighter uppercase">[COMEÇAR AGORA – RISCO ZERO]</button>
-     </div>
-    </div>
-   </div>
-   <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto"><p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic text-center">© 2026 007 SWIPER Intelligence Platform. Todos os direitos reservados.</p></footer>
+   <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto text-center">
+      <p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic mb-4">© 2026 007 SWIPER Intelligence Platform</p>
+      <div onDoubleClick={() => onLogin('admin')} className="opacity-0 w-full h-10 cursor-default">.</div>
+   </footer>
   </main>
  </div>
 );
@@ -222,6 +268,8 @@ const App: React.FC = () => {
  const [isLoggedIn, setIsLoggedIn] = useState(false);
  const [agentId, setAgentId] = useState<string>('');
  const [currentPage, setCurrentPage] = useState('home');
+ const [showRecuperar, setShowRecuperar] = useState(false);
+ const [showAdmin, setShowAdmin] = useState(false);
  const [offers, setOffers] = useState<Offer[]>([]);
  const [loading, setLoading] = useState(true);
  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
@@ -285,7 +333,6 @@ const App: React.FC = () => {
   return () => window.removeEventListener('popstate', handlePopState);
  }, [offers]);
 
- // LÓGICA DE LOGIN REAL NO FIREBASE
  const checkLogin = async (id: string, silencioso = false) => {
   if (!id) return;
   try {
@@ -309,8 +356,7 @@ const App: React.FC = () => {
   const params = new URLSearchParams(window.location.search);
   if (params.get('success') === 'true') {
    setIsSuccess(true);
-   // O ID real será enviado por email após a ativação automática
-   setNewlyGeneratedId("AGUARDANDO ATIVAÇÃO AUTOMÁTICA..."); 
+   setNewlyGeneratedId("AGUARDANDO ATIVAÇÃO..."); 
   } else {
    const savedId = localStorage.getItem('agente_token');
    if (savedId) checkLogin(savedId, true);
@@ -347,44 +393,22 @@ const App: React.FC = () => {
  const closeOffer = () => { setSelectedOffer(null); pushNavState({ sid: null }); };
  const navigateToPage = (page: string) => { setCurrentPage(page); setSelectedOffer(null); setActiveNicheSelection(null); setActiveLanguageSelection(null); pushNavState({ cp: page }); setIsMobileMenuOpen(false); };
  const toggleFavorite = (id: string, e?: React.MouseEvent) => { if (e) e.stopPropagation(); setFavorites(prev => { const isFav = prev.includes(id); const next = isFav ? prev.filter(f => f !== id) : [...prev, id]; if (agentId) localStorage.setItem(getFavKey(agentId), JSON.stringify(next)); return next; }); };
- const handleLogin = async () => {
+ 
+ const handleLogin = async (type = 'user') => {
+    if (type === 'admin') { setShowAdmin(true); return; }
     const inputId = window.prompt("🕵️‍♂️ ACESSO À CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE:");
-    
     if (inputId) {
       const cleanId = inputId.trim().toUpperCase();
-      
-      // Se não tiver o prefixo AGENTE-, barra na hora
-      if (!cleanId.startsWith('AGENTE-')) {
-        alert('FORMATO INVÁLIDO ❌\nSua credencial deve começar com AGENTE-');
-        return;
-      }
-
-      // Consulta real ao Firebase
       try {
         const docRef = doc(db, "agentes", cleanId);
         const docSnap = await getDoc(docRef);
-
         if (docSnap.exists() && docSnap.data().ativo === true) {
-          // LOGIN SUCESSO
-          setAgentId(cleanId);
-          setIsLoggedIn(true);
-          localStorage.setItem('agente_token', cleanId);
-          
-          const f = localStorage.getItem(getFavKey(cleanId)); 
-          if (f) setFavorites(JSON.parse(f));
-          
-          const v = localStorage.getItem(getViewedKey(cleanId)); 
-          if (v) setRecentlyViewed(JSON.parse(v));
-        } else {
-          // ACESSO NEGADO (ID não existe ou está inativo)
-          alert('IDENTIDADE NÃO RECONHECIDA OU INATIVA ❌\nVerifique sua credencial ou status da assinatura.');
-        }
-      } catch (e) {
-        console.error(e);
-        alert('Erro na Central de Inteligência. Tente novamente.');
-      }
+          setAgentId(cleanId); setIsLoggedIn(true); localStorage.setItem('agente_token', cleanId);
+        } else { alert('IDENTIDADE NÃO RECONHECIDA OU INATIVA ❌'); }
+      } catch (e) { console.error(e); }
     }
   };
+
  const renderSelectionGrid = (items: string[], setter: (val: string) => void, icon: any, label: string) => (
   <div className="animate-in fade-in duration-500">
    <div className="flex flex-col mb-12"><h2 className="text-3xl font-black text-white uppercase italic flex items-center gap-4">{React.createElement(icon, { className: "text-[#D4AF37]", size: 32 })} {label}</h2><p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 italic">Selecione uma categoria para infiltrar nos dados</p></div>
@@ -411,24 +435,20 @@ const App: React.FC = () => {
       <div className="flex flex-wrap items-center gap-3">
        <a href={selectedOffer.vslDownloadUrl} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg italic"><Download size={16} /> BAIXAR VSL</a>
        <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"><FileText size={16} /> TRANSCRIÇÃO</a>
-       <button onClick={() => toggleFavorite(selectedOffer.id)} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-[#1a1a1a] text-white border-white/5'}`}><Star size={16} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'FAVORITADO' : 'FAVORITAR'}</button>
       </div>
      </div>
      <div className="space-y-12">
-      {selectedOffer.views && selectedOffer.views.trim() !== '' && <div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-[#D4AF37]/40 w-fit shadow-2xl"><Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-pulse" /><span className="text-[#D4AF37] font-black uppercase text-sm md:text-base italic tracking-[0.1em]">{selectedOffer.views} ANÚNCIOS ATIVOS</span></div>}
       <div className="flex flex-col lg:flex-row gap-8 items-stretch">
        <div className="w-full lg:w-[62%] space-y-6">
         <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
-         <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">{selectedOffer.vslLinks.map((link, idx) => (<button key={idx} onClick={() => setActiveVslIndex(idx)} className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'}`}><Video size={12} /> {link.label || `VSL ${idx + 1}`}</button>))}</div>
-         <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl"><VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} /></div>
+          <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">{selectedOffer.vslLinks.map((link, idx) => (<button key={idx} onClick={() => setActiveVslIndex(idx)} className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'}`}><Video size={12} /> {link.label || `VSL ${idx + 1}`}</button>))}</div>
+          <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl"><VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} /></div>
         </div>
        </div>
        <div className="w-full lg:w-[38%]">
-        <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full flex flex-col"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0"><ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO</h3><div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">{[{ icon: Info, label: 'NOME', value: selectedOffer.description || selectedOffer.title }, { icon: Tag, label: 'NICHO', value: selectedOffer.niche }, { icon: Lock, label: 'TIPO', value: selectedOffer.productType }, { icon: Globe, label: 'IDIOMA', value: selectedOffer.language }, { icon: Target, label: 'FONTE', value: selectedOffer.trafficSource.join(', ') }].map((item, idx) => (<div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0"><div className="flex items-center gap-3"><item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" /><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span></div><span className="text-white text-sm font-black uppercase italic tracking-tight">{item.value}</span></div>))}</div></div>
+        <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full flex flex-col"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0"><ShieldCheck className="w-4 h-4" /> INFORMAÇÕES</h3><div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">{[{ icon: Info, label: 'NOME', value: selectedOffer.description || selectedOffer.title }, { icon: Tag, label: 'NICHO', value: selectedOffer.niche }, { icon: Globe, label: 'IDIOMA', value: selectedOffer.language }].map((item, idx) => (<div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0"><div className="flex items-center gap-3"><item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" /><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span></div><span className="text-white text-sm font-black uppercase italic tracking-tight">{item.value}</span></div>))}</div></div>
        </div>
       </div>
-      {selectedOffer.creativeEmbedUrls.length > 0 && (<div className="space-y-6"><h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><ImageIcon className="text-[#D4AF37] w-6 h-6" /> CRIATIVOS</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-6">{selectedOffer.creativeEmbedUrls.map((url, i) => (<div key={i} className="bg-[#121212] p-4 rounded-2xl border border-white/5 flex flex-col gap-4 shadow-xl"><div className="aspect-video bg-black rounded-xl overflow-hidden"><VideoPlayer url={url} /></div><a href={selectedOffer.creativeDownloadUrls[i] || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 flex items-center justify-center gap-2"><Download size={14} /> Download Criativo {i + 1}</a></div>))}</div></div>)}
-      <div className="space-y-6"><h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"><a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl"><div className="flex items-center gap-4"><div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Monitor size={20} /></div><div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p></div></div><ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" /></a><a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl"><div className="flex items-center gap-4"><div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Facebook size={20} /></div><div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">ADS LIBRARY</p></div></div><ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" /></a></div></div>
      </div>
     </div>
    );
@@ -439,14 +459,13 @@ const App: React.FC = () => {
     const scaling = offers.filter(o => o.trend.trim().toLowerCase() === 'escalando').slice(0, 4);
     const recent = offers.filter(o => recentlyViewed.includes(o.id));
     return (<div className="animate-in fade-in duration-700 space-y-16 md:space-y-20"><div><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Zap className="text-[#D4AF37]" fill="currentColor" /> OPERAÇÕES EM ESCALA</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">{scaling.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div></div><div><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Monitor className="text-[#D4AF37]" /> VISTOS RECENTEMENTE</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">{recent.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div></div></div>);
-   case 'offers':
-    return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 animate-in fade-in duration-700">{filtered.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div>);
+   case 'offers': return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 animate-in fade-in duration-700">{filtered.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div>);
    case 'vsl': if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, Video, "CENTRAL DE VSL"); return (<div className="space-y-12"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:text-white"><ArrowLeft size={20} /></button><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.niche === activeNicheSelection).map(o => (<div key={o.id} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 space-y-6"><div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl"><VideoPlayer url={o.vslLinks[0]?.url} /></div><div className="flex justify-between items-center"><h3 className="text-white font-black italic">{o.title}</h3><button onClick={() => openOffer(o)} className="text-[#D4AF37] font-black text-[10px] uppercase">Ver Operação</button></div></div>))}</div></div>);
    case 'creatives': if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, Palette, "ARSENAL DE CRIATIVOS"); return (<div className="space-y-12"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:text-white"><ArrowLeft size={20} /></button><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{offers.filter(o => o.niche === activeNicheSelection).flatMap(o => o.creativeEmbedUrls.map((url, idx) => (<div key={`${o.id}-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 space-y-4"><div className="aspect-video bg-black rounded-xl overflow-hidden"><VideoPlayer url={url} /></div><div className="flex justify-between items-center"><span className="text-white font-black text-xs italic">{o.title}</span><a href={o.creativeDownloadUrls[idx]} className="text-[#D4AF37]"><Download size={16}/></a></div></div>)))}</div></div>);
    case 'pages': if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, FileText, "PÁGINAS ESCALADAS"); return (<div className="space-y-12"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:text-white"><ArrowLeft size={20} /></button><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">{offers.filter(o => o.niche === activeNicheSelection).map(o => (<div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden group border border-white/5 hover:border-[#D4AF37]/50"><div className="aspect-video relative overflow-hidden"><img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover"/><div className="absolute inset-0 flex items-center justify-center scale-0 group-hover:scale-100 transition-all"><a href={o.pageUrl} target="_blank" className="p-4 bg-[#D4AF37] text-black rounded-full"><ExternalLink/></a></div></div><div className="p-6"><h3 className="text-white font-black uppercase text-sm truncate">{o.title}</h3></div></div>))}</div></div>);
    case 'ads_library': if (!activeLanguageSelection) return renderSelectionGrid(allLanguages, setActiveLanguageSelection, Library, "BIBLIOTECA DE ANÚNCIOS"); return (<div className="space-y-12"><button onClick={() => setActiveLanguageSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:text-white"><ArrowLeft size={20} /></button><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.language === activeLanguageSelection).map(o => (<div key={o.id} className="bg-[#121212] p-8 rounded-[32px] border border-white/5 flex justify-between items-center"><div className="flex items-center gap-5"><div className="p-5 bg-[#1a1a1a] rounded-2xl"><Facebook size={32}/></div><div><p className="text-[#D4AF37] font-black text-[10px] italic">ADS LIBRARY</p><h3 className="text-white font-black italic">{o.title}</h3></div></div><a href={o.facebookUrl} target="_blank" className="p-3 bg-[#D4AF37] text-black rounded-xl"><ExternalLink/></a></div>))}</div></div>);
    case 'favorites': const favs = offers.filter(o => favorites.includes(o.id)); return (<div className="animate-in fade-in duration-700"><div><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">{favs.map((o) => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div></div></div>);
-   case 'settings': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Settings className="text-[#D4AF37]" /> Painel do Agente</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5"><h3 className="text-[#D4AF37] font-black text-[10px] tracking-[0.2em] mb-8">IDENTIDADE</h3><div className="space-y-4"><div className="flex justify-between items-center border-b border-white/5 pb-4"><span className="text-gray-500 font-bold text-xs uppercase">SENHA</span><span className="text-white font-black italic">{agentId}</span></div></div></div><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 h-full flex flex-col justify-between"><div><h3 className="text-gray-500 font-bold text-xs mb-6 uppercase">SUPORTE</h3><span className="text-white font-black text-xl italic mb-8 block">{SUPPORT_EMAIL}</span></div><button onClick={() => { navigator.clipboard.writeText(SUPPORT_EMAIL); alert('E-MAIL COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button></div></div></div>);
+   case 'settings': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Settings className="text-[#D4AF37]" /> Painel do Agente</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5"><h3 className="text-[#D4AF37] font-black text-[10px] tracking-[0.2em] mb-8">IDENTIDADE</h3><div className="space-y-4"><div className="flex justify-between items-center border-b border-white/5 pb-4"><span className="text-gray-500 font-bold text-xs uppercase">SENHA</span><span className="text-white font-black italic">{agentId}</span></div></div></div><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 h-full flex flex-col justify-between"><div><h3 className="text-gray-500 font-bold text-xs mb-6 uppercase">SUPORTE</h3><span className="text-white font-black text-xl italic mb-8 block">{SUPPORT_EMAIL}</span></div><button onClick={() => { navigator.clipboard.writeText(SUPPORT_EMAIL); alert('COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button></div></div></div>);
    default: return null;
   }
  };
@@ -459,7 +478,7 @@ const App: React.FC = () => {
      {isMobileMenuOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />}
      <aside className={`w-72 bg-[#121212] border-r border-white/5 fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
       <div className="p-8 md:p-10 h-full flex flex-col">
-       <div className="flex items-center space-x-3 mb-12 px-2"><div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl"><Eye className="text-black" size={24} /></div><span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
+       <div className="flex items-center space-x-3 mb-12 px-2" onClick={() => navigateToPage('home')}><div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl"><Eye className="text-black" size={24} /></div><span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
        <nav className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
         <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => navigateToPage('home')} />
         <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => navigateToPage('favorites')} />
@@ -494,7 +513,7 @@ const App: React.FC = () => {
          {[ { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] }, { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] }, { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }, { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] } ].map((f, i) => (
           <div key={i} className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
            <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label>
-           <select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer"> {f.options.map(n => <option key={n} value={n}>{n}</option>)} </select>
+           <select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none cursor-pointer"> {f.options.map(n => <option key={n} value={n}>{n}</option>)} </select>
           </div>
          ))}
         </div>
@@ -503,8 +522,18 @@ const App: React.FC = () => {
       <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
      </main>
     </>
+   ) : showRecuperar ? (
+     <RecuperarID onBack={() => setShowRecuperar(false)} />
+   ) : showAdmin ? (
+     <PainelAdmin onBack={() => setShowAdmin(false)} />
    ) : (
-    <LandingPage onLogin={handleLogin} isSuccess={isSuccess} agentId={newlyGeneratedId} onDismissSuccess={() => { setIsSuccess(false); navigateToPage('home'); }} />
+    <LandingPage 
+      onLogin={handleLogin} 
+      onRecuperar={() => setShowRecuperar(true)}
+      isSuccess={isSuccess} 
+      agentId={newlyGeneratedId} 
+      onDismissSuccess={() => { setIsSuccess(false); navigateToPage('home'); }} 
+    />
    )}
   </div>
  );
