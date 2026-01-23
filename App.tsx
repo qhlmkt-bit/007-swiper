@@ -347,8 +347,44 @@ const App: React.FC = () => {
  const closeOffer = () => { setSelectedOffer(null); pushNavState({ sid: null }); };
  const navigateToPage = (page: string) => { setCurrentPage(page); setSelectedOffer(null); setActiveNicheSelection(null); setActiveLanguageSelection(null); pushNavState({ cp: page }); setIsMobileMenuOpen(false); };
  const toggleFavorite = (id: string, e?: React.MouseEvent) => { if (e) e.stopPropagation(); setFavorites(prev => { const isFav = prev.includes(id); const next = isFav ? prev.filter(f => f !== id) : [...prev, id]; if (agentId) localStorage.setItem(getFavKey(agentId), JSON.stringify(next)); return next; }); };
- const handleLogin = () => { const id = window.prompt("🕵️‍♂️ CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE:"); if (id) checkLogin(id); };
+ const handleLogin = async () => {
+    const inputId = window.prompt("🕵️‍♂️ ACESSO À CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE:");
+    
+    if (inputId) {
+      const cleanId = inputId.trim().toUpperCase();
+      
+      // Se não tiver o prefixo AGENTE-, barra na hora
+      if (!cleanId.startsWith('AGENTE-')) {
+        alert('FORMATO INVÁLIDO ❌\nSua credencial deve começar com AGENTE-');
+        return;
+      }
 
+      // Consulta real ao Firebase
+      try {
+        const docRef = doc(db, "agentes", cleanId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists() && docSnap.data().ativo === true) {
+          // LOGIN SUCESSO
+          setAgentId(cleanId);
+          setIsLoggedIn(true);
+          localStorage.setItem('agente_token', cleanId);
+          
+          const f = localStorage.getItem(getFavKey(cleanId)); 
+          if (f) setFavorites(JSON.parse(f));
+          
+          const v = localStorage.getItem(getViewedKey(cleanId)); 
+          if (v) setRecentlyViewed(JSON.parse(v));
+        } else {
+          // ACESSO NEGADO (ID não existe ou está inativo)
+          alert('IDENTIDADE NÃO RECONHECIDA OU INATIVA ❌\nVerifique sua credencial ou status da assinatura.');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Erro na Central de Inteligência. Tente novamente.');
+      }
+    }
+  };
  const renderSelectionGrid = (items: string[], setter: (val: string) => void, icon: any, label: string) => (
   <div className="animate-in fade-in duration-500">
    <div className="flex flex-col mb-12"><h2 className="text-3xl font-black text-white uppercase italic flex items-center gap-4">{React.createElement(icon, { className: "text-[#D4AF37]", size: 32 })} {label}</h2><p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 italic">Selecione uma categoria para infiltrar nos dados</p></div>
