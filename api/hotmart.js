@@ -48,7 +48,7 @@ export default async function handler(req, res) {
 
       // 2. Enviar E-mail via Resend
       await resend.emails.send({
-        from: '007 Swiper <onboarding@resend.dev>',
+        from: '007 Swiper <agente@007swiper.com>',
         to: emailCliente,
         subject: '🕵️ MISSÃO INICIADA: Sua Credencial de Elite Chegou!',
         html: `
