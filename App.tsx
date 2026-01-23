@@ -1,400 +1,214 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
- Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy
+  Home as HomeIcon, Star, Search, LogOut, Lock, Download, Zap, ShieldCheck, CheckCircle, 
+  Facebook, Youtube, Smartphone, Clock, Target, Loader2, ArrowLeft, LifeBuoy, FileText, 
+  Eye, Play, ExternalLink, ImageIcon, Layout, ChevronRight, User, Copy
 } from 'lucide-react';
 
-// --- INTEGRAÇÃO FIREBASE OFICIAL ---
+// --- INTEGRAÇÃO FIREBASE OFICIAL (RESTAURADA) ---
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 
 const firebaseConfig = {
- apiKey: "AIzaSyAF94806dAwkSvPJSVHglfYMm9vE1Rnei4",
- authDomain: "swiper-db-21c6f.firebaseapp.com",
- projectId: "swiper-db-21c6f",
- storageBucket: "swiper-db-21c6f.firebasestorage.app",
- messagingSenderId: "235296129520",
- appId: "1:235296129520:web:612a9c5444064ce5b11d35",
- measurementId: "G-SGQY0W9CWC"
+  apiKey: "AIzaSyAF94806dAwkSvPJSVHglfYMm9vE1Rnei4",
+  authDomain: "swiper-db-21c6f.firebaseapp.com",
+  projectId: "swiper-db-21c6f",
+  storageBucket: "swiper-db-21c6f.firebasestorage.app",
+  messagingSenderId: "235296129520",
+  appId: "1:235296129520:web:612a9c5444064ce5b11d35",
+  measurementId: "G-SGQY0W9CWC"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- COMPONENTE RECUPERAR ID ---
-const RecuperarID = ({ onBack }: { onBack: () => void }) => {
-  const [email, setEmail] = useState('');
-  const [resultado, setResultado] = useState<string | null>(null);
-  const [erro, setErro] = useState('');
-
-  const buscarID = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErro(''); setResultado(null);
-    try {
-      const q = query(collection(db, "agentes"), where("email", "==", email.trim()));
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) { setErro('Nenhuma credencial encontrada.'); }
-      else { setResultado(querySnapshot.docs[0].id); }
-    } catch (err) { setErro('Erro na conexão.'); }
-  };
-
-  return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 animate-in fade-in duration-500">
-      <button onClick={onBack} className="absolute top-10 left-10 text-[#D4AF37] flex items-center gap-2 font-black uppercase italic text-xs hover:scale-105 transition-all"><ArrowLeft size={16}/> Voltar</button>
-      <div className="max-w-md w-full border border-zinc-800 bg-zinc-950 p-8 rounded-3xl shadow-2xl">
-        <h2 className="text-2xl font-bold text-[#D4AF37] italic uppercase mb-2">Recuperar Credencial</h2>
-        <form onSubmit={buscarID} className="space-y-4 mt-6">
-          <input type="email" placeholder="seu@email.com" className="w-full bg-black border border-zinc-800 p-4 rounded-xl focus:border-[#D4AF37] outline-none transition-all" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <button className="w-full bg-[#D4AF37] text-black font-bold p-4 rounded-xl hover:bg-white transition-all uppercase tracking-widest italic">Consultar Base</button>
-        </form>
-        {resultado && <div className="mt-8 p-6 bg-zinc-900 border border-[#D4AF37] rounded-2xl text-center animate-bounce"><p className="text-xs text-zinc-500 uppercase mb-2">Sua Credencial:</p><p className="text-3xl font-mono font-black text-white">{resultado}</p></div>}
-        {erro && <p className="mt-4 text-red-500 text-center text-sm font-medium">{erro}</p>}
-      </div>
-    </div>
-  );
-};
-
-// --- COMPONENTE ADMIN ---
-const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
-  const [agentes, setAgentes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const buscar = async () => {
-      try {
-        const q = query(collection(db, "agentes"), orderBy("data_ativacao", "desc"));
-        const snap = await getDocs(q);
-        setAgentes(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      } catch (e) { console.error(e); } finally { setLoading(false); }
-    };
-    buscar();
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-black text-white p-8 animate-in fade-in duration-500">
-      <button onClick={onBack} className="mb-8 text-[#D4AF37] flex items-center gap-2 font-black uppercase italic text-xs"><ArrowLeft size={16}/> Fechar Central</button>
-      <h1 className="text-3xl font-black mb-10 italic uppercase tracking-tighter">CENTRAL DE <span className="text-[#D4AF37]">CONTROLE 007</span></h1>
-      {loading ? <p className="animate-pulse text-[#D4AF37]">Acessando registros...</p> : (
-        <div className="overflow-x-auto border border-zinc-800 rounded-3xl bg-zinc-950">
-          <table className="w-full text-left">
-            <thead className="bg-zinc-900 text-[10px] uppercase text-zinc-500 tracking-widest">
-              <tr><th className="p-6">ID Agente</th><th className="p-6">E-mail</th><th className="p-6">Data</th></tr>
-            </thead>
-            <tbody className="text-sm">
-              {agentes.map(a => <tr key={a.id} className="border-b border-zinc-900">
-                <td className="p-6 font-mono text-[#D4AF37]">{a.id}</td>
-                <td className="p-6">{a.email}</td>
-                <td className="p-6 text-zinc-500">{a.data_ativacao?.split('T')[0]}</td>
-              </tr>)}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-};
-
 /** * TYPE DEFINITIONS */
-export type ProductType = string;
-export type Niche = string;
-export type Trend = 'Em Alta' | 'Escalando' | 'Estável' | string;
 export interface VslLink { label: string; url: string; }
 export interface Offer {
- id: string; title: string; niche: Niche; language: string; trafficSource: string[]; productType: ProductType; description: string; vslLinks: VslLink[]; vslDownloadUrl: string; trend: Trend; facebookUrl: string; pageUrl: string; coverImage: string; views: string; transcriptionUrl: string; creativeImages: string[]; creativeEmbedUrls: string[]; creativeDownloadUrls: string[]; creativeZipUrl: string; addedDate: string; status: string; isFavorite?: boolean;
+  id: string; title: string; niche: string; productType: string; description: string; coverImage: string; trend: string; views: string; 
+  vslLinks: VslLink[]; vslDownloadUrl: string; transcriptionUrl: string; creativeEmbedUrls: string[]; 
+  creativeDownloadUrls: string[]; creativeZipUrl: string; facebookUrl: string; pageUrl: string; trafficSource: string[];
 }
 
-/** * CONSTANTS */
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 const KIWIFY_MENSAL = 'https://pay.hotmart.com/H104019113G?bid=1769103375372';
 const KIWIFY_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
-const SUPPORT_EMAIL = 'suporte@007swiper.com';
 
 const STYLES = `
- @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
- :root { --brand-gold: #D4AF37; --brand-dark: #0a0a0a; --brand-card: #121212; --brand-hover: #1a1a1a; }
- body { font-family: 'Inter', sans-serif; background-color: var(--brand-dark); color: #ffffff; margin: 0; overflow-x: hidden; }
- .gold-border { border: 1px solid rgba(212, 175, 55, 0.3); }
- .gold-text { color: #D4AF37; }
- .gold-bg { background-color: #D4AF37; }
- .btn-elite { background-color: #D4AF37; color: #000; font-weight: 900; text-transform: uppercase; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
- .btn-elite:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
- ::-webkit-scrollbar { width: 8px; }
- ::-webkit-scrollbar-track { background: #0a0a0a; }
- ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
- ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
- @keyframes btnPulse { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); } }
- .animate-btn-pulse { animation: btnPulse 2s infinite; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  :root { --brand-gold: #D4AF37; --brand-dark: #0a0a0a; }
+  body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #fff; margin: 0; }
+  .font-spy { font-weight: 900; font-style: italic; letter-spacing: -0.05em; text-transform: uppercase; }
+  .btn-gold { background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%); color: #000; font-weight: 900; transition: all 0.3s ease; }
+  .btn-gold:hover { transform: scale(1.05); filter: brightness(1.1); }
+  @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); } }
+  .animate-pulse-gold { animation: pulse-gold 2s infinite; }
 `;
 
-const getDriveDirectLink = (url: string) => {
- if (!url) return '';
- const trimmed = url.trim();
- if (trimmed.includes('drive.google.com')) {
-  const idMatch = trimmed.match(/[-\w]{25,}/);
-  if (idMatch) return `https://lh3.googleusercontent.com/d/${idMatch[0]}`;
- }
- return trimmed;
-};
-
-const getEmbedUrl = (url: string) => {
- if (!url) return '';
- const trimmed = url.trim();
- if (trimmed.includes('vimeo.com')) {
-  const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
-  if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?title=0&byline=0&portrait=0&badge=0&autopause=0`;
- }
- if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
-  const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
-  if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`;
- }
- return trimmed;
-};
-
-/** * UI COMPONENTS */
-const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick: () => void; variant?: 'default' | 'danger' | 'gold'; }> = ({ icon: Icon, label, active, onClick, variant = 'default' }) => (
- <button onClick={onClick} className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 ${active ? 'bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20' : variant === 'gold' ? 'text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black' : variant === 'danger' ? 'text-red-500 hover:bg-red-500/10' : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white'}`}>
-  <Icon size={20} />
-  <span className="text-sm uppercase tracking-tighter font-black">{label}</span>
- </button>
-);
-
-const TrafficIcon: React.FC<{ source: string }> = ({ source }) => {
- const normalized = source.toLowerCase().trim();
- if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />;
- if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />;
- if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />;
- if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />;
- return <Target size={14} className="text-[#D4AF37]" />;
-};
-
-const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => {
- const embed = getEmbedUrl(url);
- if (!embed || embed === '') return (
-  <div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-[#1a1a1a] border border-dashed border-white/10 rounded-2xl gap-3"><ZapOff size={32} className="opacity-20" /><p className="font-black uppercase italic text-xs tracking-widest opacity-40">Visualização indisponível</p></div>
- );
- return <iframe className="w-full h-full" src={embed} title={title || "Video Player"} frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen></iframe>;
-};
-
-const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; onClick: () => void; }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
-  const getBadgeInfo = () => {
-   if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false };
-   const dataOferta = new Date(offer.addedDate + 'T00:00:00'); 
-   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
-   const diffTempo = hoje.getTime() - dataOferta.getTime();
-   const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
-   if (diffDias <= 0) return { text: "ADICIONADO: HOJE", isNew: true };
-   if (diffDias === 1) return { text: "ADICIONADO: HÁ 1 DIA", isNew: true };
-   if (diffDias >= 2 && diffDias <= 7) return { text: `ADICIONADO: HÁ ${diffDias} DIAS`, isNew: true };
-   return { text: "OFERTA: +7 DIAS", isNew: false };
+// --- COMPONENTE RECUPERAR ID (RESTAURADO) ---
+const RecuperarID = ({ onBack }: any) => {
+  const [email, setEmail] = useState('');
+  const [resultado, setResultado] = useState<string | null>(null);
+  const [erro, setErro] = useState('');
+  const buscarID = async (e: React.FormEvent) => {
+    e.preventDefault(); setErro(''); setResultado(null);
+    try {
+      const q = query(collection(db, "agentes"), where("email", "==", email.trim()));
+      const snap = await getDocs(q);
+      if (snap.empty) setErro('Credencial não encontrada.');
+      else setResultado(snap.docs[0].id);
+    } catch (err) { setErro('Erro na central.'); }
   };
-  const badge = getBadgeInfo();
   return (
-   <div onClick={onClick} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl">
-    <div className="relative aspect-video overflow-hidden">
-     <img src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} alt={offer.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-     <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-      <div className={`px-2.5 py-1 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-400 border border-white/10'}`}><Clock size={10} /> {badge.text}</div>
-      {offer.trend.trim().toLowerCase() === 'escalando' && <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl"><Zap size={10} fill="currentColor" /> Escalando</div>}
-      {offer.trend.trim().toLowerCase() === 'em alta' && <div className="px-2.5 py-1 bg-[#D4AF37] text-black text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl"><TrendingUp size={12} className="w-3 h-3" /> Em Alta</div>}
-      {offer.views && offer.views.trim() !== '' && <div className="px-2.5 py-1 bg-[#0a0a0a]/90 backdrop-blur-xl text-[#D4AF37] text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-[#D4AF37]/30"><Flame size={12} fill="currentColor" className="text-[#D4AF37] animate-pulse" /> {offer.views.trim()}</div>}
-     </div>
-     <div className="absolute top-3 right-3">
-      <button onClick={onToggleFavorite} className={`p-2.5 rounded-xl backdrop-blur-xl transition-all duration-300 ${isFavorite ? 'bg-[#D4AF37] text-black scale-110' : 'bg-[#D4AF37]/20 text-white hover:bg-[#D4AF37] hover:text-black'}`}><Star size={18} fill={isFavorite ? "currentColor" : "none"} /></button>
-     </div>
-     <div className="absolute bottom-3 left-3"><div className="px-2 py-0.5 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase shadow-lg">{offer.niche}</div></div>
+    <div className="min-h-screen bg-black flex items-center justify-center p-6 animate-in fade-in duration-500">
+      <button onClick={onBack} className="absolute top-10 left-10 text-[#D4AF37] font-spy text-xs flex items-center gap-2"><ArrowLeft size={16}/> Voltar</button>
+      <div className="max-w-md w-full glass-card p-10 rounded-[40px] border border-white/10 bg-[#121212]">
+        <h2 className="text-2xl font-spy text-[#D4AF37] mb-6">Recuperar Credencial</h2>
+        <form onSubmit={buscarID} className="space-y-4">
+          <input type="email" placeholder="seu@email.com" className="w-full bg-black border border-white/10 p-5 rounded-2xl outline-none focus:border-[#D4AF37]" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <button className="w-full py-5 btn-gold rounded-2xl font-spy">Consultar</button>
+        </form>
+        {resultado && <div className="mt-8 p-6 bg-black border border-[#D4AF37] rounded-2xl text-center"><p className="text-xs text-zinc-500 uppercase mb-2">Seu ID:</p><p className="text-3xl font-spy text-white">{resultado}</p></div>}
+        {erro && <p className="mt-4 text-red-500 text-center font-bold italic">{erro}</p>}
+      </div>
     </div>
-    <div className="p-5">
-     <h3 className="font-black text-white mb-4 line-clamp-1 text-lg tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors italic">{offer.title}</h3>
-     <div className="flex items-center justify-between border-t border-white/5 pt-4">
-      <div className="flex items-center gap-2">{offer.trafficSource.slice(0, 2).map((source, idx) => <TrafficIcon key={idx} source={source} />)}<span className="text-gray-500 text-[9px] font-bold uppercase tracking-widest">{offer.productType}</span></div>
-     </div>
-    </div>
-   </div>
   );
 };
 
-/** * LANDING PAGE */
-const LandingPage = ({ onLogin, onRecuperar, isSuccess, agentId, onDismissSuccess }: any) => (
- <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
-  <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-  {isSuccess && (
-   <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500">
-    <div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden">
-     <div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]"><ShieldCheck size={48} className="text-black" /></div>
-     <h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO LIBERADO!</h2>
-     <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-12">
-      <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">SUA CREDENCIAL ÚNICA</p>
-      <div className="flex items-center justify-center gap-4">
-       <span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic">{agentId}</span>
-       <button onClick={() => { navigator.clipboard.writeText(agentId); alert('COPIADO! 🛡️'); }} className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"><Copy size={20} /></button>
+// --- COMPONENTE ADMIN (RESTAURADO) ---
+const PainelAdmin = ({ onBack }: any) => {
+  const [agentes, setAgentes] = useState<any[]>([]);
+  useEffect(() => {
+    const fetch = async () => {
+      const q = query(collection(db, "agentes"), orderBy("data_ativacao", "desc"));
+      const snap = await getDocs(q);
+      setAgentes(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }; fetch();
+  }, []);
+  return (
+    <div className="min-h-screen bg-black p-10 animate-in fade-in duration-500">
+      <button onClick={onBack} className="mb-10 text-[#D4AF37] font-spy text-xs flex items-center gap-2"><ArrowLeft size={16}/> Sair do Admin</button>
+      <h1 className="text-4xl font-spy mb-10">Central de <span className="text-[#D4AF37]">Controle 007</span></h1>
+      <div className="bg-[#121212] border border-white/10 rounded-[32px] overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-white/5 font-spy text-[10px] text-zinc-500"><tr className="border-b border-white/10"><th className="p-6">ID AGENTE</th><th className="p-6">E-MAIL</th><th className="p-6">DATA</th></tr></thead>
+          <tbody className="text-sm font-bold italic">
+            {agentes.map(a => <tr key={a.id} className="border-b border-white/5"><td className="p-6 text-[#D4AF37]">{a.id}</td><td className="p-6">{a.email}</td><td className="p-6 text-zinc-500">{a.data_ativacao?.split('T')[0]}</td></tr>)}
+          </tbody>
+        </table>
       </div>
-     </div>
-     <button onClick={onDismissSuccess} className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all italic tracking-tighter animate-btn-pulse">[ACESSAR ARSENAL]</button>
     </div>
-   </div>
-  )}
-  <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
-   <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3"><Eye className="text-black" size={28} /></div><span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
-   <div className="flex items-center gap-6">
-     <button onClick={onRecuperar} className="text-gray-500 hover:text-[#D4AF37] text-[10px] font-black uppercase tracking-widest transition-all">Esqueci meu ID</button>
-     <button onClick={onLogin} className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter italic"><Lock size={14} className="inline mr-2" /> Entrar</button>
-   </div>
-  </nav>
-  <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative mx-auto">
-   <h1 className="text-4xl md:text-7xl lg:text-8xl font-black text-white mb-10 leading-[1.0] tracking-tighter uppercase italic max-w-6xl text-center">ACESSE SEM LIMITES AS OFERTAS MAIS LUCRATIVAS <span className="text-[#D4AF37]">ANTES DA CONCORRÊNCIA.</span></h1>
-   <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed text-center">Rastreie VSLs, criativos e funis que estão gerando milhões. O fim do "achismo" na sua escala digital.</p>
-   
-   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 justify-center items-stretch mx-auto">
-    <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-     <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO MENSAL</h3>
-     <div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black text-white italic">R$ 197</span><span className="text-gray-500 font-black text-sm uppercase">/mês</span></div>
-     <button onClick={() => window.open(KIWIFY_MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] transition-all uppercase italic tracking-tighter animate-btn-pulse">QUERO ACESSO MENSAL</button>
+  );
+};
+
+/** * UTILS */
+const getDriveDirectLink = (url: string) => {
+  if (!url) return '';
+  const idMatch = url.match(/[-\w]{25,}/);
+  return idMatch ? `https://lh3.googleusercontent.com/u/0/d/${idMatch[0]}` : url;
+};
+const getEmbedUrl = (url: string) => {
+  if (!url) return '';
+  const vimeoId = url.match(/vimeo\.com\/([0-9]+)/);
+  if (vimeoId) return `https://player.vimeo.com/video/${vimeoId[1]}?badge=0&autopause=0&player_id=0&app_id=58479`;
+  const ytId = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+  if (ytId) return `https://www.youtube.com/embed/${ytId[1]}`;
+  return url;
+};
+
+const OfferCard = ({ offer, index, isFavorite, onToggleFavorite, onClick }: any) => (
+  <div onClick={onClick} className="bg-[#121212] rounded-[32px] overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500">
+    <div className="relative aspect-video overflow-hidden">
+      <img src={getDriveDirectLink(offer.coverImage)} alt={offer.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+      <div className="absolute top-4 left-4"><div className="px-3 py-1 bg-[#D4AF37] text-black text-[9px] font-spy rounded">007 VIP</div></div>
+      <button onClick={onToggleFavorite} className={`absolute top-4 right-4 p-2.5 rounded-xl backdrop-blur-md ${isFavorite ? 'bg-[#D4AF37] text-black' : 'bg-black/50 text-white'}`}><Star size={16} fill={isFavorite ? "currentColor" : "none"} /></button>
     </div>
-    <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-[#D4AF37]">
-     <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO TRIMESTRAL</h3>
-     <div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black italic">R$ 497</span><span className="text-gray-400 font-black text-sm uppercase">/trimestre</span></div>
-     <button onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] transition-all shadow-2xl uppercase italic tracking-tighter animate-btn-pulse">ASSINAR TRIMESTRAL</button>
-    </div>
-   </div>
-   <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto text-center">
-      <p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic mb-4">© 2026 007 SWIPER Intelligence Platform</p>
-      <div onDoubleClick={() => onLogin('admin')} className="opacity-0 w-full h-10 cursor-default">.</div>
-   </footer>
-  </main>
- </div>
+    <div className="p-6"><h3 className="font-spy text-white text-lg truncate mb-4">{offer.title}</h3><div className="flex justify-between items-center pt-4 border-t border-white/5"><span className="text-[#D4AF37] text-[10px] font-spy">{offer.niche}</span><div className="flex gap-2 text-zinc-500 italic text-[10px] font-bold">{offer.trafficSource[0]}</div></div></div>
+  </div>
 );
 
-/** * MAIN APP */
-const App: React.FC = () => {
- const [isLoggedIn, setIsLoggedIn] = useState(false);
- const [agentId, setAgentId] = useState<string>('');
- const [currentPage, setCurrentPage] = useState('home');
- const [showRecuperar, setShowRecuperar] = useState(false);
- const [showAdmin, setShowAdmin] = useState(false);
- const [offers, setOffers] = useState<Offer[]>([]);
- const [loading, setLoading] = useState(true);
- const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
- const [activeVslIndex, setActiveVslIndex] = useState(0);
- const [favorites, setFavorites] = useState<string[]>([]);
- const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
- const [searchQuery, setSearchQuery] = useState('');
- const [selectedNiche, setSelectedNiche] = useState('Todos');
- const [selectedLanguage, setSelectedLanguage] = useState('Todos');
- const [selectedType, setSelectedType] = useState('Todos');
- const [selectedTraffic, setSelectedTraffic] = useState('Todos');
- const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
- const [activeNicheSelection, setActiveNicheSelection] = useState<string | null>(null);
- const [activeLanguageSelection, setActiveLanguageSelection] = useState<string | null>(null);
- const [isSuccess, setIsSuccess] = useState(false);
- const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
+const LandingPage = ({ onLogin, onRecuperar }: any) => (
+  <div className="w-full bg-[#0a0a0a] min-h-screen">
+    <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+    <nav className="max-w-7xl px-8 py-10 flex justify-between items-center mx-auto">
+      <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2 rounded-xl rotate-3"><Eye className="text-black" size={24} /></div><span className="text-2xl font-spy text-white">007 SWIPER</span></div>
+      <div className="flex items-center gap-6">
+        <button onClick={onRecuperar} className="text-zinc-500 font-spy text-[10px] hover:text-[#D4AF37]">Recuperar ID</button>
+        <button onClick={() => onLogin()} className="px-8 py-3 btn-gold rounded-full text-xs font-spy"><Lock size={14} className="inline mr-2"/> Entrar</button>
+      </div>
+    </nav>
+    <main className="max-w-7xl px-8 py-20 text-center mx-auto">
+      <h1 className="text-5xl md:text-8xl font-spy text-white mb-8 leading-none">RASTREIE AS OFERTAS QUE ESTÃO <span className="text-[#D4AF37]">ESCALANDO MILHÕES.</span></h1>
+      <p className="text-zinc-500 text-xl font-medium max-w-3xl mb-20 italic mx-auto leading-relaxed">Acesse criativos, VSLs e funis validados sem instabilidade. Seu dossiê de espionagem digital de elite.</p>
+      
+      {/* VIDEO PREVIEW - RESTORED */}
+      <div className="w-full max-w-4xl mx-auto mb-32 relative group cursor-pointer aspect-video bg-[#121212] rounded-[40px] border border-white/10 flex items-center justify-center overflow-hidden">
+        <Play size={64} className="text-[#D4AF37] animate-pulse-gold relative z-10" fill="currentColor"/>
+        <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1200" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-105 transition-all" />
+      </div>
 
- const allNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
- const allLanguages = Array.from(new Set(offers.map(o => o.language))).sort();
- const allTypes = Array.from(new Set(offers.map(o => o.productType))).sort();
- const allTrafficSources = Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort();
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto mb-32 text-left italic">
+        <div className="bg-[#121212] p-12 rounded-[40px] border border-white/5">
+          <h3 className="text-[#D4AF37] font-spy text-xl mb-4">PLANO MENSAL</h3>
+          <p className="text-4xl font-spy mb-10">R$ 197 <span className="text-sm">/mês</span></p>
+          <button onClick={() => window.open(KIWIFY_MENSAL)} className="w-full py-5 bg-white text-black font-spy rounded-2xl hover:bg-[#D4AF37] transition-all">ASSINAR MENSAL</button>
+        </div>
+        <div className="bg-white p-12 rounded-[40px] border-t-8 border-[#D4AF37] scale-105 shadow-2xl">
+          <h3 className="text-[#D4AF37] font-spy text-xl mb-4">PLANO TRIMESTRAL</h3>
+          <p className="text-4xl font-spy text-black mb-10">R$ 497 <span className="text-sm">/trimestre</span></p>
+          <button onClick={() => window.open(KIWIFY_TRIMESTRAL)} className="w-full py-5 bg-black text-[#D4AF37] font-spy rounded-2xl animate-pulse-gold">ASSINAR TRIMESTRAL</button>
+        </div>
+      </div>
 
- const getFavKey = (id: string) => `favs_${id}`;
- const getViewedKey = (id: string) => `viewed_${id}`;
+      {/* GUARANTEE - RESTORED */}
+      <div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-16 flex flex-col md:flex-row items-center gap-12 text-left mb-32">
+        <div className="w-32 h-32 md:w-44 md:h-44 rounded-full border-[5px] border-[#D4AF37] flex flex-col items-center justify-center"><span className="text-[#D4AF37] text-7xl font-spy leading-none">7</span><p className="text-[#D4AF37] text-[10px] font-spy -mt-2">DIAS</p></div>
+        <div className="flex-1 space-y-4">
+          <h2 className="text-white text-4xl font-spy">GARANTIA INCONDICIONAL</h2>
+          <p className="text-zinc-500 text-lg italic leading-relaxed">Se em até 7 dias você não sentir que os dados do <span className="text-white">007 Swiper</span> mudaram sua operação, devolvemos 100% do seu dinheiro. Risco zero.</p>
+        </div>
+      </div>
 
- const applyEliteFilters = useCallback((data: Offer[]) => {
-  return data.filter(offer => {
-   const searchLower = searchQuery.toLowerCase();
-   const mSearch = offer.title.toLowerCase().includes(searchLower) || (offer.description && offer.description.toLowerCase().includes(searchLower));
-   const mNiche = selectedNiche === 'Todos' || offer.niche === selectedNiche;
-   const mLang = selectedLanguage === 'Todos' || offer.language === selectedLanguage;
-   const mType = selectedType === 'Todos' || offer.productType === selectedType;
-   const mTraffic = selectedTraffic === 'Todos' || offer.trafficSource.some(t => t.toLowerCase().includes(selectedTraffic.toLowerCase()));
-   return mSearch && mNiche && mLang && mType && mTraffic;
-  });
- }, [searchQuery, selectedNiche, selectedLanguage, selectedType, selectedTraffic]);
+      <footer className="pt-20 border-t border-white/5 text-center">
+        <p className="text-zinc-600 font-spy text-[10px] tracking-widest mb-10">© 2026 007 SWIPER Intelligence Group</p>
+        <div onDoubleClick={() => onLogin('admin')} className="h-10 opacity-0 cursor-default">.</div>
+      </footer>
+    </main>
+  </div>
+);
 
- const showFilters = currentPage === 'offers' && !selectedOffer;
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [agentId, setAgentId] = useState('');
+  const [currentPage, setCurrentPage] = useState('home');
+  const [showRecuperar, setShowRecuperar] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
- const pushNavState = useCallback((params: any) => {
-  const newState = { cp: currentPage, sid: selectedOffer?.id || null, ans: activeNicheSelection, als: activeLanguageSelection, ...params };
-  window.history.pushState(newState, '');
- }, [currentPage, selectedOffer, activeNicheSelection, activeLanguageSelection]);
+  useEffect(() => {
+    const savedId = localStorage.getItem('agente_token');
+    if (savedId) { setAgentId(savedId); setIsLoggedIn(true); }
+    const fetchOffers = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(CSV_URL);
+        const text = await res.text();
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        const parsed: Offer[] = lines.slice(2).map((l, i) => {
+          const v = l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.trim().replace(/^"|"$/g, '').trim());
+          if (!v[1]) return null;
+          return { id: v[0] || String(i), title: v[1], niche: v[2] || 'Geral', productType: v[3] || 'Geral', description: v[4] || '', coverImage: v[5] || '', trend: v[6] || 'Estável', views: v[7] || '', vslLinks: (v[8] || '').split(',').map(u => ({ label: 'VSL Principal', url: u.trim() })), vslDownloadUrl: v[9] || '#', transcriptionUrl: v[10] || '#', creativeEmbedUrls: (v[11] || '').split(',').filter(Boolean), creativeDownloadUrls: (v[12] || '').split(',').filter(Boolean), facebookUrl: v[13] || '#', pageUrl: v[14] || '#', language: v[15] || 'Português', trafficSource: (v[16] || '').split(',').filter(Boolean), creativeZipUrl: v[17] || '#', } as Offer;
+        }).filter((o): o is Offer => o !== null);
+        setOffers(parsed.reverse());
+      } catch (e) { console.error(e); } finally { setLoading(false); }
+    }; fetchOffers();
+  }, []);
 
- useEffect(() => {
-  const handlePopState = (e: PopStateEvent) => {
-   if (e.state) {
-    const { cp, sid, ans, als } = e.state;
-    setCurrentPage(cp || 'home');
-    setActiveNicheSelection(ans || null);
-    setActiveLanguageSelection(als || null);
-    if (sid) {
-     const found = offers.find(o => o.id === sid);
-     setSelectedOffer(found || null);
-    } else {
-     setSelectedOffer(null);
-    }
-   }
-  };
-  window.addEventListener('popstate', handlePopState);
-  return () => window.removeEventListener('popstate', handlePopState);
- }, [offers]);
-
- const checkLogin = async (id: string, silencioso = false) => {
-  if (!id) return;
-  try {
-   const cleanId = id.toUpperCase().trim();
-   const docRef = doc(db, "agentes", cleanId);
-   const docSnap = await getDoc(docRef);
-
-   if (docSnap.exists() && docSnap.data().ativo === true) {
-    setAgentId(cleanId);
-    setIsLoggedIn(true);
-    localStorage.setItem('agente_token', cleanId);
-    const favs = localStorage.getItem(getFavKey(cleanId)); if (favs) setFavorites(JSON.parse(favs));
-    const viewed = localStorage.getItem(getViewedKey(cleanId)); if (viewed) setRecentlyViewed(JSON.parse(viewed));
-   } else if (!silencioso) {
-    alert('IDENTIDADE NÃO RECONHECIDA ❌\nUse o formato AGENTE-XXXXX.');
-   }
-  } catch (e) { console.error(e); }
- };
-
- useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('success') === 'true') {
-   setIsSuccess(true);
-   setNewlyGeneratedId("AGUARDANDO ATIVAÇÃO..."); 
-  } else {
-   const savedId = localStorage.getItem('agente_token');
-   if (savedId) checkLogin(savedId, true);
-  }
-
-  const fetchOffers = async () => {
-   try {
-    setLoading(true);
-    const res = await fetch(CSV_URL);
-    const text = await res.text();
-    const lines = text.split(/\r?\n/).filter(l => l.trim());
-    const parsed: Offer[] = lines.slice(2).map((l, i) => {
-     const v = l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.trim().replace(/^"|"$/g, '').trim());
-     if (!v[1] || v[1].toLowerCase() === 'undefined') return null;
-     return {
-      id: v[0] || String(i), title: v[1], niche: v[2] || 'Geral', productType: v[3] || 'Geral', description: v[4] || '', coverImage: v[5] || '', trend: (v[6] as Trend) || 'Estável', views: v[7] || '', vslLinks: (v[8] || '').split(',').map(u => ({ label: 'VSL Principal', url: u.trim() })).filter(link => link.url), vslDownloadUrl: v[9] || '#', transcriptionUrl: v[10] || '#', creativeEmbedUrls: (v[11] || '').split(',').map(s => s.trim()).filter(Boolean), creativeDownloadUrls: (v[12] || '').split(',').map(s => s.trim()).filter(Boolean), facebookUrl: v[13] || '#', pageUrl: v[14] || '#', language: v[15] || 'Português', trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), creativeZipUrl: v[17] || '#', addedDate: v[18] || '', status: (v[19] || '').toUpperCase(), creativeImages: [],
-     };
-    }).filter((o): o is Offer => o !== null);
-    setOffers(parsed.filter(o => o.status === 'ATIVO').reverse());
-   } catch (e) { console.error(e); } finally { setLoading(false); }
-  };
-  fetchOffers();
- }, []);
-
- const openOffer = (offer: Offer) => {
-  const newViewed = [offer.id, ...recentlyViewed.filter(id => id !== offer.id)].slice(0, 8);
-  setRecentlyViewed(newViewed);
-  if (agentId) localStorage.setItem(getViewedKey(agentId), JSON.stringify(newViewed));
-  setSelectedOffer(offer);
-  pushNavState({ sid: offer.id });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
- };
-
- const closeOffer = () => { setSelectedOffer(null); pushNavState({ sid: null }); };
- const navigateToPage = (page: string) => { setCurrentPage(page); setSelectedOffer(null); setActiveNicheSelection(null); setActiveLanguageSelection(null); pushNavState({ cp: page }); setIsMobileMenuOpen(false); };
- const toggleFavorite = (id: string, e?: React.MouseEvent) => { if (e) e.stopPropagation(); setFavorites(prev => { const isFav = prev.includes(id); const next = isFav ? prev.filter(f => f !== id) : [...prev, id]; if (agentId) localStorage.setItem(getFavKey(agentId), JSON.stringify(next)); return next; }); };
- 
- const handleLogin = async (type = 'user') => {
+  const handleLogin = async (type = 'user') => {
     if (type === 'admin') { setShowAdmin(true); return; }
     const inputId = window.prompt("🕵️‍♂️ ACESSO À CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE:");
     if (inputId) {
@@ -409,134 +223,78 @@ const App: React.FC = () => {
     }
   };
 
- const renderSelectionGrid = (items: string[], setter: (val: string) => void, icon: any, label: string) => (
-  <div className="animate-in fade-in duration-500">
-   <div className="flex flex-col mb-12"><h2 className="text-3xl font-black text-white uppercase italic flex items-center gap-4">{React.createElement(icon, { className: "text-[#D4AF37]", size: 32 })} {label}</h2><p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 italic">Selecione uma categoria para infiltrar nos dados</p></div>
-   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {items.map((item, idx) => (
-     <button key={idx} onClick={() => { setter(item); pushNavState({ [items === allNiches ? 'ans' : 'als']: item }); }} className="group bg-[#121212] border border-white/5 hover:border-[#D4AF37]/50 p-8 rounded-[32px] text-left transition-all hover:scale-[1.02] shadow-xl flex flex-col justify-between h-48 relative overflow-hidden">
-      <div className="absolute -right-4 -bottom-4 text-white/5 group-hover:text-[#D4AF37]/10 transition-colors">{React.createElement(icon, { size: 120 })}</div>
-      <p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest italic mb-2">Categoria 00{idx + 1}</p>
-      <span className="text-white text-2xl font-black uppercase italic tracking-tighter leading-none group-hover:text-[#D4AF37] transition-colors relative z-10">{item}</span>
-      <div className="flex items-center gap-2 mt-auto relative z-10"><span className="text-gray-500 text-[9px] font-black uppercase tracking-widest group-hover:text-white transition-colors italic">Infiltrar</span><ChevronRight size={14} className="text-[#D4AF37] group-hover:translate-x-1 transition-transform" /></div>
-     </button>
-    ))}
-   </div>
-  </div>
- );
+  const toggleFavorite = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setFavorites(p => p.includes(id) ? p.filter(f => f !== id) : [...p, id]);
+  };
 
- const renderContent = () => {
-  if (loading) return <div className="flex flex-col items-center justify-center py-40 gap-4 animate-pulse"><Loader2 className="text-[#D4AF37] animate-spin" size={48} /><p className="text-[#D4AF37] font-black uppercase text-xs tracking-widest italic">Interceptando pacotes de dados...</p></div>;
-  if (selectedOffer) {
-   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-      <button onClick={closeOffer} className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"><div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ArrowLeft size={16} /></div>Voltar</button>
-      <div className="flex flex-wrap items-center gap-3">
-       <a href={selectedOffer.vslDownloadUrl} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg italic"><Download size={16} /> BAIXAR VSL</a>
-       <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"><FileText size={16} /> TRANSCRIÇÃO</a>
-      </div>
-     </div>
-     <div className="space-y-12">
-      <div className="flex flex-col lg:flex-row gap-8 items-stretch">
-       <div className="w-full lg:w-[62%] space-y-6">
-        <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
-          <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">{selectedOffer.vslLinks.map((link, idx) => (<button key={idx} onClick={() => setActiveVslIndex(idx)} className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'}`}><Video size={12} /> {link.label || `VSL ${idx + 1}`}</button>))}</div>
-          <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl"><VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} /></div>
-        </div>
-       </div>
-       <div className="w-full lg:w-[38%]">
-        <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full flex flex-col"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0"><ShieldCheck className="w-4 h-4" /> INFORMAÇÕES</h3><div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">{[{ icon: Info, label: 'NOME', value: selectedOffer.description || selectedOffer.title }, { icon: Tag, label: 'NICHO', value: selectedOffer.niche }, { icon: Globe, label: 'IDIOMA', value: selectedOffer.language }].map((item, idx) => (<div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0"><div className="flex items-center gap-3"><item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" /><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span></div><span className="text-white text-sm font-black uppercase italic tracking-tight">{item.value}</span></div>))}</div></div>
-       </div>
-      </div>
-     </div>
-    </div>
-   );
-  }
-  const filtered = applyEliteFilters(offers);
-  switch (currentPage) {
-   case 'home':
-    const scaling = offers.filter(o => o.trend.trim().toLowerCase() === 'escalando').slice(0, 4);
-    const recent = offers.filter(o => recentlyViewed.includes(o.id));
-    return (<div className="animate-in fade-in duration-700 space-y-16 md:space-y-20"><div><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Zap className="text-[#D4AF37]" fill="currentColor" /> OPERAÇÕES EM ESCALA</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">{scaling.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div></div><div><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Monitor className="text-[#D4AF37]" /> VISTOS RECENTEMENTE</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">{recent.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div></div></div>);
-   case 'offers': return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 animate-in fade-in duration-700">{filtered.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div>);
-   case 'vsl': if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, Video, "CENTRAL DE VSL"); return (<div className="space-y-12"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:text-white"><ArrowLeft size={20} /></button><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.niche === activeNicheSelection).map(o => (<div key={o.id} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 space-y-6"><div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl"><VideoPlayer url={o.vslLinks[0]?.url} /></div><div className="flex justify-between items-center"><h3 className="text-white font-black italic">{o.title}</h3><button onClick={() => openOffer(o)} className="text-[#D4AF37] font-black text-[10px] uppercase">Ver Operação</button></div></div>))}</div></div>);
-   case 'creatives': if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, Palette, "ARSENAL DE CRIATIVOS"); return (<div className="space-y-12"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:text-white"><ArrowLeft size={20} /></button><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{offers.filter(o => o.niche === activeNicheSelection).flatMap(o => o.creativeEmbedUrls.map((url, idx) => (<div key={`${o.id}-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 space-y-4"><div className="aspect-video bg-black rounded-xl overflow-hidden"><VideoPlayer url={url} /></div><div className="flex justify-between items-center"><span className="text-white font-black text-xs italic">{o.title}</span><a href={o.creativeDownloadUrls[idx]} className="text-[#D4AF37]"><Download size={16}/></a></div></div>)))}</div></div>);
-   case 'pages': if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, FileText, "PÁGINAS ESCALADAS"); return (<div className="space-y-12"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:text-white"><ArrowLeft size={20} /></button><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">{offers.filter(o => o.niche === activeNicheSelection).map(o => (<div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden group border border-white/5 hover:border-[#D4AF37]/50"><div className="aspect-video relative overflow-hidden"><img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover"/><div className="absolute inset-0 flex items-center justify-center scale-0 group-hover:scale-100 transition-all"><a href={o.pageUrl} target="_blank" className="p-4 bg-[#D4AF37] text-black rounded-full"><ExternalLink/></a></div></div><div className="p-6"><h3 className="text-white font-black uppercase text-sm truncate">{o.title}</h3></div></div>))}</div></div>);
-   case 'ads_library': if (!activeLanguageSelection) return renderSelectionGrid(allLanguages, setActiveLanguageSelection, Library, "BIBLIOTECA DE ANÚNCIOS"); return (<div className="space-y-12"><button onClick={() => setActiveLanguageSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:text-white"><ArrowLeft size={20} /></button><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.language === activeLanguageSelection).map(o => (<div key={o.id} className="bg-[#121212] p-8 rounded-[32px] border border-white/5 flex justify-between items-center"><div className="flex items-center gap-5"><div className="p-5 bg-[#1a1a1a] rounded-2xl"><Facebook size={32}/></div><div><p className="text-[#D4AF37] font-black text-[10px] italic">ADS LIBRARY</p><h3 className="text-white font-black italic">{o.title}</h3></div></div><a href={o.facebookUrl} target="_blank" className="p-3 bg-[#D4AF37] text-black rounded-xl"><ExternalLink/></a></div>))}</div></div>);
-   case 'favorites': const favs = offers.filter(o => favorites.includes(o.id)); return (<div className="animate-in fade-in duration-700"><div><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">{favs.map((o) => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div></div></div>);
-   case 'settings': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Settings className="text-[#D4AF37]" /> Painel do Agente</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5"><h3 className="text-[#D4AF37] font-black text-[10px] tracking-[0.2em] mb-8">IDENTIDADE</h3><div className="space-y-4"><div className="flex justify-between items-center border-b border-white/5 pb-4"><span className="text-gray-500 font-bold text-xs uppercase">SENHA</span><span className="text-white font-black italic">{agentId}</span></div></div></div><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 h-full flex flex-col justify-between"><div><h3 className="text-gray-500 font-bold text-xs mb-6 uppercase">SUPORTE</h3><span className="text-white font-black text-xl italic mb-8 block">{SUPPORT_EMAIL}</span></div><button onClick={() => { navigator.clipboard.writeText(SUPPORT_EMAIL); alert('COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button></div></div></div>);
-   default: return null;
-  }
- };
+  if (showAdmin) return <PainelAdmin onBack={() => setShowAdmin(false)} />;
+  if (showRecuperar) return <RecuperarID onBack={() => setShowRecuperar(false)} />;
+  if (!isLoggedIn) return <LandingPage onLogin={handleLogin} onRecuperar={() => setShowRecuperar(true)} />;
 
- return (
-  <div className="flex min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37] selection:text-black">
-   <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-   {isLoggedIn ? (
-    <>
-     {isMobileMenuOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />}
-     <aside className={`w-72 bg-[#121212] border-r border-white/5 fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-      <div className="p-8 md:p-10 h-full flex flex-col">
-       <div className="flex items-center space-x-3 mb-12 px-2" onClick={() => navigateToPage('home')}><div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl"><Eye className="text-black" size={24} /></div><span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
-       <nav className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
-        <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => navigateToPage('home')} />
-        <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => navigateToPage('favorites')} />
-        <SidebarItem icon={Settings} label="PAINEL" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
-        <div className="pt-8 pb-4">
-         <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
-         <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => navigateToPage('offers')} />
-         <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => navigateToPage('vsl')} />
-         <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => navigateToPage('creatives')} />
-         <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
-         <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
-        </div>
-       </nav>
-       <div className="mt-8"><SidebarItem icon={LogOut} label="Sair" active={false} onClick={() => { setIsLoggedIn(false); localStorage.removeItem('agente_token'); }} variant="danger" /></div>
-      </div>
-     </aside>
-     <main className="flex-1 lg:ml-72 relative w-full">
-      <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4 md:gap-6">
-       <div className="flex items-center justify-between gap-4">
-        <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37]"><Menu size={24} /></button>
-        <div className="flex-1 flex items-center bg-[#121212] px-4 md:px-6 py-2.5 md:py-3 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-inner max-w-xl">
-         <Search className="text-gray-500 mr-3 md:mr-4" size={18} />
-         <input type="text" placeholder="Pesquisar inteligência..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-transparent border-none outline-none text-xs md:text-sm w-full font-bold" />
-        </div>
-        <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0">
-         <div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div>
-         <div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-zinc-500 leading-none">Agente</p><p className="text-white font-mono text-[10px] uppercase">{agentId}</p></div>
-        </div>
-       </div>
-       {showFilters && (
-        <div className="animate-in fade-in slide-in-from-top-2 duration-500 flex flex-wrap items-center gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
-         {[ { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] }, { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] }, { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }, { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] } ].map((f, i) => (
-          <div key={i} className="flex-1 lg:flex-none flex flex-col gap-1.5 min-w-[140px]">
-           <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label>
-           <select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none cursor-pointer"> {f.options.map(n => <option key={n} value={n}>{n}</option>)} </select>
+  const filtered = offers.filter(o => o.title.toLowerCase().includes(searchQuery.toLowerCase()) || o.niche.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  return (
+    <div className="flex h-screen bg-black text-white">
+      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      <aside className="w-72 bg-[#050505] border-r border-white/5 p-8">
+        <div className="flex items-center space-x-3 mb-16"><div className="bg-[#D4AF37] p-2 rounded-xl"><Eye size={24} className="text-black"/></div><span className="font-spy text-lg">007 SWIPER</span></div>
+        <nav className="space-y-6">
+          <div onClick={() => {setCurrentPage('home'); setSelectedOffer(null)}} className={`flex items-center gap-3 font-spy text-sm cursor-pointer ${currentPage === 'home' ? 'text-[#D4AF37]' : 'text-zinc-500'}`}><HomeIcon size={20}/> Dashboard</div>
+          <div onClick={() => {setCurrentPage('favs'); setSelectedOffer(null)}} className={`flex items-center gap-3 font-spy text-sm cursor-pointer ${currentPage === 'favs' ? 'text-[#D4AF37]' : 'text-zinc-500'}`}><Star size={20}/> Favoritos</div>
+        </nav>
+        <div className="mt-auto pt-10 border-t border-white/5"><div onClick={() => {setIsLoggedIn(false); localStorage.removeItem('agente_token');}} className="flex items-center gap-3 font-spy text-sm text-red-500 cursor-pointer"><LogOut size={20}/> Encerrar</div></div>
+      </aside>
+
+      <main className="flex-1 overflow-y-auto p-12">
+        <header className="flex justify-between items-center mb-12">
+          <h1 className="text-3xl font-spy italic">INTELIGÊNCIA <span className="text-[#D4AF37]">007</span></h1>
+          <input type="text" placeholder="RASTREAR..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="bg-[#121212] border border-white/5 p-4 rounded-2xl w-80 font-spy text-xs focus:border-[#D4AF37] outline-none" />
+        </header>
+
+        {loading ? <div className="animate-pulse text-[#D4AF37] font-spy">Interceptando dados...</div> : selectedOffer ? (
+          <div className="space-y-12 animate-in fade-in duration-500">
+            <button onClick={() => setSelectedOffer(null)} className="text-zinc-500 font-spy text-xs flex items-center gap-2"><ArrowLeft size={16}/> Voltar ao Dashboard</button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 italic">
+              <div className="lg:col-span-2 space-y-10">
+                <div className="aspect-video bg-black rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
+                  <iframe className="w-full h-full" src={getEmbedUrl(selectedOffer.vslLinks[0]?.url)} frameBorder="0" allowFullScreen></iframe>
+                </div>
+                <div className="bg-[#121212] p-10 rounded-[40px] border border-white/5 space-y-4">
+                  <h3 className="text-[#D4AF37] font-spy">Dossiê Técnico</h3>
+                  <p className="text-zinc-500 leading-relaxed italic">{selectedOffer.description || "Análise detalhada desta oferta em processamento."}</p>
+                </div>
+                <div className="space-y-6">
+                  <h3 className="font-spy text-white">Arsenal de Criativos</h3>
+                  <div className="grid grid-cols-2 gap-6">
+                    {selectedOffer.creativeEmbedUrls.map((url, idx) => (
+                      <div key={idx} className="aspect-square bg-[#1a1a1a] rounded-3xl border border-white/5 overflow-hidden">
+                        <iframe className="w-full h-full" src={getEmbedUrl(url)} frameBorder="0"></iframe>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-8">
+                <div className="bg-[#121212] p-8 rounded-[40px] border border-white/5 space-y-8">
+                  <div className="space-y-1"><p className="text-[10px] text-zinc-500 font-spy">OPERADOR</p><p className="font-spy text-[#D4AF37]">{agentId}</p></div>
+                  <div className="space-y-1"><p className="text-[10px] text-zinc-500 font-spy">ESTRUTURA</p><p className="font-spy">{selectedOffer.productType}</p></div>
+                  <a href={selectedOffer.pageUrl} target="_blank" className="block w-full py-4 btn-gold rounded-2xl text-center font-spy text-xs">VISUALIZAR PÁGINA</a>
+                  <a href={selectedOffer.facebookUrl} target="_blank" className="block w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-center font-spy text-xs">ADS LIBRARY</a>
+                </div>
+              </div>
+            </div>
           </div>
-         ))}
-        </div>
-       )}
-      </header>
-      <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
-     </main>
-    </>
-   ) : showRecuperar ? (
-     <RecuperarID onBack={() => setShowRecuperar(false)} />
-   ) : showAdmin ? (
-     <PainelAdmin onBack={() => setShowAdmin(false)} />
-   ) : (
-    <LandingPage 
-      onLogin={handleLogin} 
-      onRecuperar={() => setShowRecuperar(true)}
-      isSuccess={isSuccess} 
-      agentId={newlyGeneratedId} 
-      onDismissSuccess={() => { setIsSuccess(false); navigateToPage('home'); }} 
-    />
-   )}
-  </div>
- );
+        ) : (
+          <div className="grid grid-cols-3 gap-8">
+            {(currentPage === 'home' ? filtered : filtered.filter(o => favorites.includes(o.id))).map((o, i) => (
+              <OfferCard key={o.id} offer={o} index={i} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => setSelectedOffer(o)} />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
 };
 
 export default App;
