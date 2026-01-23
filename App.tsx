@@ -82,8 +82,8 @@ export interface Offer {
 /** * CONSTANTS 
  */
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
-const KIWIFY_MENSAL = 'https://pay.kiwify.com.br/mtU9l7e';
-const KIWIFY_TRIMESTRAL = 'https://pay.kiwify.com.br/ExDtrjE';
+const KIWIFY_MENSAL = 'https://pay.hotmart.com/H104019113G?bid=1769103375372';
+const KIWIFY_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
 
 const STYLES = `
