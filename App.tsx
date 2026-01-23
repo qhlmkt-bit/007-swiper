@@ -150,14 +150,14 @@ const OfferCard = ({ offer, isFavorite, onToggleFavorite, onClick }: any) => {
  );
 };
 
-const LandingPage = ({ onLogin, onRecuperar, isSuccess, agentId, onDismissSuccess }: any) => (
+const LandingPage = ({ onLogin, onRecover, onAdmin, isSuccess, agentId, onDismissSuccess }: any) => (
  <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
   <style dangerouslySetInnerHTML={{ __html: STYLES }} />
   {isSuccess && (<div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500"><div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div><div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]"><ShieldCheck size={48} className="text-black" /></div><h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO À INTELIGÊNCIA LIBERADO!</h2><p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10 leading-relaxed">Sua operação de rastreio de elite começa agora. Sua credencial é única e privada.</p><div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-12"><p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">ESTA É SUA CREDENCIAL ÚNICA E PRIVADA</p><div className="flex items-center justify-center gap-4"><span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic selection:bg-[#D4AF37] selection:text-black">{agentId}</span><button onClick={() => {navigator.clipboard.writeText(agentId);alert('ID COPIADO! 🛡️');}} className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"><Copy size={20} /></button></div></div><button onClick={onDismissSuccess} className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter animate-btn-pulse">[ACESSAR ARSENAL]</button></div></div>)}
   <nav className="w-full max-w-7xl px-8 py-10 flex justify-between items-center z-50 mx-auto">
    <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div><span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
    <div className="flex items-center gap-6">
-    <button onClick={onRecuperar} className="text-gray-500 hover:text-[#D4AF37] text-[10px] font-black uppercase italic tracking-widest transition-all">Recuperar ID</button>
+    <button onClick={onRecover} className="text-gray-500 hover:text-[#D4AF37] text-[10px] font-black uppercase italic tracking-widest transition-all">Recuperar ID</button>
     <button onClick={() => onLogin()} className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs italic font-bold tracking-tighter"><Lock size={14} className="inline mr-2" /> Entrar</button>
    </div>
   </nav>
@@ -225,7 +225,7 @@ const App: React.FC = () => {
  }, [searchQuery, selectedNiche, selectedLanguage, selectedType, selectedTraffic]);
 
  // --- AQUI ESTÁ A LÓGICA HARMÔNICA DOS FILTROS ---
- const showFilters = (currentPage === 'offers' || currentPage === 'home') && !selectedOffer;
+ const showFilters = currentPage === 'offers' && !selectedOffer;
 
  const pushNavState = useCallback((params: any) => {
    const newState = { cp: currentPage, sid: selectedOffer?.id || null, ans: activeNicheSelection, als: activeLanguageSelection, ...params };
