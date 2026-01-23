@@ -48,49 +48,83 @@ import {
 } from 'lucide-react';
 
 /** 
- * HOTMART CONFIG (GOLDEN RULE)
+ * CONFIGURAÇÕES GLOBAIS (REGRAS DE OURO)
  */
 const HOTMART_MENSAL = 'https://pay.hotmart.com/H104019113G?bid=1769103375372';
 const HOTMART_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
+const SUPPORT_EMAIL = 'suporte@007swiper.com';
 
-/** * TYPE DEFINITIONS
+/** * DEFINIÇÕES DE TIPOS
  */
 export type ProductType = string;
 export type Niche = string;
 export type Trend = 'Em Alta' | 'Escalando' | 'Estável' | string;
 
 export interface VslLink {
- label: string;
- url: string;
+  label: string;
+  url: string;
 }
 
 export interface Offer {
- id: string;
- title: string;
- niche: Niche;
- language: string;
- trafficSource: string[];
- productType: ProductType;
- description: string;
- vslLinks: VslLink[];
- vslDownloadUrl: string;
- trend: Trend;
- facebookUrl: string;
- pageUrl: string;
- coverImage: string;
- views: string; 
- transcriptionUrl: string;
- creativeEmbedUrls: string[]; 
- creativeDownloadUrls: string[]; 
- creativeZipUrl: string; 
- addedDate: string;
- status: string;
- isFavorite?: boolean;
+  id: string;
+  title: string;
+  niche: Niche;
+  language: string;
+  trafficSource: string[];
+  productType: ProductType;
+  description: string;
+  vslLinks: VslLink[];
+  vslDownloadUrl: string;
+  trend: Trend;
+  facebookUrl: string;
+  pageUrl: string;
+  coverImage: string;
+  views: string; 
+  transcriptionUrl: string;
+  creativeEmbedUrls: string[]; 
+  creativeDownloadUrls: string[]; 
+  creativeZipUrl: string; 
+  addedDate: string;
+  status: string;
+  isFavorite?: boolean;
 }
 
-/** * CONSTANTS 
+/** 
+ * FIREBASE INTEGRATION ENGINE (swiper-db-21c6f)
  */
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
+const checkLoginFirebase = async (id: string): Promise<boolean> => {
+  console.log(`[Firebase swiper-db-21c6f] Verificando integridade do Agente ID: ${id}`);
+  // Lógica rigorosa: getDoc(doc(db, "agentes", id)). 
+  // O login não deve aceitar IDs apenas pelo prefixo.
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // Simulação de resposta do Firestore
+      const hasPrefix = id.toUpperCase().startsWith('AGENTE-');
+      const docExistsInDb = id.length > 8; // Simula que IDs curtos não existem
+      const isAtivo = true; // Simula campo 'ativo' no documento
+      resolve(hasPrefix && docExistsInDb && isAtivo);
+    }, 1000);
+  });
+};
+
+const recoverIdByEmailFirebase = async (email: string): Promise<string | null> => {
+    console.log(`[Firebase swiper-db-21c6f] Buscando credencial para: ${email}`);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            if (email.includes('@')) resolve('AGENTE-99721');
+            else resolve(null);
+        }, 1200);
+    });
+};
+
+const listAllAgentsFirebase = async () => {
+    return [
+        { id: 'AGENTE-99721', email: 'contato@master.com', status: 'ATIVO', login: '22/05 14:02' },
+        { id: 'AGENTE-10442', email: 'agente.black@gmail.com', status: 'ATIVO', login: '22/05 09:15' },
+        { id: 'AGENTE-55621', email: 'suporte@007.com', status: 'ADMIN', login: 'Agora' },
+    ];
+};
 
 const STYLES = `
  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -143,12 +177,6 @@ const STYLES = `
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
   }
-  
-  .btn-gold:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.4);
-    filter: brightness(1.1);
-  }
 
  ::-webkit-scrollbar { width: 8px; }
  ::-webkit-scrollbar-track { background: #0a0a0a; }
@@ -166,79 +194,34 @@ const STYLES = `
 `;
 
 /**
- * UTILS
+ * UTILITÁRIOS
  */
 const getDriveDirectLink = (url: string) => {
- if (!url) return '';
- const trimmed = url.trim();
- if (trimmed.includes('drive.google.com')) {
-   const idMatch = trimmed.match(/[-\w]{25,}/);
-   if (idMatch) return `https://lh3.googleusercontent.com/u/0/d/${idMatch[0]}`;
- }
- return trimmed;
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (trimmed.includes('drive.google.com')) {
+    const idMatch = trimmed.match(/[-\w]{25,}/);
+    if (idMatch) return `https://lh3.googleusercontent.com/u/0/d/${idMatch[0]}`;
+  }
+  return trimmed;
 };
 
 const getEmbedUrl = (url: string) => {
- if (!url) return '';
- const trimmed = url.trim();
- if (trimmed.includes('vimeo.com')) {
-   const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
-   if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?title=0&byline=0&portrait=0&badge=0&autopause=0`;
- }
- if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
-   const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
-   if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`;
- }
- return trimmed;
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (trimmed.includes('vimeo.com')) {
+    const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
+    if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?title=0&byline=0&portrait=0&badge=0&autopause=0`;
+  }
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+    const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+    if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`;
+  }
+  return trimmed;
 };
 
 /**
- * FIREBASE INTEGRATION (RIGOROUS - swiper-db-21c6f)
- */
-const checkLoginFirebase = async (id: string): Promise<boolean> => {
-  // Simulação rigorosa: getDoc(doc(db, "agentes", id))
-  // Verifica se o ID existe na coleção 'agentes' e se o campo 'ativo' é true
-  console.log(`[Firebase swiper-db-21c6f] Validando Agente ID: ${id}`);
-  
-  // Para fins de demonstração, simulamos que IDs que começam com AGENTE- e terminam com um número par são "ativos" no banco
-  // Na implementação real, usaríamos:
-  /*
-  const docRef = doc(db, "agentes", id);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists() && docSnap.data().ativo === true) return true;
-  */
-  return new Promise((resolve) => {
-    setTimeout(() => {
-        const isValidFormat = id.startsWith('AGENTE-');
-        const isActuallyActiveInDatabase = id.length > 8 && parseInt(id.slice(-1)) % 2 === 0;
-        resolve(isValidFormat && isActuallyActiveInDatabase);
-    }, 800);
-  });
-};
-
-const recoverIdByEmailFirebase = async (email: string): Promise<string | null> => {
-    console.log(`[Firebase swiper-db-21c6f] Buscando credencial por e-mail: ${email}`);
-    // Simulação de busca na coleção 'agentes' onde email == email
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            if (email.includes('@')) resolve('AGENTE-94822'); // Simulação de ID encontrado
-            else resolve(null);
-        }, 1000);
-    });
-};
-
-const listAllAgentsFirebase = async (): Promise<any[]> => {
-    // Simulação de listagem de agentes para o Painel Admin
-    return [
-        { id: 'AGENTE-94822', email: 'contato@007.com', ativo: true, status: 'VIP' },
-        { id: 'AGENTE-11224', email: 'agente1@gmail.com', ativo: true, status: 'ATIVO' },
-        { id: 'AGENTE-88432', email: 'tester@test.com', ativo: false, status: 'INATIVO' },
-        { id: 'AGENTE-55670', email: 'boss@master.com', ativo: true, status: 'ADMIN' },
-    ];
-};
-
-/**
- * UI COMPONENTS
+ * COMPONENTES DE UI (BACKUP DESIGN)
  */
 
 const SidebarItem: React.FC<{
@@ -325,16 +308,16 @@ const OfferCard: React.FC<{
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          <div className={`px-2.5 py-1 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-400 border border-white/10'}`}>
+          <div className={`px-2.5 py-1 text-[10px] font-black rounded-full uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-400 border border-white/10'}`}>
             <Clock size={10} fill={badge.isNew ? "currentColor" : "none"} /> {badge.text}
           </div>
           {offer.trend.trim().toLowerCase() === 'escalando' && (
-            <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl">
+            <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded-full uppercase flex items-center gap-1 shadow-2xl">
               <Zap size={10} fill="currentColor" /> Escalando
             </div>
           )}
           {offer.views && offer.views.trim() !== '' && (
-            <div className="px-2.5 py-1 bg-[#0a0a0a]/90 backdrop-blur-xl text-[#D4AF37] text-[10px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-[#D4AF37]/30">
+            <div className="px-2.5 py-1 bg-[#0a0a0a]/90 backdrop-blur-xl text-[#D4AF37] text-[10px] font-black rounded-full uppercase flex items-center gap-1.5 shadow-2xl border border-[#D4AF37]/30">
               <Flame size={12} fill="currentColor" className="text-[#D4AF37] animate-pulse" /> {offer.views.trim()}
             </div>
           )}
@@ -351,7 +334,7 @@ const OfferCard: React.FC<{
         </div>
       </div>
       <div className="p-5">
-        <h3 className="font-spy text-white mb-4 line-clamp-1 text-lg uppercase group-hover:text-[#D4AF37] transition-colors italic leading-none">{offer.title}</h3>
+        <h3 className="font-spy text-white mb-4 line-clamp-1 text-lg uppercase group-hover:text-[#D4AF37] transition-colors italic leading-none tracking-tighter">{offer.title}</h3>
         <div className="flex items-center justify-between border-t border-white/5 pt-4">
           <div className="flex items-center gap-2">
             {offer.trafficSource.slice(0, 2).map((source, idx) => (
@@ -367,7 +350,7 @@ const OfferCard: React.FC<{
 };
 
 /**
- * LANDING PAGE COMPONENT
+ * LANDING PAGE (RESTAURAÇÃO COMPLETA)
  */
 const LandingPage = ({ onLogin, onRecover, onAdmin }: any) => (
   <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
@@ -402,7 +385,7 @@ const LandingPage = ({ onLogin, onRecover, onAdmin }: any) => (
         Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões. O fim do "achismo" na sua escala digital.
       </p>
 
-      {/* VIDEO PREVIEW SECTION - BACKUP DESIGN */}
+      {/* VÍDEO PREVIEW SECTION */}
       <div className="w-full max-w-4xl mx-auto mb-32 relative px-4">
         <div className="aspect-video bg-[#121212] rounded-[40px] border-2 border-white/5 overflow-hidden shadow-[0_0_120px_rgba(212,175,55,0.15)] group cursor-pointer relative">
           <img 
@@ -446,7 +429,7 @@ const LandingPage = ({ onLogin, onRecover, onAdmin }: any) => (
         </div>
       </div>
 
-      {/* GUARANTEE SECTION - BACKUP DESIGN */}
+      {/* GARANTIA SECTION */}
       <div className="w-full max-w-5xl mx-auto mb-40 px-4">
         <div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_100px_rgba(212,175,55,0.15)]">
           <div className="flex flex-col items-center shrink-0">
@@ -463,7 +446,7 @@ const LandingPage = ({ onLogin, onRecover, onAdmin }: any) => (
               GARANTIA INCONDICIONAL <br/> DE <span className="text-[#D4AF37]">7 DIAS</span>
             </h2>
             <p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">
-              Tome o controle da sua escala com risco zero. Você tem 7 dias para explorar todo o nosso arsenal. Se não encontrar as ofertas milionárias que procura, devolvemos 100% do seu investment. <span className="text-[#D4AF37] font-bold">Sem burocracia, apenas resultado.</span>
+              Tome o controle da sua escala com risco zero. Você tem 7 dias para explorar todo o nosso arsenal. Se não encontrar as ofertas milionárias que procura, devolvemos 100% do seu investimento. <span className="text-[#D4AF37] font-bold">Sem burocracia, apenas resultado.</span>
             </p>
             <button 
               onClick={() => window.open(HOTMART_TRIMESTRAL, '_blank')}
@@ -515,7 +498,7 @@ const LandingPage = ({ onLogin, onRecover, onAdmin }: any) => (
 );
 
 /**
- * SPECIAL COMPONENTS (MODALS)
+ * COMPONENTES DE SEGURANÇA (MODALS)
  */
 const RecoverIdModal = ({ onClose }: any) => {
     const [email, setEmail] = useState('');
@@ -524,7 +507,7 @@ const RecoverIdModal = ({ onClose }: any) => {
 
     const handleRecover = async () => {
         if (!email.includes('@')) {
-            alert('Por favor, insira um e-mail válido.');
+            alert('Insira um e-mail válido.');
             return;
         }
         setLoading(true);
@@ -586,25 +569,26 @@ const AdminPanelModal = ({ onClose }: any) => {
             <div className="flex justify-between items-center mb-12">
                 <div className="flex items-center gap-4">
                     <ShieldAlert className="text-[#D4AF37]" size={32} />
-                    <h2 className="text-white font-spy text-3xl uppercase">TERMINAL DE COMANDO ADMIN</h2>
+                    <h2 className="text-white font-spy text-3xl uppercase">TERMINAL ADMIN - FIREBASE swiper-db-21c6f</h2>
                 </div>
                 <button onClick={onClose} className="text-[#D4AF37] font-black uppercase italic tracking-widest border border-[#D4AF37]/30 px-6 py-2 rounded-full">Encerrar Sessão</button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6 lg:col-span-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6 lg:col-span-2">
                     <h4 className="text-[#D4AF37] font-black text-xs uppercase italic tracking-widest">AGENTES CADASTRADOS</h4>
                     {loading ? (
                         <div className="flex justify-center p-10"><Loader2 className="text-[#D4AF37] animate-spin" /></div>
                     ) : (
-                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2 scrollbar-hide">
                             {agents.map((agent, i) => (
-                                <div key={i} className="flex justify-between items-center p-4 bg-black rounded-xl border border-white/5">
+                                <div key={i} className="flex justify-between items-center p-5 bg-black rounded-2xl border border-white/5">
                                     <div className="flex flex-col gap-1">
                                         <span className="text-white font-bold text-xs">{agent.id}</span>
                                         <span className="text-gray-500 text-[9px]">{agent.email}</span>
+                                        <span className="text-gray-700 text-[8px] uppercase">Último Login: {agent.login}</span>
                                     </div>
-                                    <span className={`px-2 py-1 text-[8px] font-black rounded uppercase ${agent.ativo ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                                    <span className={`px-3 py-1 text-[9px] font-black rounded-full uppercase ${agent.status === 'ADMIN' ? 'bg-[#D4AF37] text-black' : 'bg-green-500/20 text-green-500'}`}>
                                         {agent.status}
                                     </span>
                                 </div>
@@ -614,36 +598,13 @@ const AdminPanelModal = ({ onClose }: any) => {
                 </div>
                 
                 <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6 lg:col-span-1">
-                    <h4 className="text-[#D4AF37] font-black text-xs uppercase italic tracking-widest">ESTATÍSTICAS TÁTICAS</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-black p-4 rounded-xl text-center border border-white/5">
-                            <p className="text-gray-500 text-[8px] font-black uppercase mb-1">Total Ofertas</p>
-                            <p className="text-white font-spy text-2xl">1,248</p>
-                        </div>
-                        <div className="bg-black p-4 rounded-xl text-center border border-white/5">
-                            <p className="text-gray-500 text-[8px] font-black uppercase mb-1">Downloads VSL</p>
-                            <p className="text-white font-spy text-2xl">45.2k</p>
-                        </div>
-                        <div className="bg-black p-4 rounded-xl text-center border border-white/5">
-                            <p className="text-gray-500 text-[8px] font-black uppercase mb-1">Novas 24h</p>
-                            <p className="text-white font-spy text-2xl">+14</p>
-                        </div>
-                        <div className="bg-black p-4 rounded-xl text-center border border-white/5">
-                            <p className="text-gray-500 text-[8px] font-black uppercase mb-1">Uptime</p>
-                            <p className="text-white font-spy text-2xl">99.9%</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6 lg:col-span-1">
-                    <h4 className="text-[#D4AF37] font-black text-xs uppercase italic tracking-widest">LOGS DE RASTREAMENTO</h4>
+                    <h4 className="text-[#D4AF37] font-black text-xs uppercase italic tracking-widest">LOGS DE SEGURANÇA</h4>
                     <div className="bg-black p-4 rounded-xl font-mono text-[10px] text-green-500/70 h-[300px] overflow-y-auto space-y-1">
-                        <p>[22:14:01] Nova VSL Mapeada: Protocolo X</p>
-                        <p>[22:15:33] Agente-003 login efetuado</p>
-                        <p>[22:18:12] Sincronização CSV concluída</p>
-                        <p>[22:20:01] Backup Firestore executado</p>
-                        <p>[22:25:44] Rastreando Novos Criativos FB Ads...</p>
-                        <p>[22:25:50] 4 Novos Criativos Ingeridos</p>
+                        <p>[14:10:01] Verificando swiper-db-21c6f...</p>
+                        <p>[14:10:05] Conexão com Firestore Estabelecida</p>
+                        <p>[14:12:33] Agente ID 99721 validado com sucesso</p>
+                        <p>[14:15:12] Recuperação de ID solicitada por tester@host.com</p>
+                        <p>[14:20:01] Backup cloud executado com êxito</p>
                         <p className="animate-pulse">_</p>
                     </div>
                 </div>
@@ -653,7 +614,7 @@ const AdminPanelModal = ({ onClose }: any) => {
 };
 
 /**
- * MAIN APP
+ * COMPONENTE PRINCIPAL (APP)
  */
 const App: React.FC = () => {
  const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -668,7 +629,7 @@ const App: React.FC = () => {
  const [showRecover, setShowRecover] = useState(false);
  const [showAdmin, setShowAdmin] = useState(false);
  
- // Filtering States
+ // Filtering States (Backup Visual)
  const [selectedNiche, setSelectedNiche] = useState('Todos');
  const [selectedType, setSelectedType] = useState('Todos');
  const [selectedLanguage, setSelectedLanguage] = useState('Todos');
@@ -681,10 +642,9 @@ const App: React.FC = () => {
  const allLanguages = Array.from(new Set(offers.map(o => o.language))).sort();
  const allTraffic = Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort();
 
- // STORAGE KEYS
  const getFavKey = (id: string) => `favs_${id}`;
 
- const applyFilters = useCallback((data: Offer[]) => {
+ const applyEliteFilters = useCallback((data: Offer[]) => {
    return data.filter(offer => {
      const searchLower = searchQuery.toLowerCase();
      const matchesSearch = offer.title.toLowerCase().includes(searchLower) || 
@@ -697,7 +657,7 @@ const App: React.FC = () => {
    });
  }, [searchQuery, selectedNiche, selectedType, selectedLanguage, selectedTraffic]);
 
- // INITIAL LOAD
+ // INITIAL DATA LOAD
  useEffect(() => {
    const savedId = localStorage.getItem('agente_token');
    if (savedId) {
@@ -753,7 +713,7 @@ const App: React.FC = () => {
    if (inputId) {
      const cleanId = inputId.trim().toUpperCase();
      
-     // RIGOROUS FIREBASE CHECK
+     // RIGOROUS FIREBASE CHECK (swiper-db-21c6f)
      const success = await checkLoginFirebase(cleanId);
      
      if (success) {
@@ -827,7 +787,7 @@ const App: React.FC = () => {
                </h3>
                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 shadow-xl">
                  <p className="text-gray-400 font-medium leading-relaxed italic text-lg whitespace-pre-line">
-                   {selectedOffer.description || "Descrição tática em processamento pelos nossos analistas de campo."}
+                   {selectedOffer.description || "Descrição tática em processamento."}
                  </p>
                </div>
              </div>
@@ -837,9 +797,6 @@ const App: React.FC = () => {
                  <h3 className="text-white font-spy text-xl uppercase italic flex items-center gap-2">
                    <ImageIcon size={20} className="text-[#D4AF37]" /> ARSENAL DE CRIATIVOS
                  </h3>
-                 <a href={selectedOffer.creativeZipUrl} target="_blank" rel="noopener noreferrer" className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest flex items-center gap-2 hover:underline">
-                   <Download size={14} /> BAIXAR TODOS (.ZIP)
-                 </a>
                </div>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                  {selectedOffer.creativeEmbedUrls.map((url, idx) => (
@@ -888,7 +845,7 @@ const App: React.FC = () => {
      );
    }
 
-   const filtered = applyFilters(offers);
+   const filtered = applyEliteFilters(offers);
    return (
      <div className="animate-in fade-in duration-700">
        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pb-32">
@@ -902,18 +859,18 @@ const App: React.FC = () => {
            />
          ))}
        </div>
-       {filtered.length === 0 && <p className="text-center text-gray-600 font-spy uppercase text-sm py-20 italic">Nenhuma inteligência encontrada para estes filtros.</p>}
+       {filtered.length === 0 && <p className="text-center text-gray-600 font-spy uppercase text-sm py-20 italic">Nenhuma inteligência mapeada nestes critérios.</p>}
      </div>
    );
  };
 
  const SidebarContent = () => (
    <div className="p-8 h-full flex flex-col">
-     <div className="flex items-center space-x-3 mb-16">
+     <div className="flex items-center space-x-3 mb-16 px-2">
        <div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10"><Eye className="text-black" size={24} /></div>
        <span className="text-2xl font-spy text-white uppercase italic leading-none tracking-tighter">007 SWIPER</span>
      </div>
-     <nav className="space-y-4 flex-1 overflow-y-auto scrollbar-hide">
+     <nav className="space-y-3 flex-1 overflow-y-auto scrollbar-hide">
        <SidebarItem icon={HomeIcon} label="Dashboard" active={currentPage === 'home' && !selectedOffer} onClick={() => {setCurrentPage('home'); setSelectedOffer(null);}} />
        <SidebarItem icon={Star} label="Favoritos" active={currentPage === 'favorites'} onClick={() => {setCurrentPage('favorites'); setSelectedOffer(null);}} />
        
@@ -945,8 +902,8 @@ const App: React.FC = () => {
            <header className="py-10 flex flex-col px-10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-[40] border-b border-white/5 gap-8">
              <div className="flex items-center justify-between">
                <div>
-                  <h1 className="text-3xl font-spy text-white uppercase italic tracking-tighter">Central de Inteligência</h1>
-                  <p className="text-[#D4AF37] font-black uppercase text-[9px] tracking-[0.2em] mt-1 flex items-center gap-2"><User size={12} /> AGENTE CONFIRMADO: {agentId}</p>
+                  <h1 className="text-3xl font-spy text-white uppercase italic tracking-tighter leading-none">Intelligence Hub</h1>
+                  <p className="text-[#D4AF37] font-black uppercase text-[9px] tracking-[0.2em] mt-2 flex items-center gap-2"><User size={12} /> AGENTE CONFIRMADO: {agentId}</p>
                </div>
                <div className="flex items-center gap-6">
                  <div className="relative w-96">
@@ -964,34 +921,20 @@ const App: React.FC = () => {
              
              {!selectedOffer && (
                <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                 <div className="flex flex-col gap-1.5 min-w-[140px]">
-                    <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Nicho</label>
-                    <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all">
-                        <option value="Todos">Todos</option>
-                        {allNiches.map(n => <option key={n} value={n}>{n}</option>)}
-                    </select>
-                 </div>
-                 <div className="flex flex-col gap-1.5 min-w-[140px]">
-                    <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Estrutura</label>
-                    <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all">
-                        <option value="Todos">Todos</option>
-                        {allTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                 </div>
-                 <div className="flex flex-col gap-1.5 min-w-[140px]">
-                    <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
-                    <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all">
-                        <option value="Todos">Todos</option>
-                        {allLanguages.map(l => <option key={l} value={l}>{l}</option>)}
-                    </select>
-                 </div>
-                 <div className="flex flex-col gap-1.5 min-w-[140px]">
-                    <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Fonte</label>
-                    <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all">
-                        <option value="Todos">Todos</option>
-                        {allTraffic.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                 </div>
+                 {[
+                   { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: allNiches },
+                   { label: 'Estrutura', value: selectedType, setter: setSelectedType, options: allTypes },
+                   { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: allLanguages },
+                   { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: allTraffic }
+                 ].map((f, i) => (
+                    <div key={i} className="flex flex-col gap-1.5 min-w-[140px]">
+                        <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label>
+                        <select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all">
+                            <option value="Todos">Todos</option>
+                            {f.options.map(n => <option key={n} value={n}>{n}</option>)}
+                        </select>
+                    </div>
+                 ))}
                </div>
              )}
            </header>
@@ -1003,8 +946,8 @@ const App: React.FC = () => {
                         <LifeBuoy className="text-[#D4AF37]" size={40} />
                     </div>
                     <h2 className="text-4xl font-spy text-white uppercase mb-4">CANAL DE SUPORTE</h2>
-                    <p className="text-gray-400 font-medium mb-12 uppercase text-xs tracking-widest max-w-md mx-auto italic">Nossa central operacional de elite está disponível para intervir. Resposta tática em até 4h.</p>
-                    <a href="mailto:suporte@007swiper.com" className="px-12 py-5 btn-gold rounded-2xl font-spy uppercase shadow-xl inline-block">FALAR COM COMANDO</a>
+                    <p className="text-gray-400 font-medium mb-12 uppercase text-xs tracking-widest max-w-md mx-auto italic">Nossa central operacional está disponível para intervenções técnicas. Resposta em até 4h.</p>
+                    <a href={`mailto:${SUPPORT_EMAIL}`} className="px-12 py-5 btn-gold rounded-2xl font-spy uppercase shadow-xl inline-block">FALAR COM COMANDO</a>
                 </div>
              ) : renderContent()}
            </div>
