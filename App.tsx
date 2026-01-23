@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Home, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Download, Video, Zap, ZapOff, Globe, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Library, Loader2, Info, Copy, Flame, ArrowLeft, LifeBuoy } from 'lucide-react';
+import { 
+ Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy
+} from 'lucide-react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 
@@ -16,8 +18,8 @@ const SUPPORT_EMAIL = 'suporte@007swiper.com';
 
 const STYLES = `
  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
- :root { --brand-gold: #D4AF37; --brand-dark: #0a0a0a; }
- body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #ffffff; margin: 0; overflow-x: hidden; }
+ :root { --brand-gold: #D4AF37; --brand-dark: #0a0a0a; --brand-card: #121212; }
+ body { font-family: 'Inter', sans-serif; background-color: var(--brand-dark); color: #ffffff; margin: 0; overflow-x: hidden; }
  .btn-elite { background-color: #D4AF37; color: #000; font-weight: 900; text-transform: uppercase; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
  .btn-elite:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
  ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #0a0a0a; } ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
@@ -66,7 +68,7 @@ const PainelAdmin = ({ onBack }: any) => {
   );
 };
 
-// --- LANDING PAGE (COM PREÇOS CORRIGIDOS) ---
+// --- LANDING PAGE (LAYOUT PREÇOS CORRIGIDO) ---
 const LandingPage = ({ onLogin, onRecover, onAdmin, isSuccess, agentId, onDismissSuccess }: any) => (
  <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
   <style dangerouslySetInnerHTML={{ __html: STYLES }} />
@@ -81,8 +83,21 @@ const LandingPage = ({ onLogin, onRecover, onAdmin, isSuccess, agentId, onDismis
    <p className="text-gray-400 text-xl max-w-4xl mb-20">Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões.</p>
    <section className="w-full max-w-4xl aspect-video bg-[#121212] rounded-[32px] border border-white/10 flex items-center justify-center mb-32"><Play size={64} className="text-[#D4AF37]"/></section>
    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto mb-40 text-left">
-    <div className="bg-[#121212] border border-white/5 rounded-[40px] p-12 flex flex-col shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xl mb-1 tracking-tight">PLANO MENSAL</h3><p className="text-5xl font-black text-white mb-10 italic">R$ 197 <span className="text-sm font-normal text-zinc-500 uppercase">/mês</span></p><button onClick={() => window.open(KIWIFY_MENSAL)} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-105 transition-all shadow-xl italic uppercase">QUERO ACESSO MENSAL</button></div>
-    <div className="bg-white text-black rounded-[40px] p-12 flex flex-col scale-105 border-t-8 border-[#D4AF37] shadow-2xl shadow-[#D4AF37]/20"><h3 className="text-[#D4AF37] font-black uppercase text-xl mb-1 tracking-tight">PLANO TRIMESTRAL</h3><p className="text-5xl font-black mb-10 italic">R$ 497 <span className="text-sm font-normal text-gray-400 uppercase">/tri</span></p><button onClick={() => window.open(KIWIFY_TRIMESTRAL)} className="w-full py-5 bg-black text-[#D4AF37] font-black text-xl rounded-2xl animate-btn-pulse shadow-2xl italic uppercase">ASSINAR TRIMESTRAL</button></div>
+    {/* PLANO MENSAL (PRETO) */}
+    <div className="bg-[#121212] border border-white/5 rounded-[40px] p-12 flex flex-col shadow-2xl">
+        <h3 className="text-[#D4AF37] font-black uppercase text-xl mb-4 italic">PLANO MENSAL</h3>
+        <p className="text-5xl font-black text-white mb-10 italic">R$ 197 <span className="text-sm font-normal text-zinc-500 uppercase">/mês</span></p>
+        <div className="space-y-4 mb-10 flex-1">{['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala'].map((i,k)=><div key={k} className="flex gap-3 text-zinc-400 text-xs font-bold italic"><CheckCircle size={14} className="text-[#D4AF37]"/> {i}</div>)}</div>
+        <button onClick={() => window.open(KIWIFY_MENSAL)} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-105 transition-all shadow-xl italic uppercase">QUERO ACESSO MENSAL</button>
+    </div>
+    {/* PLANO TRIMESTRAL (BRANCO) */}
+    <div className="bg-white text-black rounded-[40px] p-12 flex flex-col border-t-8 border-[#D4AF37] shadow-2xl shadow-[#D4AF37]/20 scale-105 relative">
+        <div className="absolute top-6 right-8 bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">Economize R$ 94</div>
+        <h3 className="text-[#D4AF37] font-black uppercase text-xl mb-4 italic">PLANO TRIMESTRAL</h3>
+        <p className="text-5xl font-black mb-10 italic">R$ 497 <span className="text-sm font-normal text-zinc-400 uppercase">/tri</span></p>
+        <div className="space-y-4 mb-10 flex-1">{['Acesso Total', 'Comunidade VIP', 'Checklist 007', 'Suporte Black'].map((i,k)=><div key={k} className="flex gap-3 text-zinc-700 text-xs font-bold italic"><CheckCircle size={14} className="text-[#D4AF37]"/> {i}</div>)}</div>
+        <button onClick={() => window.open(KIWIFY_TRIMESTRAL)} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl animate-btn-pulse shadow-2xl italic uppercase">ASSINAR TRIMESTRAL</button>
+    </div>
    </div>
    <div className="w-full max-w-5xl mx-auto mb-40 border border-[#D4AF37]/30 rounded-[40px] p-16 flex items-center gap-12 bg-zinc-950"><div className="text-6xl font-black text-[#D4AF37] border-4 border-[#D4AF37] p-10 rounded-full">7</div><div className="text-left"><h2 className="text-white text-4xl font-black italic mb-4">GARANTIA DE 7 DIAS</h2><p className="text-gray-400 text-lg">Risco zero. Se não gostar, devolvemos seu dinheiro.</p></div></div>
    <footer className="w-full pt-12 pb-20 border-t border-white/5"><p className="text-gray-600 text-[10px] font-black uppercase tracking-widest">© 2026 007 SWIPER Intelligence Group</p><div onDoubleClick={onAdmin} className="h-10 opacity-0 cursor-default">.</div></footer>
