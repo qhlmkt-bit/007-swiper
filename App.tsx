@@ -3,7 +3,7 @@ import {
  Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy
 } from 'lucide-react';
 
-// --- INJEÇÃO FIREBASE ---
+// --- INTEGRAÇÃO FIREBASE 007 ---
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
@@ -19,9 +19,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-// ------------------------
 
-/** * TYPE DEFINITIONS */
+/** * DEFINIÇÕES DE TIPO */
 export type ProductType = string;
 export type Niche = string;
 export type Trend = 'Em Alta' | 'Escalando' | 'Estável' | string;
@@ -32,7 +31,7 @@ export interface Offer {
  id: string; title: string; niche: Niche; language: string; trafficSource: string[]; productType: ProductType; description: string; vslLinks: VslLink[]; vslDownloadUrl: string; trend: Trend; facebookUrl: string; pageUrl: string; coverImage: string; views: string; transcriptionUrl: string; creativeImages: string[]; creativeEmbedUrls: string[]; creativeDownloadUrls: string[]; creativeZipUrl: string; addedDate: string; status: string; isFavorite?: boolean;
 }
 
-/** * CONSTANTS */
+/** * CONSTANTES OPERACIONAIS */
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
 const HOTMART_MENSAL = 'https://pay.hotmart.com/H104019113G?bid=1769103375372';
 const HOTMART_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
@@ -55,50 +54,51 @@ const STYLES = `
  .animate-btn-pulse { animation: btnPulse 2s infinite; }
 `;
 
+/** * UTILITÁRIOS */
 const getDriveDirectLink = (url: string) => {
- if (!url) return '';
- const trimmed = url.trim();
- if (trimmed.includes('drive.google.com')) {
-  const idMatch = trimmed.match(/[-\w]{25,}/);
-  if (idMatch) return \`https://lh3.googleusercontent.com/d/\${idMatch[0]}\`;
- }
- return trimmed;
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (trimmed.includes('drive.google.com')) {
+    const idMatch = trimmed.match(/[-\w]{25,}/);
+    if (idMatch) return `https://lh3.googleusercontent.com/d/${idMatch[0]}`;
+  }
+  return trimmed;
 };
 
 const getEmbedUrl = (url: string) => {
- if (!url) return '';
- const trimmed = url.trim();
- if (trimmed.includes('vimeo.com')) {
-  const vimeoIdMatch = trimmed.match(/(?:vimeo\\.com\\/|player\\.vimeo\\.com\\/video\\/|video\\/)([0-9]+)/);
-  if (vimeoIdMatch) return \`https://player.vimeo.com/video/\${vimeoIdMatch[1]}?title=0&byline=0&portrait=0&badge=0&autopause=0\`;
- }
- if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
-  const ytIdMatch = trimmed.match(/(?:youtu\\.be\\/|youtube\\.com\\/(?:embed\\/|v\\/|watch\\?v=|watch\\?.+&v=))([^&?]+)/);
-  if (ytIdMatch) return \`https://www.youtube.com/embed/\${ytIdMatch[1]}\`;
- }
- return trimmed;
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (trimmed.includes('vimeo.com')) {
+    const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/);
+    if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?title=0&byline=0&portrait=0&badge=0&autopause=0`;
+  }
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+    const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+    if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`;
+  }
+  return trimmed;
 };
 
-/** * UI COMPONENTS */
+/** * COMPONENTES DE INTERFACE */
 const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick: () => void; variant?: 'default' | 'danger' | 'gold'; }> = ({ icon: Icon, label, active, onClick, variant = 'default' }) => (
- <button onClick={onClick} className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 \${active ? 'bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20' : variant === 'gold' ? 'text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black' : variant === 'danger' ? 'text-red-500 hover:bg-red-500/10' : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white'}`}>
-  <Icon size={20} />
-  <span className="text-sm uppercase tracking-tighter font-black">{label}</span>
- </button>
+  <button onClick={onClick} className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 ${active ? 'bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20' : variant === 'gold' ? 'text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black' : variant === 'danger' ? 'text-red-500 hover:bg-red-500/10' : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white'}`}>
+    <Icon size={20} />
+    <span className="text-sm uppercase tracking-tighter font-black">{label}</span>
+  </button>
 );
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => {
- const normalized = source.toLowerCase().trim();
- if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />;
- if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />;
- if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />;
- return <Target size={14} className="text-[#D4AF37]" />;
+  const n = source.toLowerCase().trim();
+  if (n.includes('facebook')) return <Facebook size={14} className="text-blue-500" />;
+  if (n.includes('youtube') || n.includes('google')) return <Youtube size={14} className="text-red-500" />;
+  if (n.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />;
+  return <Target size={14} className="text-[#D4AF37]" />;
 };
 
 const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => {
- const embed = getEmbedUrl(url);
- if (!embed) return <div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-[#1a1a1a] border border-dashed border-white/10 rounded-2xl gap-3"><ZapOff size={32} className="opacity-20" /><p className="font-black uppercase italic text-xs tracking-widest opacity-40">Visualização indisponível</p></div>;
- return <iframe className="w-full h-full" src={embed} title={title || "Video Player"} frameBorder="0" allow="autoplay; fullscreen" allowFullScreen></iframe>;
+  const embed = getEmbedUrl(url);
+  if (!embed) return <div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-[#1a1a1a] border border-dashed border-white/10 rounded-2xl gap-3"><ZapOff size={32} className="opacity-20" /><p className="font-black uppercase italic text-xs tracking-widest opacity-40">Visualização indisponível</p></div>;
+  return <iframe className="w-full h-full" src={embed} title={title || "Video Player"} frameBorder="0" allow="autoplay; fullscreen" allowFullScreen></iframe>;
 };
 
 const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; onClick: () => void; }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
@@ -116,11 +116,11 @@ const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite:
       <div className="relative aspect-video overflow-hidden">
         <img src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} alt={offer.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          <div className={`px-2.5 py-1 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl \${badge.isNew ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-400 border border-white/10'}`}><Clock size={10} /> {badge.text}</div>
-          {offer.trend.toLowerCase() === 'escalando' && <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl"><Zap size={10} fill="currentColor" /> Escalando</div>}
+          <div className={`px-2.5 py-1 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-400 border border-white/10'}`}><Clock size={10} /> {badge.text}</div>
+          {offer.trend.toLowerCase().trim() === 'escalando' && <div className="px-2.5 py-1 bg-green-600 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-2xl"><Zap size={10} fill="currentColor" /> Escalando</div>}
         </div>
         <div className="absolute top-3 right-3">
-          <button onClick={onToggleFavorite} className={`p-2.5 rounded-xl backdrop-blur-xl transition-all duration-300 \${isFavorite ? 'bg-[#D4AF37] text-black scale-110' : 'bg-[#D4AF37]/20 text-white hover:bg-[#D4AF37] hover:text-black'}`}><Star size={18} fill={isFavorite ? "currentColor" : "none"} /></button>
+          <button onClick={onToggleFavorite} className={`p-2.5 rounded-xl backdrop-blur-xl transition-all duration-300 ${isFavorite ? 'bg-[#D4AF37] text-black scale-110' : 'bg-[#D4AF37]/20 text-white hover:bg-[#D4AF37] hover:text-black'}`}><Star size={18} fill={isFavorite ? "currentColor" : "none"} /></button>
         </div>
         <div className="absolute bottom-3 left-3"><div className="px-2 py-0.5 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase shadow-lg">{offer.niche}</div></div>
       </div>
@@ -140,47 +140,61 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess }: any) => 
    <style dangerouslySetInnerHTML={{ __html: STYLES }} />
    {isSuccess && (
      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
-       <div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative">
-         <div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl"><ShieldCheck size={48} className="text-black" /></div>
-         <h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO LIBERADO!</h2>
+       <div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden">
+         <div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]"><ShieldCheck size={48} className="text-black" /></div>
+         <h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO À INTELIGÊNCIA LIBERADO!</h2>
          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-12">
-           <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">SUA CREDENCIAL ÚNICA</p>
+           <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">SUA CREDENCIAL ÚNICA E PRIVADA</p>
            <span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic">{agentId}</span>
          </div>
          <button onClick={onDismissSuccess} className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter animate-btn-pulse">[ACESSAR ARSENAL]</button>
        </div>
      </div>
    )}
-   <nav className="w-full max-w-7xl px-4 py-10 flex justify-between items-center relative z-50 mx-auto">
-     <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3"><Eye className="text-black" size={28} /></div><span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
+   <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
+     <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2.5 rounded-2xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div><span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
      <button onClick={onLogin} className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter italic font-black"><Lock size={14} className="inline mr-2" /> Entrar</button>
    </nav>
-   <main className="w-full max-w-7xl px-4 flex flex-col items-center justify-center text-center mt-12 mb-32 relative mx-auto">
+   <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative mx-auto">
      <h1 className="text-4xl md:text-7xl lg:text-8xl font-black text-white mb-10 leading-[1.0] tracking-tighter uppercase italic max-w-6xl mx-auto text-center">ACESSE SEM LIMITES AS OFERTAS MAIS LUCRATIVAS DO MERCADO <span className="text-[#D4AF37]">ANTES DA CONCORRÊNCIA.</span></h1>
-     <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed text-center px-4">Rastreie VSLs, criativos e funis validados nos maiores players do mercado digital. O fim do "achismo" na sua escala digital.</p>
-     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-5xl mb-40 px-4 mx-auto items-stretch">
-       <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 text-left relative overflow-hidden group shadow-xl">
+     <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed text-center">Rastreie VSLs, criativos e funis validados nos maiores players do mercado digital. O fim do "achismo" na sua escala digital.</p>
+     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 px-4 mx-auto items-stretch">
+       <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-xl">
          <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO MENSAL</h3>
          <div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black text-white italic">R$ 197</span><span className="text-gray-500 font-black text-sm uppercase">/mês</span></div>
          <ul className="space-y-4 mb-12 flex-1">
            {['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Transcrições de VSL', 'Radar de Tendências'].map((item, i) => (
-             <li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37]" /> {item}</li>
+             <li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>
            ))}
          </ul>
-         <button onClick={() => window.open(HOTMART_MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-105 transition-all uppercase tracking-tighter shadow-xl italic">QUERO ACESSO MENSAL</button>
+         <button onClick={() => window.open(HOTMART_MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-105 transition-all uppercase tracking-tighter shadow-xl italic font-black">QUERO ACESSO MENSAL</button>
        </div>
-       <div className="bg-white text-black rounded-[40px] p-8 text-left relative overflow-hidden group shadow-2xl scale-105 border-t-[8px] border-[#D4AF37]">
+       <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-2xl scale-105 border-t-[8px] border-[#D4AF37]">
          <h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1">PLANO TRIMESTRAL</h3>
          <div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black italic">R$ 497</span><span className="text-gray-400 font-black text-sm uppercase">/trimestre</span></div>
          <ul className="space-y-4 mb-12 flex-1">
-           {['Tudo do Mensal', 'Comunidade VIP', 'Transcrições Ilimitadas', 'Suporte Prioritário'].map((item, i) => (
-             <li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37]" /> {item}</li>
+           {['Acesso a Todas as Ofertas', 'Transcrições Ilimitadas', 'Radar de Tendências Global', 'Suporte Agente Black'].map((item, i) => (
+             <li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>
            ))}
          </ul>
-         <button onClick={() => window.open(HOTMART_TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter italic">ASSINAR TRIMESTRAL</button>
+         <button onClick={() => window.open(HOTMART_TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter italic font-black">ASSINAR PLANO TRIMESTRAL</button>
        </div>
      </div>
-     <footer className="w-full max-w-7xl px-4 border-t border-white/5 pt-12 pb-20 mx-auto"><p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic text-center">© 2026 007 SWIPER. Todos os direitos reservados.</p></footer>
+
+     {/* GARANTIA */}
+     <div className="w-full max-w-5xl mx-auto mb-40 px-4">
+       <div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-2xl">
+         <div className="flex flex-col items-center shrink-0">
+           <div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative"><span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span></div>
+           <div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase -mt-5 relative z-10">DIAS</div>
+         </div>
+         <div className="flex-1 text-center md:text-left space-y-6">
+           <h2 className="text-white text-3xl md:text-5xl font-black italic uppercase">GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span></h2>
+           <p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic">Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investimento. Sem perguntas.</p>
+         </div>
+       </div>
+     </div>
+     <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto"><p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic text-center">© 2026 007 SWIPER. Todos os direitos reservados.</p></footer>
    </main>
  </div>
 );
@@ -213,8 +227,8 @@ const App: React.FC = () => {
   const allTypes = Array.from(new Set(offers.map(o => o.productType))).sort();
   const allTrafficSources = Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort();
 
-  const getFavKey = (id: string) => `favs_\${id}`;
-  const getViewedKey = (id: string) => `viewed_\${id}`;
+  const getFavKey = (id: string) => `favs_${id}`;
+  const getViewedKey = (id: string) => `viewed_${id}`;
 
   const applyEliteFilters = useCallback((data: Offer[]) => {
     return data.filter(offer => {
@@ -228,13 +242,31 @@ const App: React.FC = () => {
     });
   }, [searchQuery, selectedNiche, selectedLanguage, selectedType, selectedTraffic]);
 
+  const checkLogin = async (id: string, silent = false) => {
+    if (!id) return;
+    try {
+      const cleanId = id.toUpperCase().trim();
+      const docRef = doc(db, "agentes", cleanId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().ativo === true) {
+        setAgentId(cleanId);
+        setIsLoggedIn(true);
+        localStorage.setItem('agente_token', cleanId);
+        const f = localStorage.getItem(getFavKey(cleanId)); if (f) setFavorites(JSON.parse(f));
+        const v = localStorage.getItem(getViewedKey(cleanId)); if (v) setRecentlyViewed(JSON.parse(v));
+      } else if (!silent) {
+        alert("CREDENCIAL INVÁLIDA OU INATIVA ❌");
+      }
+    } catch (e) { console.error(e); }
+  };
+
   useEffect(() => {
     const fetchOffers = async () => {
       try {
         setLoading(true);
         const res = await fetch(CSV_URL);
         const text = await res.text();
-        const lines = text.split(/\\r?\\n/).filter(l => l.trim());
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
         const parsed: Offer[] = lines.slice(2).map((l, i) => {
           const v = l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.trim().replace(/^"|"$/g, '').trim());
           if (!v[1] || v[1].toLowerCase() === 'undefined') return null;
@@ -252,47 +284,30 @@ const App: React.FC = () => {
       setNewlyGeneratedId("AGUARDANDO ATIVAÇÃO...");
     } else {
       const savedId = localStorage.getItem('agente_token');
-      if (savedId) { checkLogin(savedId, true); }
+      if (savedId) checkLogin(savedId, true);
     }
     fetchOffers();
   }, []);
 
-  const checkLogin = async (id: string, silently = false) => {
-    const cleanId = id.toUpperCase().trim();
-    try {
-      const docRef = doc(db, "agentes", cleanId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists() && docSnap.data().ativo === true) {
-        setAgentId(cleanId);
-        setIsLoggedIn(true);
-        localStorage.setItem('agente_token', cleanId);
-        const f = localStorage.getItem(getFavKey(cleanId)); if (f) setFavorites(JSON.parse(f));
-        const v = localStorage.getItem(getViewedKey(cleanId)); if (v) setRecentlyViewed(JSON.parse(v));
-      } else if (!silently) {
-        alert('CREDENCIAL INVÁLIDA OU INATIVA ❌');
-      }
-    } catch (e) { console.error(e); }
-  };
-
   const handleLogin = () => {
-    const inputId = window.prompt("🕵️ ACESSO À CENTRAL\\nDigite seu ID DO AGENTE:");
-    if (inputId) checkLogin(inputId);
+    const id = window.prompt("🕵️ ACESSO À CENTRAL\nDigite seu ID DO AGENTE:");
+    if (id) checkLogin(id);
   };
 
   const SidebarContent = () => (
     <div className="p-8 md:p-10 h-full flex flex-col">
       <div className="flex items-center space-x-3 mb-12 px-2"><div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl"><Eye className="text-black" size={24} /></div><span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
       <nav className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
-        <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => {setCurrentPage('home'); setSelectedOffer(null); setIsMobileMenuOpen(false);}} />
-        <SidebarItem icon={Star} label="FAVORITOS" active={currentPage === 'favorites'} onClick={() => {setCurrentPage('favorites'); setIsMobileMenuOpen(false);}} />
-        <SidebarItem icon={Settings} label="PAINEL" active={currentPage === 'settings'} onClick={() => {setCurrentPage('settings'); setIsMobileMenuOpen(false);}} />
+        <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => {setCurrentPage('home'); setSelectedOffer(null);}} />
+        <SidebarItem icon={Star} label="FAVORITOS" active={currentPage === 'favorites'} onClick={() => setCurrentPage('favorites')} />
+        <SidebarItem icon={Settings} label="PAINEL" active={currentPage === 'settings'} onClick={() => setCurrentPage('settings')} />
         <div className="pt-8 pb-4">
           <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-widest mb-4 italic">Módulos VIP</p>
-          <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => {setCurrentPage('offers'); setIsMobileMenuOpen(false);}} />
-          <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => {setCurrentPage('vsl'); setIsMobileMenuOpen(false);}} />
-          <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => {setCurrentPage('creatives'); setIsMobileMenuOpen(false);}} />
-          <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => {setCurrentPage('pages'); setIsMobileMenuOpen(false);}} />
-          <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => {setCurrentPage('ads_library'); setIsMobileMenuOpen(false);}} />
+          <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => setCurrentPage('offers')} />
+          <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => setCurrentPage('vsl')} />
+          <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => setCurrentPage('creatives')} />
+          <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => setCurrentPage('pages')} />
+          <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => setCurrentPage('ads_library')} />
         </div>
       </nav>
       <div className="mt-8"><SidebarItem icon={LogOut} label="Sair" active={false} onClick={() => {setIsLoggedIn(false); localStorage.removeItem('agente_token');}} variant="danger" /></div>
@@ -341,12 +356,12 @@ const App: React.FC = () => {
       {isLoggedIn ? (
         <>
           {isMobileMenuOpen && <div className="fixed inset-0 bg-black/80 z-[100] lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />}
-          <aside className={`w-72 bg-[#121212] border-r border-white/5 fixed h-screen z-[110] transition-transform lg:translate-x-0 \${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}><SidebarContent /></aside>
+          <aside className={`w-72 bg-[#121212] border-r border-white/5 fixed h-screen z-[110] transition-transform lg:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}><SidebarContent /></aside>
           <main className="flex-1 lg:ml-72 relative w-full p-4 md:p-10">
             <header className="flex flex-col md:flex-row gap-6 mb-12 justify-between items-center bg-[#0a0a0a]/80 sticky top-0 py-4 z-50">
               <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37]"><Menu size={24} /></button>
               <div className="flex-1 flex items-center bg-[#121212] px-6 py-3 rounded-2xl border border-white/5 shadow-inner max-w-xl">
-                <Search className="text-gray-500 mr-4" size={20} /><input type="text" placeholder="Pesquisar inteligência..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-transparent border-none outline-none w-full font-bold placeholder:text-gray-700" />
+                <Search className="text-gray-500 mr-4" size={20} /><input type="text" placeholder="Pesquisar inteligência..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-transparent border-none outline-none w-full font-bold" />
               </div>
               <div className="flex items-center gap-3 bg-[#121212] p-2 pr-6 rounded-2xl border border-white/5">
                 <div className="w-10 h-10 bg-[#D4AF37] rounded-xl flex items-center justify-center font-black text-black">007</div>
