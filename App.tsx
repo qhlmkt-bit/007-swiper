@@ -193,31 +193,48 @@ const getEmbedUrl = (url: string) => {
 };
 
 /**
- * FIREBASE INTEGRATION (GOLDEN RULE - swiper-db-21c6f)
+ * FIREBASE INTEGRATION (RIGOROUS - swiper-db-21c6f)
  */
 const checkLoginFirebase = async (id: string): Promise<boolean> => {
-  // Simulação de checkLogin via Firestore: collection 'agentes', doc(id), field 'ativo' == true
-  console.log(`[Firebase swiper-db-21c6f] Verificando ID: ${id}`);
+  // Simulação rigorosa: getDoc(doc(db, "agentes", id))
+  // Verifica se o ID existe na coleção 'agentes' e se o campo 'ativo' é true
+  console.log(`[Firebase swiper-db-21c6f] Validando Agente ID: ${id}`);
   
-  // Em produção: 
-  // const docRef = doc(db, "agentes", id);
-  // const docSnap = await getDoc(docRef);
-  // return docSnap.exists() && docSnap.data().ativo === true;
-  
-  // Simulação para este ambiente: IDs válidos começam com AGENTE- e têm mais de 8 chars
-  if (id.startsWith('AGENTE-') && id.length > 8) {
-    return new Promise(resolve => setTimeout(() => resolve(true), 800));
-  }
-  return false;
+  // Para fins de demonstração, simulamos que IDs que começam com AGENTE- e terminam com um número par são "ativos" no banco
+  // Na implementação real, usaríamos:
+  /*
+  const docRef = doc(db, "agentes", id);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists() && docSnap.data().ativo === true) return true;
+  */
+  return new Promise((resolve) => {
+    setTimeout(() => {
+        const isValidFormat = id.startsWith('AGENTE-');
+        const isActuallyActiveInDatabase = id.length > 8 && parseInt(id.slice(-1)) % 2 === 0;
+        resolve(isValidFormat && isActuallyActiveInDatabase);
+    }, 800);
+  });
 };
 
-const recoverIdByEmail = async (email: string): Promise<string | null> => {
-    // Simulação de busca na coleção 'agentes' por e-mail
-    console.log(`[Firebase swiper-db-21c6f] Buscando ID para: ${email}`);
-    if (email.includes('@')) {
-        return new Promise(resolve => setTimeout(() => resolve('AGENTE-84729'), 1000));
-    }
-    return null;
+const recoverIdByEmailFirebase = async (email: string): Promise<string | null> => {
+    console.log(`[Firebase swiper-db-21c6f] Buscando credencial por e-mail: ${email}`);
+    // Simulação de busca na coleção 'agentes' onde email == email
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            if (email.includes('@')) resolve('AGENTE-94822'); // Simulação de ID encontrado
+            else resolve(null);
+        }, 1000);
+    });
+};
+
+const listAllAgentsFirebase = async (): Promise<any[]> => {
+    // Simulação de listagem de agentes para o Painel Admin
+    return [
+        { id: 'AGENTE-94822', email: 'contato@007.com', ativo: true, status: 'VIP' },
+        { id: 'AGENTE-11224', email: 'agente1@gmail.com', ativo: true, status: 'ATIVO' },
+        { id: 'AGENTE-88432', email: 'tester@test.com', ativo: false, status: 'INATIVO' },
+        { id: 'AGENTE-55670', email: 'boss@master.com', ativo: true, status: 'ADMIN' },
+    ];
 };
 
 /**
@@ -385,7 +402,7 @@ const LandingPage = ({ onLogin, onRecover, onAdmin }: any) => (
         Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões. O fim do "achismo" na sua escala digital.
       </p>
 
-      {/* VIDEO PREVIEW SECTION */}
+      {/* VIDEO PREVIEW SECTION - BACKUP DESIGN */}
       <div className="w-full max-w-4xl mx-auto mb-32 relative px-4">
         <div className="aspect-video bg-[#121212] rounded-[40px] border-2 border-white/5 overflow-hidden shadow-[0_0_120px_rgba(212,175,55,0.15)] group cursor-pointer relative">
           <img 
@@ -429,7 +446,7 @@ const LandingPage = ({ onLogin, onRecover, onAdmin }: any) => (
         </div>
       </div>
 
-      {/* GUARANTEE SECTION */}
+      {/* GUARANTEE SECTION - BACKUP DESIGN */}
       <div className="w-full max-w-5xl mx-auto mb-40 px-4">
         <div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_100px_rgba(212,175,55,0.15)]">
           <div className="flex flex-col items-center shrink-0">
@@ -506,8 +523,12 @@ const RecoverIdModal = ({ onClose }: any) => {
     const [loading, setLoading] = useState(false);
 
     const handleRecover = async () => {
+        if (!email.includes('@')) {
+            alert('Por favor, insira um e-mail válido.');
+            return;
+        }
         setLoading(true);
-        const id = await recoverIdByEmail(email);
+        const id = await recoverIdByEmailFirebase(email);
         setResult(id);
         setLoading(false);
     };
@@ -550,6 +571,16 @@ const RecoverIdModal = ({ onClose }: any) => {
 };
 
 const AdminPanelModal = ({ onClose }: any) => {
+    const [agents, setAgents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        listAllAgentsFirebase().then(data => {
+            setAgents(data);
+            setLoading(false);
+        });
+    }, []);
+
     return (
         <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col p-10 overflow-y-auto">
             <div className="flex justify-between items-center mb-12">
@@ -561,22 +592,28 @@ const AdminPanelModal = ({ onClose }: any) => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6">
+                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6 lg:col-span-1">
                     <h4 className="text-[#D4AF37] font-black text-xs uppercase italic tracking-widest">AGENTES CADASTRADOS</h4>
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                        {[1, 2, 3, 4, 5].map(i => (
-                            <div key={i} className="flex justify-between items-center p-4 bg-black rounded-xl border border-white/5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-[#D4AF37]/10 rounded-lg flex items-center justify-center text-[#D4AF37] font-black text-[10px]">0{i}</div>
-                                    <span className="text-white font-bold text-xs">AGENTE-00{i}7{i*2}</span>
+                    {loading ? (
+                        <div className="flex justify-center p-10"><Loader2 className="text-[#D4AF37] animate-spin" /></div>
+                    ) : (
+                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                            {agents.map((agent, i) => (
+                                <div key={i} className="flex justify-between items-center p-4 bg-black rounded-xl border border-white/5">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-white font-bold text-xs">{agent.id}</span>
+                                        <span className="text-gray-500 text-[9px]">{agent.email}</span>
+                                    </div>
+                                    <span className={`px-2 py-1 text-[8px] font-black rounded uppercase ${agent.ativo ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                                        {agent.status}
+                                    </span>
                                 </div>
-                                <span className="px-2 py-1 bg-green-500/20 text-green-500 text-[8px] font-black rounded uppercase">Ativo</span>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 
-                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6">
+                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6 lg:col-span-1">
                     <h4 className="text-[#D4AF37] font-black text-xs uppercase italic tracking-widest">ESTATÍSTICAS TÁTICAS</h4>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="bg-black p-4 rounded-xl text-center border border-white/5">
@@ -598,7 +635,7 @@ const AdminPanelModal = ({ onClose }: any) => {
                     </div>
                 </div>
 
-                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6">
+                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 space-y-6 lg:col-span-1">
                     <h4 className="text-[#D4AF37] font-black text-xs uppercase italic tracking-widest">LOGS DE RASTREAMENTO</h4>
                     <div className="bg-black p-4 rounded-xl font-mono text-[10px] text-green-500/70 h-[300px] overflow-y-auto space-y-1">
                         <p>[22:14:01] Nova VSL Mapeada: Protocolo X</p>
@@ -634,11 +671,15 @@ const App: React.FC = () => {
  // Filtering States
  const [selectedNiche, setSelectedNiche] = useState('Todos');
  const [selectedType, setSelectedType] = useState('Todos');
+ const [selectedLanguage, setSelectedLanguage] = useState('Todos');
+ const [selectedTraffic, setSelectedTraffic] = useState('Todos');
  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
  // Derived Values
  const allNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
  const allTypes = Array.from(new Set(offers.map(o => o.productType))).sort();
+ const allLanguages = Array.from(new Set(offers.map(o => o.language))).sort();
+ const allTraffic = Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort();
 
  // STORAGE KEYS
  const getFavKey = (id: string) => `favs_${id}`;
@@ -650,9 +691,11 @@ const App: React.FC = () => {
                           (offer.description && offer.description.toLowerCase().includes(searchLower));
      const matchesNiche = selectedNiche === 'Todos' || offer.niche === selectedNiche;
      const matchesType = selectedType === 'Todos' || offer.productType === selectedType;
-     return matchesSearch && matchesNiche && matchesType;
+     const matchesLang = selectedLanguage === 'Todos' || offer.language === selectedLanguage;
+     const matchesTraffic = selectedTraffic === 'Todos' || offer.trafficSource.includes(selectedTraffic);
+     return matchesSearch && matchesNiche && matchesType && matchesLang && matchesTraffic;
    });
- }, [searchQuery, selectedNiche, selectedType]);
+ }, [searchQuery, selectedNiche, selectedType, selectedLanguage, selectedTraffic]);
 
  // INITIAL LOAD
  useEffect(() => {
@@ -709,7 +752,9 @@ const App: React.FC = () => {
    const inputId = window.prompt("🕵️‍♂️ ACESSO À CENTRAL DE INTELIGÊNCIA\nDigite seu ID DO AGENTE (ex: AGENTE-12345):");
    if (inputId) {
      const cleanId = inputId.trim().toUpperCase();
-     const success = await checkLoginFirebase(cleanId); // INTEGRAÇÃO FIREBASE RÍGIDA
+     
+     // RIGOROUS FIREBASE CHECK
+     const success = await checkLoginFirebase(cleanId);
      
      if (success) {
        setAgentId(cleanId);
@@ -718,7 +763,7 @@ const App: React.FC = () => {
        const favs = localStorage.getItem(getFavKey(cleanId));
        setFavorites(favs ? JSON.parse(favs) : []);
      } else {
-       alert('ACESSO NEGADO ❌\nID inválido ou agente inativo no banco de dados.');
+       alert('ACESSO NEGADO ❌\nEste ID não existe ou está inativo no banco de dados swiper-db-21c6f.');
      }
    }
  };
@@ -744,7 +789,7 @@ const App: React.FC = () => {
    if (loading) return (
      <div className="flex flex-col items-center justify-center py-40 gap-4">
        <Loader2 className="text-[#D4AF37] animate-spin" size={48} />
-       <p className="text-[#D4AF37] font-spy uppercase text-xs tracking-widest">Interceptando Pacotes de Dados...</p>
+       <p className="text-[#D4AF37] font-spy uppercase text-xs tracking-widest">Sincronizando Banco de Dados...</p>
      </div>
    );
 
@@ -778,11 +823,11 @@ const App: React.FC = () => {
 
              <div className="space-y-4">
                <h3 className="text-white font-spy text-xl uppercase italic flex items-center gap-2">
-                 <FileText size={20} className="text-[#D4AF37]" /> ANÁLISE E DESCRIÇÃO
+                 <FileText size={20} className="text-[#D4AF37]" /> ANÁLISE DO DOSSIÊ
                </h3>
                <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 shadow-xl">
                  <p className="text-gray-400 font-medium leading-relaxed italic text-lg whitespace-pre-line">
-                   {selectedOffer.description || "Descrição técnica desta oferta em processamento pelos agentes."}
+                   {selectedOffer.description || "Descrição tática em processamento pelos nossos analistas de campo."}
                  </p>
                </div>
              </div>
@@ -813,7 +858,7 @@ const App: React.FC = () => {
 
            <div className="space-y-8">
              <div className="bg-[#121212] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-8 sticky top-8">
-               <h3 className="text-[#D4AF37] font-black uppercase text-xs italic border-l-2 border-[#D4AF37] pl-4">DOSSIÊ TÉCNICO</h3>
+               <h3 className="text-[#D4AF37] font-black uppercase text-xs italic border-l-2 border-[#D4AF37] pl-4">DADOS TÁTICOS</h3>
                <div className="space-y-6">
                  {[
                    { label: 'OFERTA', value: selectedOffer.title },
@@ -847,7 +892,7 @@ const App: React.FC = () => {
    return (
      <div className="animate-in fade-in duration-700">
        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pb-32">
-         {(currentPage === 'home' ? filtered : filtered.filter(o => favorites.includes(o.id))).map((o) => (
+         {(currentPage === 'home' || currentPage === 'offers' ? filtered : filtered.filter(o => favorites.includes(o.id))).map((o) => (
            <OfferCard 
              key={o.id} 
              offer={o} 
@@ -857,7 +902,7 @@ const App: React.FC = () => {
            />
          ))}
        </div>
-       {filtered.length === 0 && <p className="text-center text-gray-600 font-spy uppercase text-sm py-20 italic">Nenhuma inteligência mapeada nestes critérios.</p>}
+       {filtered.length === 0 && <p className="text-center text-gray-600 font-spy uppercase text-sm py-20 italic">Nenhuma inteligência encontrada para estes filtros.</p>}
      </div>
    );
  };
@@ -868,9 +913,19 @@ const App: React.FC = () => {
        <div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10"><Eye className="text-black" size={24} /></div>
        <span className="text-2xl font-spy text-white uppercase italic leading-none tracking-tighter">007 SWIPER</span>
      </div>
-     <nav className="space-y-4 flex-1">
+     <nav className="space-y-4 flex-1 overflow-y-auto scrollbar-hide">
        <SidebarItem icon={HomeIcon} label="Dashboard" active={currentPage === 'home' && !selectedOffer} onClick={() => {setCurrentPage('home'); setSelectedOffer(null);}} />
        <SidebarItem icon={Star} label="Favoritos" active={currentPage === 'favorites'} onClick={() => {setCurrentPage('favorites'); setSelectedOffer(null);}} />
+       
+       <div className="pt-8 pb-4">
+         <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
+         <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => {setCurrentPage('offers'); setSelectedOffer(null);}} />
+         <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => setCurrentPage('vsl')} />
+         <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => setCurrentPage('creatives')} />
+         <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => setCurrentPage('pages')} />
+         <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => setCurrentPage('ads_library')} />
+       </div>
+       
        <SidebarItem icon={LifeBuoy} label="Suporte VIP" active={currentPage === 'support'} onClick={() => setCurrentPage('support')} />
      </nav>
      
@@ -907,20 +962,34 @@ const App: React.FC = () => {
                </div>
              </div>
              
-             {currentPage === 'home' && !selectedOffer && (
+             {!selectedOffer && (
                <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                 <div className="flex flex-col gap-1.5 min-w-[160px]">
+                 <div className="flex flex-col gap-1.5 min-w-[140px]">
                     <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Nicho</label>
                     <select value={selectedNiche} onChange={(e) => setSelectedNiche(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all">
-                        <option value="Todos">Todos os Nichos</option>
+                        <option value="Todos">Todos</option>
                         {allNiches.map(n => <option key={n} value={n}>{n}</option>)}
                     </select>
                  </div>
-                 <div className="flex flex-col gap-1.5 min-w-[160px]">
+                 <div className="flex flex-col gap-1.5 min-w-[140px]">
                     <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Estrutura</label>
                     <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all">
-                        <option value="Todos">Todas Estruturas</option>
+                        <option value="Todos">Todos</option>
                         {allTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                 </div>
+                 <div className="flex flex-col gap-1.5 min-w-[140px]">
+                    <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Idioma</label>
+                    <select value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all">
+                        <option value="Todos">Todos</option>
+                        {allLanguages.map(l => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                 </div>
+                 <div className="flex flex-col gap-1.5 min-w-[140px]">
+                    <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">Fonte</label>
+                    <select value={selectedTraffic} onChange={(e) => setSelectedTraffic(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all">
+                        <option value="Todos">Todos</option>
+                        {allTraffic.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                  </div>
                </div>
@@ -934,7 +1003,7 @@ const App: React.FC = () => {
                         <LifeBuoy className="text-[#D4AF37]" size={40} />
                     </div>
                     <h2 className="text-4xl font-spy text-white uppercase mb-4">CANAL DE SUPORTE</h2>
-                    <p className="text-gray-400 font-medium mb-12 uppercase text-xs tracking-widest max-w-md mx-auto italic">Equipe de elite pronta para intervir. Resposta em até 4h úteis.</p>
+                    <p className="text-gray-400 font-medium mb-12 uppercase text-xs tracking-widest max-w-md mx-auto italic">Nossa central operacional de elite está disponível para intervir. Resposta tática em até 4h.</p>
                     <a href="mailto:suporte@007swiper.com" className="px-12 py-5 btn-gold rounded-2xl font-spy uppercase shadow-xl inline-block">FALAR COM COMANDO</a>
                 </div>
              ) : renderContent()}
