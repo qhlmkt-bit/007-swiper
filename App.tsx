@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
- Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy
+ Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle
 } from 'lucide-react';
 
 // --- INTEGRAÇÃO FIREBASE ---
@@ -405,6 +405,62 @@ const App: React.FC = () => {
    case 'pages': if (!activeNicheSelection) return renderSelectionGrid(allNiches, setActiveNicheSelection, FileText, "PÁGINAS DE ALTA CONVERSÃO"); return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">PÁGINAS:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">{offers.filter(o => o.niche === activeNicheSelection && o.pageUrl && o.pageUrl !== '#').map((o) => (<div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden border border-white/5 group hover:border-[#D4AF37]/50 transition-all flex flex-col shadow-2xl h-full"><div className="aspect-[4/3] bg-black relative"><img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" /><div className="absolute inset-0 flex items-center justify-center"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="p-5 bg-[#D4AF37] text-black rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 shadow-2xl"><Monitor size={28} /></a></div></div><div className="p-6 flex-1 flex flex-col justify-between"><div className="mb-6"><h3 className="text-white font-black uppercase text-sm italic mb-2 tracking-tight group-hover:text-[#D4AF37] transition-colors">{o.title}</h3><p className="text-gray-500 text-[10px] font-bold uppercase italic truncate">{o.pageUrl}</p></div><div className="space-y-2"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg block">Acessar Link Externo</a><button onClick={() => openOffer(o)} className="w-full py-3 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div></div>))}</div></div>);
    case 'ads_library': if (!activeLanguageSelection) return renderSelectionGrid(allLanguages, setActiveLanguageSelection, Library, "BIBLIOTECA DE ANÚNCIOS"); return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveLanguageSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">IDIOMA:</span> {activeLanguageSelection}</h2></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.language === activeLanguageSelection && o.facebookUrl && o.facebookUrl !== '#').map(o => (<div key={o.id} className="bg-[#121212] p-8 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex flex-col gap-8 shadow-2xl group"><div className="flex items-center justify-between"><div className="flex items-center gap-5"><div className="p-5 bg-[#1a1a1a] rounded-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-xl"><Facebook size={32} /></div><div><p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest mb-1 italic">FACEBOOK ADS LIBRARY</p><h3 className="text-white font-black uppercase text-xl italic tracking-tight">{o.title}</h3></div></div><button onClick={(e) => toggleFavorite(o.id, e)} className={`p-3 rounded-xl ${favorites.includes(o.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={20} fill={favorites.includes(o.id) ? "currentColor" : "none"} /></button></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><a href={o.facebookUrl} target="_blank" rel="noopener noreferrer" className="py-4 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-2"><ExternalLink size={16} /> Acessar Link Externo</a><button onClick={() => openOffer(o)} className="py-4 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div>))}</div></div>);
    case 'favorites': return (<div className="animate-in fade-in duration-700"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">{offers.filter(o => favorites.includes(o.id)).map((o) => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div>{favorites.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center col-span-full">Sua lista privada de favoritos está vazia.</p>}</div>);
+   case 'extension': return (
+     <div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10">
+       <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4">
+         <Puzzle className="text-[#D4AF37]" /> CENTRAL DE EXTENSÃO 007
+       </h2>
+
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         {/* COLUNA ESQUERDA: VÍDEO TUTORIAL */}
+         <div className="lg:col-span-2 space-y-6">
+           <div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl">
+             <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic border-l-2 border-[#D4AF37] pl-3">
+               TUTORIAL DE INSTALAÇÃO & USO
+             </h3>
+             <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5">
+               <iframe 
+                 className="w-full h-full" 
+                 src="https://www.youtube.com/embed/Mu0wRgkxP54?rel=0&modestbranding=1" 
+                 title="Tutorial Extensão 007" 
+                 frameBorder="0" 
+                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                 allowFullScreen
+               ></iframe>
+             </div>
+             <p className="mt-6 text-zinc-400 font-medium text-sm leading-relaxed italic">
+               Aprenda como instalar a extensão no modo desenvolvedor e utilizar as funções de mineração de vídeo e desbloqueio de downloads em sites protegidos.
+             </p>
+           </div>
+         </div>
+
+         {/* COLUNA DIREITA: DOWNLOAD & INFO */}
+         <div className="space-y-6">
+           <div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col items-center text-center h-full justify-center">
+             <div className="w-20 h-20 bg-[#1a1a1a] rounded-full flex items-center justify-center mb-6 border border-[#D4AF37]/20 shadow-[0_0_30px_rgba(212,175,55,0.15)]">
+               <Puzzle size={40} className="text-[#D4AF37]" />
+             </div>
+             <h3 className="text-white font-black uppercase text-xl italic mb-2">007 SWIPER SPY</h3>
+             <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">Versão v23.0 (Estável)</p>
+             
+             {/* BOTÃO DE DOWNLOAD */}
+             <a 
+               href="https://drive.google.com/file/d/1s0Jnth9iCVuwPyU1nMo7vssjPO7UtcZN/view?usp=sharing" 
+               target="_blank"
+               rel="noopener noreferrer"
+               className="w-full py-4 bg-[#D4AF37] text-black font-black rounded-xl uppercase tracking-widest hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-3 italic animate-btn-pulse"
+             >
+               <Download size={18} /> BAIXAR .ZIP
+             </a>
+             
+             <p className="mt-6 text-[10px] text-gray-600 font-bold uppercase leading-relaxed">
+               Compatível com Google Chrome, Edge e Brave. Instalação manual necessária.
+             </p>
+           </div>
+         </div>
+       </div>
+     </div>
+   );
    case 'settings': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Settings className="text-[#D4AF37]" /> Painel do Agente</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 italic">Identidade Operacional</h3><div className="space-y-4"><div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SENHA</span><span className="text-white font-black uppercase italic text-lg">{agentId}</span></div><div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SESSÃO</span><span className="bg-[#D4AF37] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic">INDIVIDUAL / PRIVADA</span></div></div></div><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between"><div><h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">SUPORTE</h3><span className="text-white font-black text-xl italic mb-8 block">{SUPPORT_EMAIL}</span></div><button onClick={() => { navigator.clipboard.writeText(SUPPORT_EMAIL); alert('E-MAIL COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button></div></div></div>);
    default: return null;
   }
@@ -416,7 +472,6 @@ const App: React.FC = () => {
    <nav className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
     <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => navigateToPage('home')} />
     <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => navigateToPage('favorites')} />
-    <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
     <div className="pt-8 pb-4">
      <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
      <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => navigateToPage('offers')} />
@@ -424,6 +479,11 @@ const App: React.FC = () => {
      <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => navigateToPage('creatives')} />
      <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
      <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
+    </div>
+    <div className="pt-4 pb-4">
+     <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Ferramentas</p>
+     <SidebarItem icon={Puzzle} label="EXTENSÃO 007" active={currentPage === 'extension'} onClick={() => navigateToPage('extension')} variant="gold" />
+     <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
     </div>
    </nav>
    <div className="mt-8 space-y-3"><SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" /></div>
