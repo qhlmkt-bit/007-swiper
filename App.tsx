@@ -84,6 +84,10 @@ const KIWIFY_MENSAL = 'https://pay.hotmart.com/H104019113G?bid=1769103375372';
 const KIWIFY_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
 
+// --- CONFIGURAÇÃO DA IMAGEM "SEM VSL" ---
+// IMPORTANTE: Substitua o link abaixo pelo link da sua imagem no Google Drive ou Hospedagem
+const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
+
 const STYLES = `
  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
  :root { --brand-gold: #D4AF37; --brand-dark: #0a0a0a; --brand-card: #121212; --brand-hover: #1a1a1a; }
@@ -108,7 +112,24 @@ const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normalized = source.toLowerCase().trim(); if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />; if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />; if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />; if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />; return <Target size={14} className="text-[#D4AF37]" />; };
 
-const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => { const embed = getEmbedUrl(url); if (!embed || embed === '') return (<div className="w-full h-full flex flex-col items-center justify-center text-gray-700 bg-[#1a1a1a] border border-dashed border-white/10 rounded-2xl gap-3"><ZapOff size={32} className="opacity-20" /><p className="font-black uppercase italic text-xs tracking-widest opacity-40">Visualização indisponível</p></div>); return (<iframe className="w-full h-full" src={embed} title={title || "Video Player"} frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen></iframe>); };
+const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => { 
+  const embed = getEmbedUrl(url); 
+  
+  // SE NÃO TIVER VÍDEO, MOSTRA A IMAGEM DE "OFFER SEM VSL"
+  if (!embed || embed === '') return (
+    <div className="w-full h-full relative group">
+      <img src={NO_VSL_PLACEHOLDER} alt="Sem VSL" className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
+        <div className="bg-black/50 p-4 rounded-full backdrop-blur-sm border border-white/10">
+           <ZapOff size={32} className="opacity-50" />
+        </div>
+        <p className="font-black uppercase italic text-xs tracking-widest mt-4 opacity-60">Oferta sem VSL disponível</p>
+      </div>
+    </div>
+  ); 
+  
+  return (<iframe className="w-full h-full" src={embed} title={title || "Video Player"} frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen></iframe>); 
+};
 
 const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; onClick: () => void; }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
  const getBadgeInfo = () => { if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false }; const dataOferta = new Date(offer.addedDate + 'T00:00:00'); const hoje = new Date(); hoje.setHours(0, 0, 0, 0); const diffTempo = hoje.getTime() - dataOferta.getTime(); const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24)); if (diffDias <= 0) return { text: "ADICIONADO: HOJE", isNew: true }; if (diffDias === 1) return { text: "ADICIONADO: HÁ 1 DIA", isNew: true }; if (diffDias >= 2 && diffDias <= 7) return { text: `ADICIONADO: HÁ ${diffDias} DIAS`, isNew: true }; return { text: "OFERTA: +7 DIAS", isNew: false }; };
@@ -421,7 +442,7 @@ const App: React.FC = () => {
              <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5">
                <iframe 
                  className="w-full h-full" 
-                 src="https://www.youtube.com/embed/Mu0wRgkxP54?rel=0&modestbranding=1" 
+                 src="https://www.youtube.com/embed/En_eE15WR3s?rel=0&modestbranding=1" 
                  title="Tutorial Extensão 007" 
                  frameBorder="0" 
                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
