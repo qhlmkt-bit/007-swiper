@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
- Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle
+ Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle, AlertTriangle
 } from 'lucide-react';
 
 // --- INTEGRAÇÃO FIREBASE ---
@@ -85,7 +85,6 @@ const KIWIFY_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
 
 // --- CONFIGURAÇÃO DA IMAGEM "SEM VSL" ---
-// IMPORTANTE: Substitua o link abaixo pelo link da sua imagem no Google Drive ou Hospedagem
 const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
 
 const STYLES = `
@@ -591,6 +590,35 @@ const App: React.FC = () => {
         </div>
        )}
       </header>
+      
+      {/* BANNER DE MANUTENÇÃO */}
+      <div className="mx-4 md:mx-10 mt-6 mb-2 bg-yellow-900/20 border border-yellow-600/50 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start shadow-[0_0_20px_rgba(234,179,8,0.1)] animate-in fade-in slide-in-from-top-4">
+        <div className="bg-yellow-600/20 p-3 rounded-xl shrink-0">
+          <AlertTriangle className="text-yellow-500" size={32} />
+        </div>
+        <div className="space-y-3">
+          <h3 className="text-yellow-500 font-black uppercase text-lg italic tracking-wide">⚠️ COMUNICADO: MANUTENÇÃO</h3>
+          <p className="text-zinc-300 text-sm font-medium leading-relaxed max-w-4xl">
+            "Detectamos uma instabilidade temporária no servidor de reprodução de vídeos (VSL/Criativos). Nossa equipe de engenharia já está realizando a manutenção. A previsão de normalização é de algumas horas.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-green-500 bg-green-900/20 px-3 py-1.5 rounded-lg border border-green-500/20">
+               ✅ Downloads: 100%
+             </div>
+             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-green-500 bg-green-900/20 px-3 py-1.5 rounded-lg border border-green-500/20">
+               ✅ Links Externos: 100%
+             </div>
+             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-green-500 bg-green-900/20 px-3 py-1.5 rounded-lg border border-green-500/20">
+               ✅ Extensão 007: 100%
+             </div>
+             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-yellow-500 bg-yellow-900/20 px-3 py-1.5 rounded-lg border border-yellow-500/20">
+               ⚠️ Player: Manutenção
+             </div>
+          </div>
+          <p className="text-xs text-yellow-500/80 font-bold italic mt-1">(Dica Tática: Use o botão 'Baixar' para assistir enquanto normalizamos)</p>
+        </div>
+      </div>
+
       <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
      </main>
     </>
