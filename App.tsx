@@ -79,7 +79,7 @@ export interface VslLink { label: string; url: string; }
 export interface Offer { id: string; title: string; niche: Niche; language: string; trafficSource: string[]; productType: ProductType; description: string; vslLinks: VslLink[]; vslDownloadUrl: string; trend: Trend; facebookUrl: string; pageUrl: string; coverImage: string; views: string; transcriptionUrl: string; creativeImages: string[]; creativeEmbedUrls: string[]; creativeDownloadUrls: string[]; creativeZipUrl: string; addedDate: string; status: string; isFavorite?: boolean; }
 
 // --- CONSTANTES ---
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDp0QGfirNoQ8JIIFeb4p-AAIjYjbWSTMctxce21Ke7dn3HUHL3v4f5uTkTblnxQ/pub?output=csv';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/1oBF0tnKiKoYq9exujM6VmTlzAHogTkAX/edit?usp=sharing&ouid=109474482100779817627&rtpof=true&sd=true';
 const KIWIFY_MENSAL = 'https://pay.hotmart.com/H104019113G?bid=1769103375372';
 const KIWIFY_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
