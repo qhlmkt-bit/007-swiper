@@ -103,7 +103,31 @@ const STYLES = `
 
 // --- UTILS ---
 const getDriveDirectLink = (url: string) => { if (!url) return ''; const trimmed = url.trim(); if (trimmed.includes('drive.google.com')) { const idMatch = trimmed.match(/[-\w]{25,}/); if (idMatch) return `https://lh3.googleusercontent.com/u/0/d/${idMatch[0]}`; } return trimmed; };
-const getEmbedUrl = (url: string) => { if (!url) return ''; const trimmed = url.trim(); if (trimmed.includes('vimeo.com')) { const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/); if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?title=0&byline=0&portrait=0&badge=0&autopause=0`; } if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) { const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/); if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`; } return trimmed; };
+
+// Helper para identificar links diretos (Bunny/MP4)
+const isDirectVideo = (url: string) => {
+  const clean = url.trim().toLowerCase();
+  return clean.includes('.mp4') || clean.includes('.m3u8') || clean.includes('bunny.net') || clean.includes('b-cdn.net') || clean.includes('mediapack');
+};
+
+const getEmbedUrl = (url: string) => { 
+  if (!url) return ''; 
+  const trimmed = url.trim(); 
+  
+  // SE FOR LINK DIRETO (Bunny/MP4), RETORNA ELE MESMO
+  if (isDirectVideo(trimmed)) return trimmed;
+
+  // Lógica antiga para Vimeo/Youtube
+  if (trimmed.includes('vimeo.com')) { 
+    const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/); 
+    if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?title=0&byline=0&portrait=0&badge=0&autopause=0`; 
+  } 
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) { 
+    const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/); 
+    if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`; 
+  } 
+  return trimmed; 
+};
 
 // --- UI COMPONENTS ---
 const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick: () => void; variant?: 'default' | 'danger' | 'gold'; }> = ({ icon: Icon, label, active, onClick, variant = 'default' }) => (
@@ -113,11 +137,11 @@ const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normalized = source.toLowerCase().trim(); if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />; if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />; if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />; if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />; return <Target size={14} className="text-[#D4AF37]" />; };
 
 const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => { 
-  const embed = getEmbedUrl(url); 
+  const videoSource = getEmbedUrl(url); 
   
-  // SE NÃO TIVER VÍDEO, MOSTRA A IMAGEM DE "OFFER SEM VSL"
-  if (!embed || embed === '') return (
-    <div className="w-full h-full relative group">
+  // 1. SE NÃO TIVER VÍDEO, MOSTRA A IMAGEM DE "SEM VSL"
+  if (!videoSource || videoSource === '') return (
+    <div className="w-full h-full relative group bg-[#0a0a0a]">
       <img src={NO_VSL_PLACEHOLDER} alt="Sem VSL" className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
       <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
         <div className="bg-black/50 p-4 rounded-full backdrop-blur-sm border border-white/10">
@@ -127,8 +151,34 @@ const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
       </div>
     </div>
   ); 
+
+  // 2. SE FOR ARQUIVO DIRETO (BUNNY / MP4) -> USA TAG <VIDEO>
+  if (isDirectVideo(url)) {
+    return (
+      <video 
+        className="w-full h-full object-cover bg-black" 
+        controls 
+        playsInline
+        controlsList="nodownload"
+        poster={NO_VSL_PLACEHOLDER} 
+      >
+        <source src={videoSource} type="video/mp4" />
+        Seu navegador não suporta a tag de vídeo.
+      </video>
+    );
+  }
   
-  return (<iframe className="w-full h-full" src={embed} title={title || "Video Player"} frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen></iframe>); 
+  // 3. SE FOR IFRAME (YOUTUBE / VIMEO SOBREVIVENTES)
+  return (
+    <iframe 
+      className="w-full h-full" 
+      src={videoSource} 
+      title={title || "Video Player"} 
+      frameBorder="0" 
+      allow="autoplay; fullscreen; picture-in-picture" 
+      allowFullScreen
+    ></iframe>
+  ); 
 };
 
 const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; onClick: () => void; }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
