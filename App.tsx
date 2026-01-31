@@ -84,7 +84,6 @@ const KIWIFY_MENSAL = 'https://pay.hotmart.com/H104019113G?bid=1769103375372';
 const KIWIFY_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
 
-// --- CONFIGURAÇÃO DA IMAGEM "SEM VSL" ---
 const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
 
 const STYLES = `
@@ -448,7 +447,19 @@ const App: React.FC = () => {
       <div className="w-full lg:w-[62%] space-y-6">
        <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
         <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">{selectedOffer.vslLinks.map((link, idx) => (<button key={idx} onClick={() => setActiveVslIndex(idx)} className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'}`}><Video size={12} /> {link.label || `VSL ${idx + 1}`}</button>))}</div>
-        <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl"><VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" /></div>
+        
+        {/* PLAYER VSL */}
+        <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl">
+            <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" />
+        </div>
+
+        {/* NOVO BOTÃO DE DOWNLOAD EMBAIXO DO PLAYER */}
+        <div className="mt-4 flex justify-end">
+           <a href={getSmartLink(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] text-[#D4AF37] text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 shadow-lg">
+             <Download size={14} /> DOWNLOAD VSL (MP4)
+           </a>
+        </div>
+
         <div className="mt-6 p-8 bg-[#1a1a1a] rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black text-xs italic mb-4 border-l-2 border-[#D4AF37] pl-4 uppercase">Dossiê Técnico</h3><p className="text-zinc-400 font-medium leading-relaxed text-lg whitespace-pre-line">{selectedOffer.description || "Descrição técnica em processamento..."}</p></div>
        </div>
       </div>
