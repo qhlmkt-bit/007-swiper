@@ -105,22 +105,23 @@ const getDriveDirectLink = (url: string) => { if (!url) return ''; const trimmed
 // Helper para identificar links diretos (Bunny/MP4)
 const isDirectVideo = (url: string) => {
   const clean = url.trim().toLowerCase();
-  return clean.includes('.mp4') || clean.includes('.m3u8') || clean.includes('bunny.net') || clean.includes('b-cdn.net') || clean.includes('mediapack');
+  return clean.includes('.mp4') || clean.includes('.m3u8') || clean.includes('bunny.net') || clean.includes('b-cdn.net') || clean.includes('mediapack') || clean.includes('/original');
 };
 
-// *** "AUTO-CONVERSOR" DE BUNNY (INTELIGENTE) ***
+// *** "AUTO-CONVERSOR" DE BUNNY (MODO ORIGINAL) ***
 const getSmartLink = (url: string) => { 
   if (!url) return ''; 
   const trimmed = url.trim(); 
 
-  // DETECTA SE O USUÁRIO COLOU O LINK .m3u8 (RÁPIDO) E CONVERTE PRO MP4 720p
+  // DETECTA SE O USUÁRIO COLOU O LINK .m3u8 E CONVERTE PRO ARQUIVO ORIGINAL
+  // ISSO GARANTE QUE O LINK EXISTA IMEDIATAMENTE (SEM ESPERAR ENCODING 720P)
   if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
     if (trimmed.includes('playlist.m3u8')) {
-        return trimmed.replace('playlist.m3u8', 'play_720p.mp4');
+        return trimmed.replace('playlist.m3u8', 'original');
     }
   }
   
-  // SE FOR LINK JÁ PRONTO (.MP4), RETORNA ELE MESMO
+  // SE FOR LINK JÁ PRONTO, RETORNA ELE MESMO
   if (isDirectVideo(trimmed)) return trimmed;
 
   // Lógica antiga para Vimeo/Youtube
@@ -143,7 +144,7 @@ const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normalized = source.toLowerCase().trim(); if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />; if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />; if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />; if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />; return <Target size={14} className="text-[#D4AF37]" />; };
 
-// *** VIDEO PLAYER ATUALIZADO ***
+// *** VIDEO PLAYER ***
 const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => { 
   const videoSource = getSmartLink(url); 
   
@@ -159,7 +160,8 @@ const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
     </div>
   ); 
 
-  if (isDirectVideo(videoSource) || videoSource.includes('720p.mp4')) {
+  // Detecta se é um link direto (MP4 ou Original)
+  if (isDirectVideo(videoSource) || videoSource.endsWith('/original')) {
     return (
       <video 
         className="w-full h-full object-cover bg-black" 
@@ -554,71 +556,4 @@ const App: React.FC = () => {
   }
  };
 
- const SidebarContent = () => (
-  <div className="p-8 md:p-10 h-full flex flex-col">
-   <div className="flex items-center space-x-3 mb-12 px-2"><div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10"><Eye className="text-black" size={24} /></div><span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
-   <nav className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
-    <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => navigateToPage('home')} />
-    <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => navigateToPage('favorites')} />
-    <div className="pt-8 pb-4">
-     <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
-     <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => navigateToPage('offers')} />
-     <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => navigateToPage('vsl')} />
-     <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => navigateToPage('creatives')} />
-     <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
-     <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
-    </div>
-    <div className="pt-4 pb-4">
-     <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Ferramentas</p>
-     <SidebarItem icon={Puzzle} label="EXTENSÃO 007" active={currentPage === 'extension'} onClick={() => navigateToPage('extension')} variant="gold" />
-     <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
-    </div>
-   </nav>
-   <div className="mt-8 space-y-3"><SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" /></div>
-  </div>
- );
-
- // --- AS LINHAS ABAIXO RESOLVEM A TELA PRETA (PRIORIDADE TELA CHEIA) ---
- if (showAdmin) return <PainelAdmin onBack={() => setShowAdmin(false)} />;
- if (showRecuperar) return <RecuperarID onBack={() => setShowRecuperar(false)} />;
-
- return (
-  <div className="flex min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37] selection:text-black">
-   <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-   {isLoggedIn ? (
-    <>
-     {isMobileMenuOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300" onClick={() => setIsMobileMenuOpen(false)} />}
-     <aside className={`w-72 bg-[#121212] border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}><SidebarContent /></aside>
-     <main className="flex-1 lg:ml-72 relative w-full">
-      <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4">
-       <div className="flex items-center justify-between gap-4">
-        <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37] hover:bg-[#1a1a1a] transition-colors"><Menu size={24} /></button>
-        <div className="flex-1"></div>
-        <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0"><div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div><div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p></div></div>
-       </div>
-       {showFilters && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-2">
-         <div className="flex flex-col gap-1.5 w-full">
-          <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">BUSCAR</label>
-          <div className="relative w-full"><input type="text" placeholder="Pesquisar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl pl-4 pr-10 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all h-[38px] placeholder:text-zinc-700" /><Search className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} /></div>
-         </div>
-         {[ { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] }, { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] }, { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }, { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] } ].map((f, i) => (
-          <div key={i} className="flex flex-col gap-1.5 w-full"><label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label><select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all h-[38px]">{f.options.map(n => <option key={n} value={n}>{n}</option>)}</select></div>
-         ))}
-        </div>
-       )}
-      </header>
-      
-      {/* BANNER DE MANUTENÇÃO REMOVIDO */}
-
-      <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
-     </main>
-    </>
-   ) : (
-    <LandingPage onLogin={handleLogin} onRecover={() => setShowRecuperar(true)} onAdmin={() => setShowAdmin(true)} isSuccess={isSuccess} agentId={agentId} onDismissSuccess={() => setIsSuccess(false)} />
-   )}
-  </div>
- );
-};
-
-export default App;
+ export default App;
