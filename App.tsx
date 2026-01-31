@@ -109,17 +109,17 @@ const isDirectVideo = (url: string) => {
 };
 
 // *** 1. LINK PARA O PLAYER (Leve = 720p) ***
-// Converte link .m3u8 para play_720p.mp4 (Carrega Rápido)
+// Converte link .m3u8 OU link /original para play_720p.mp4
 const getStreamUrl = (url: string) => { 
   if (!url) return ''; 
   const trimmed = url.trim(); 
 
-  // Se for Bunny, força o 720p para rodar liso no player
   if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
+    // Se for .m3u8 (link rápido), converte para 720p
     if (trimmed.includes('playlist.m3u8')) {
         return trimmed.replace('playlist.m3u8', 'play_720p.mp4');
     }
-    // Se o usuário já colou o link "original", força o player a usar o 720p
+    // Se for /original (link pesado), FORÇA a conversão para 720p para não travar o player
     if (trimmed.endsWith('/original')) {
         return trimmed.replace('/original', '/play_720p.mp4');
     }
@@ -140,13 +140,12 @@ const getStreamUrl = (url: string) => {
 };
 
 // *** 2. LINK PARA DOWNLOAD (Pesado = Original) ***
-// Converte link .m3u8 para original (Qualidade Máxima)
+// Converte qualquer link da Bunny para /original (Qualidade Máxima)
 const getDownloadUrl = (url: string) => {
   if (!url) return ''; 
   const trimmed = url.trim(); 
 
   if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
-    // Para download, queremos sempre o ORIGINAL
     if (trimmed.includes('playlist.m3u8')) return trimmed.replace('playlist.m3u8', 'original');
     if (trimmed.includes('play_720p.mp4')) return trimmed.replace('play_720p.mp4', 'original');
     if (trimmed.includes('play_480p.mp4')) return trimmed.replace('play_480p.mp4', 'original');
@@ -161,9 +160,9 @@ const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normalized = source.toLowerCase().trim(); if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />; if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />; if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />; if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />; return <Target size={14} className="text-[#D4AF37]" />; };
 
-// *** VIDEO PLAYER (Usa getStreamUrl para ser RÁPIDO) ***
+// *** VIDEO PLAYER (USA VERSÃO LEVE) ***
 const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => { 
-  const videoSource = getStreamUrl(url); // Força link leve 720p
+  const videoSource = getStreamUrl(url); // Força 720p
   
   if (!videoSource || videoSource === '') return (
     <div className="w-full h-full relative group bg-[#0a0a0a]">
@@ -177,8 +176,7 @@ const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
     </div>
   ); 
 
-  // Detecta se é um link direto (MP4 ou Original)
-  if (isDirectVideo(videoSource) || videoSource.endsWith('/original')) {
+  if (isDirectVideo(videoSource) || videoSource.includes('720p.mp4')) {
     return (
       <video 
         className="w-full h-full object-cover bg-black" 
@@ -463,12 +461,12 @@ const App: React.FC = () => {
        <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
         <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">{selectedOffer.vslLinks.map((link, idx) => (<button key={idx} onClick={() => setActiveVslIndex(idx)} className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'}`}><Video size={12} /> {link.label || `VSL ${idx + 1}`}</button>))}</div>
         
-        {/* PLAYER VSL */}
+        {/* PLAYER VSL (Usa getStreamUrl para usar 720p) */}
         <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl">
             <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" />
         </div>
 
-        {/* NOVO BOTÃO DE DOWNLOAD EMBAIXO DO PLAYER (USA LINK ORIGINAL/PESADO) */}
+        {/* BOTÃO DE DOWNLOAD (Usa getDownloadUrl para usar Original) */}
         <div className="mt-4 flex justify-end">
            <a href={getDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] text-[#D4AF37] text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 shadow-lg">
              <Download size={14} /> DOWNLOAD VSL (ORIGINAL)
