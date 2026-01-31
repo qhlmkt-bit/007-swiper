@@ -104,15 +104,15 @@ const isDirectVideo = (url: string) => {
   return clean.includes('.mp4') || clean.includes('.m3u8') || clean.includes('bunny.net') || clean.includes('b-cdn.net') || clean.includes('mediapack');
 };
 
-// *** 1. LINK PARA DOWNLOAD RÁPIDO (720p) ***
+// *** 1. LINK PARA DOWNLOAD RÁPIDO (480p) ***
 const getFastDownloadUrl = (url: string) => {
   if (!url) return ''; 
   const trimmed = url.trim(); 
   if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
-    // Força 720p (Rápido)
-    if (trimmed.includes('playlist.m3u8')) return trimmed.replace('playlist.m3u8', 'play_720p.mp4');
-    if (trimmed.endsWith('original')) return trimmed.replace('original', 'play_720p.mp4');
-    if (trimmed.includes('play_480p.mp4')) return trimmed.replace('play_480p.mp4', 'play_720p.mp4');
+    // Força 480p (Super Leve)
+    if (trimmed.includes('playlist.m3u8')) return trimmed.replace('playlist.m3u8', 'play_480p.mp4');
+    if (trimmed.endsWith('original')) return trimmed.replace('original', 'play_480p.mp4');
+    if (trimmed.includes('play_720p.mp4')) return trimmed.replace('play_720p.mp4', 'play_480p.mp4');
   }
   return trimmed;
 };
@@ -157,7 +157,7 @@ const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normalized = source.toLowerCase().trim(); if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />; if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />; if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />; if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />; return <Target size={14} className="text-[#D4AF37]" />; };
 
-// *** VIDEO PLAYER (CASCATA COMPLETA 720->480->360->Original) ***
+// *** VIDEO PLAYER ***
 const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => { 
   const trimmed = url ? url.trim() : '';
   
@@ -456,12 +456,7 @@ const App: React.FC = () => {
    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
      <button onClick={closeOffer} className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"><div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ArrowLeft size={16} /></div>Voltar</button>
-     <div className="flex flex-wrap items-center gap-3">
-      {/* BOTÃO TOPO: Tenta 720p (Rápido) */}
-      <a href={getFastDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#D4AF37] text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg italic"><Download size={16} /> BAIXAR VSL (HD)</a>
-      <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#1a1a1a] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-[#D4AF37] border border-white/5 transition-all shadow-lg italic"><FileText size={16} /> BAIXAR TRANSCRIÇÃO</a>
-      <button onClick={() => toggleFavorite(selectedOffer.id)} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border ${favorites.includes(selectedOffer.id) ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-[#1a1a1a] text-white border-white/5'}`}><Star size={16} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'FAVORITADO' : 'FAVORITAR'}</button>
-     </div>
+     {/* BOTÕES SUPERIORES REMOVIDOS - AGORA ESTÃO EMBAIXO DO VÍDEO */}
     </div>
     <div className="space-y-12 italic font-black uppercase">
      {selectedOffer.views && selectedOffer.views.trim() !== '' && (<div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-[#D4AF37]/40 w-fit shadow-[0_10px_30px_rgba(0,0,0,0.5)]"><Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-pulse" /><span className="text-[#D4AF37] font-black text-sm md:text-base italic tracking-[0.1em]">{selectedOffer.views} ANÚNCIOS ATIVOS</span></div>)}
@@ -475,14 +470,27 @@ const App: React.FC = () => {
             <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" />
         </div>
 
-        {/* BOTÕES DE DOWNLOAD ABAIXO DO PLAYER (DUPLA OPÇÃO) */}
-        <div className="mt-4 flex flex-col md:flex-row justify-end gap-3">
-           <a href={getFastDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] transition-all shadow-lg border border-[#D4AF37] order-1 md:order-2">
-             <Download size={14} /> DOWNLOAD RÁPIDO (HD 720p)
+        {/* --- BARRA DE AÇÃO UNIFICADA (ABAIXO DO VÍDEO) --- */}
+        <div className="mt-5 grid grid-cols-2 lg:flex lg:flex-row gap-3">
+           {/* 1. DOWNLOAD RÁPIDO (480p) - DOURADO */}
+           <a href={getFastDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] transition-all shadow-lg border border-[#D4AF37] order-1">
+             <Download size={14} /> VSL (LEVE)
            </a>
-           <a href={getOriginalDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1a1a1a] text-zinc-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:text-white hover:bg-white/5 transition-all border border-white/5 order-2 md:order-1">
-             <FileText size={14} /> Baixar Original (Backup)
+           
+           {/* 2. DOWNLOAD ORIGINAL - ESCURO */}
+           <a href={getOriginalDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#1a1a1a] text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:text-white hover:bg-white/5 transition-all border border-white/5 order-2">
+             <Video size={14} /> VSL (ORIGINAL)
            </a>
+
+           {/* 3. TRANSCRIÇÃO - ESCURO */}
+           <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#1a1a1a] text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:text-white hover:bg-white/5 transition-all border border-white/5 order-3">
+             <FileText size={14} /> TRANSCRIÇÃO
+           </a>
+
+           {/* 4. FAVORITAR - ESCURO/DOURADO */}
+           <button onClick={() => toggleFavorite(selectedOffer.id)} className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border order-4 ${favorites.includes(selectedOffer.id) ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-[#1a1a1a] text-zinc-400 border-white/5 hover:text-white'}`}>
+             <Star size={14} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'FAVORITO' : 'FAVORITAR'}
+           </button>
         </div>
 
         <div className="mt-6 p-8 bg-[#1a1a1a] rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black text-xs italic mb-4 border-l-2 border-[#D4AF37] pl-4 uppercase">Dossiê Técnico</h3><p className="text-zinc-400 font-medium leading-relaxed text-lg whitespace-pre-line">{selectedOffer.description || "Descrição técnica em processamento..."}</p></div>
@@ -583,70 +591,4 @@ const App: React.FC = () => {
   }
  };
 
- // *** SEÇÃO SIDEBAR CONTENT ***
- const SidebarContent = () => (
-  <div className="p-8 md:p-10 h-full flex flex-col">
-   <div className="flex items-center space-x-3 mb-12 px-2"><div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10"><Eye className="text-black" size={24} /></div><span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
-   <nav className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
-    <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => navigateToPage('home')} />
-    <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => navigateToPage('favorites')} />
-    <div className="pt-8 pb-4">
-     <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
-     <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => navigateToPage('offers')} />
-     <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => navigateToPage('vsl')} />
-     <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => navigateToPage('creatives')} />
-     <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
-     <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
-    </div>
-    <div className="pt-4 pb-4">
-     <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Ferramentas</p>
-     <SidebarItem icon={Puzzle} label="EXTENSÃO 007" active={currentPage === 'extension'} onClick={() => navigateToPage('extension')} variant="gold" />
-     <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
-    </div>
-   </nav>
-   <div className="mt-8 space-y-3"><SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" /></div>
-  </div>
- );
-
- // --- AS LINHAS ABAIXO RESOLVEM A TELA PRETA (PRIORIDADE TELA CHEIA) ---
- if (showAdmin) return <PainelAdmin onBack={() => setShowAdmin(false)} />;
- if (showRecuperar) return <RecuperarID onBack={() => setShowRecuperar(false)} />;
-
- return (
-  <div className="flex min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37] selection:text-black">
-   <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-   {isLoggedIn ? (
-    <>
-     {isMobileMenuOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300" onClick={() => setIsMobileMenuOpen(false)} />}
-     <aside className={`w-72 bg-[#121212] border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}><SidebarContent /></aside>
-     <main className="flex-1 lg:ml-72 relative w-full">
-      <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4">
-       <div className="flex items-center justify-between gap-4">
-        <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37] hover:bg-[#1a1a1a] transition-colors"><Menu size={24} /></button>
-        <div className="flex-1"></div>
-        <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0"><div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div><div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p></div></div>
-       </div>
-       {showFilters && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-2">
-         <div className="flex flex-col gap-1.5 w-full">
-          <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">BUSCAR</label>
-          <div className="relative w-full"><input type="text" placeholder="Pesquisar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl pl-4 pr-10 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all h-[38px] placeholder:text-zinc-700" /><Search className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} /></div>
-         </div>
-         {[ { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] }, { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] }, { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }, { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] } ].map((f, i) => (
-          <div key={i} className="flex flex-col gap-1.5 w-full"><label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label><select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all h-[38px]">{f.options.map(n => <option key={n} value={n}>{n}</option>)}</select></div>
-         ))}
-        </div>
-       )}
-      </header>
-      
-      <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
-     </main>
-    </>
-   ) : (
-    <LandingPage onLogin={handleLogin} onRecover={() => setShowRecuperar(true)} onAdmin={() => setShowAdmin(true)} isSuccess={isSuccess} agentId={agentId} onDismissSuccess={() => setIsSuccess(false)} />
-   )}
-  </div>
- );
-};
-
-export default App;
+ export default App;
