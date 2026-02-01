@@ -78,10 +78,10 @@ export interface VslLink { label: string; url: string; }
 export interface Offer { id: string; title: string; niche: Niche; language: string; trafficSource: string[]; productType: ProductType; description: string; vslLinks: VslLink[]; vslDownloadUrl: string; trend: Trend; facebookUrl: string; pageUrl: string; coverImage: string; views: string; transcriptionUrl: string; creativeImages: string[]; creativeEmbedUrls: string[]; creativeDownloadUrls: string[]; creativeZipUrl: string; addedDate: string; status: string; isFavorite?: boolean; }
 
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6N1u2xV-Of_muP_LJY9OGC77qXDOJ254TVzwpYAb-Ew8X-6-ZL3ZurlTiAwy19w/pub?output=csv';
-const SUPPORT_EMAIL = 'suporte@007swiper.com';
-const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
 const KIWIFY_MENSAL = 'https://pay.hotmart.com/H104019113G?bid=1769103375372';
 const KIWIFY_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
+const SUPPORT_EMAIL = 'suporte@007swiper.com';
+const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
 
 const STYLES = `
  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -109,7 +109,6 @@ const getFastDownloadUrl = (url: string) => {
   if (!url) return ''; 
   const trimmed = url.trim(); 
   if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
-    // Tenta pegar a versão 480p que é leve e compatível
     if (trimmed.includes('playlist.m3u8')) return trimmed.replace('playlist.m3u8', 'play_480p.mp4');
     if (trimmed.endsWith('original')) return trimmed.replace('original', 'play_480p.mp4');
     if (trimmed.includes('play_720p.mp4')) return trimmed.replace('play_720p.mp4', 'play_480p.mp4');
@@ -130,21 +129,49 @@ const getOriginalDownloadUrl = (url: string) => {
   return trimmed;
 };
 
-// *** UI COMPONENTS ---
+// *** 3. LINK PARA PLAYER (Cascata) ***
+const getStreamUrl = (url: string) => { 
+  if (!url) return ''; 
+  const trimmed = url.trim(); 
+  if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
+    if (trimmed.includes('playlist.m3u8')) return trimmed.replace('playlist.m3u8', 'play_720p.mp4');
+    if (trimmed.endsWith('/original')) return trimmed.replace('/original', '/play_720p.mp4');
+  }
+  if (isDirectVideo(trimmed)) return trimmed;
+  if (trimmed.includes('vimeo.com')) { 
+    const vimeoIdMatch = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/); 
+    if (vimeoIdMatch) return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?title=0&byline=0&portrait=0&badge=0&autopause=0`; 
+  } 
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) { 
+    const ytIdMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/); 
+    if (ytIdMatch) return `https://www.youtube.com/embed/${ytIdMatch[1]}`; 
+  } 
+  return trimmed; 
+};
+
+// --- UI COMPONENTS ---
 const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick: () => void; variant?: 'default' | 'danger' | 'gold'; }> = ({ icon: Icon, label, active, onClick, variant = 'default' }) => (
  <button onClick={onClick} className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 ${active ? 'bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20' : variant === 'gold' ? 'text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black' : variant === 'danger' ? 'text-red-500 hover:bg-red-500/10' : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white'}`}><Icon size={20} /><span className="text-sm uppercase tracking-tighter font-black">{label}</span></button>
 );
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normalized = source.toLowerCase().trim(); if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />; if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />; if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />; if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />; return <Target size={14} className="text-[#D4AF37]" />; };
 
-// *** VIDEO PLAYER (CASCATA COMPLETA 720->480->360->Original) ***
-const VideoPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => { 
+// *** VIDEO PLAYER ATUALIZADO (AVISO SEM VSL/CRIATIVO) ***
+const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creative' }> = ({ url, title, type = 'vsl' }) => { 
   const trimmed = url ? url.trim() : '';
   
+  // SE NÃO TIVER URL, MOSTRA O AVISO ESPECÍFICO
   if (!trimmed) return (
-    <div className="w-full h-full relative group bg-[#0a0a0a] flex items-center justify-center">
-      <img src={NO_VSL_PLACEHOLDER} className="absolute w-full h-full object-cover opacity-30" />
-      <ZapOff size={32} className="text-gray-500 relative z-10" />
+    <div className="w-full h-full relative group bg-[#0a0a0a] flex items-center justify-center border border-white/5 rounded-2xl">
+      <img src={NO_VSL_PLACEHOLDER} className="absolute w-full h-full object-cover opacity-10" />
+      <div className="relative z-10 flex flex-col items-center justify-center p-6 text-center">
+        <div className="bg-black/50 p-4 rounded-full backdrop-blur-sm border border-white/10 mb-4">
+           <ZapOff size={32} className="text-gray-500" />
+        </div>
+        <p className="text-gray-500 font-black uppercase text-xs tracking-[0.2em]">
+            {type === 'vsl' ? "ESSA OFERTA NÃO TEM VSL" : "VÍDEO INDISPONÍVEL"}
+        </p>
+      </div>
     </div>
   ); 
 
@@ -261,6 +288,7 @@ const App: React.FC = () => {
  const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
  const [searchQuery, setSearchQuery] = useState('');
  
+ // Filtering States
  const [selectedNiche, setSelectedNiche] = useState('Todos');
  const [selectedLanguage, setSelectedLanguage] = useState('Todos');
  const [selectedType, setSelectedType] = useState('Todos');
@@ -270,16 +298,19 @@ const App: React.FC = () => {
  const [activeNicheSelection, setActiveNicheSelection] = useState<string | null>(null);
  const [activeLanguageSelection, setActiveLanguageSelection] = useState<string | null>(null);
 
+ // Success Modal State
  const [isSuccess, setIsSuccess] = useState(false);
  const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
  const [showRecuperar, setShowRecuperar] = useState(false);
  const [showAdmin, setShowAdmin] = useState(false);
 
+ // Derived Values
  const allNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
  const allLanguages = Array.from(new Set(offers.map(o => o.language))).sort();
  const allTypes = Array.from(new Set(offers.map(o => o.productType))).sort();
  const allTrafficSources = Array.from(new Set(offers.flatMap(o => o.trafficSource))).sort();
 
+ // Storage Keys per Agent
  const getFavKey = (id: string) => `favs_${id}`;
  const getViewedKey = (id: string) => `viewed_${id}`;
 
@@ -441,9 +472,9 @@ const App: React.FC = () => {
        <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
         <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">{selectedOffer.vslLinks.map((link, idx) => (<button key={idx} onClick={() => setActiveVslIndex(idx)} className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-500 hover:text-white'}`}><Video size={12} /> {link.label || `VSL ${idx + 1}`}</button>))}</div>
         
-        {/* PLAYER VSL */}
+        {/* PLAYER VSL - Agora mostra "ESSA OFERTA NÃO TEM VSL" se não houver link */}
         <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl">
-            <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" />
+            <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" type="vsl" />
         </div>
 
         {/* --- BARRA DE AÇÃO UNIFICADA (ABAIXO DO VÍDEO) --- */}
@@ -481,12 +512,36 @@ const App: React.FC = () => {
        </div>
       </div>
      </div>
-     {selectedOffer.creativeEmbedUrls.length > 0 && (
-      <div className="space-y-6">
+
+     {/* --- SEÇÃO CRIATIVOS INTELIGENTE --- */}
+     <div className="space-y-6">
        <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><ImageIcon className="text-[#D4AF37] w-6 h-6" /> CRIATIVOS</h3>
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">{selectedOffer.creativeEmbedUrls.map((url, i) => (<div key={i} className="bg-[#121212] p-4 rounded-2xl border border-white/5 flex flex-col gap-4 shadow-xl"><div className="aspect-video bg-black rounded-xl overflow-hidden"><VideoPlayer url={url} title={`Creative ${i + 1}`} /></div><a href={getFastDownloadUrl(selectedOffer.creativeDownloadUrls[i] || '#')} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 flex items-center justify-center gap-2"><Download size={14} /> Download Criativo {i + 1}</a></div>))}</div>
-      </div>
-     )}
+       
+       {selectedOffer.creativeEmbedUrls.length > 0 ? (
+         /* Se tiver criativos (1, 2 ou 3), mostra o grid normal */
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+           {selectedOffer.creativeEmbedUrls.map((url, i) => (
+             <div key={i} className="bg-[#121212] p-4 rounded-2xl border border-white/5 flex flex-col gap-4 shadow-xl">
+               <div className="aspect-video bg-black rounded-xl overflow-hidden">
+                 <VideoPlayer url={url} title={`Creative ${i + 1}`} type="creative" />
+               </div>
+               <a href={getFastDownloadUrl(selectedOffer.creativeDownloadUrls[i] || '#')} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 flex items-center justify-center gap-2">
+                 <Download size={14} /> Download Criativo {i + 1}
+               </a>
+             </div>
+           ))}
+         </div>
+       ) : (
+         /* Se NÃO tiver criativos (0), mostra o aviso */
+         <div className="w-full p-12 bg-[#121212] rounded-[32px] border border-white/5 flex flex-col items-center justify-center text-center shadow-xl">
+            <div className="bg-black/50 p-6 rounded-full mb-6 border border-white/10">
+              <ZapOff size={48} className="text-gray-600" />
+            </div>
+            <p className="text-gray-500 font-black uppercase text-sm tracking-[0.25em] italic">ESSA OFERTA NÃO TEM CRIATIVOS EM VÍDEO</p>
+         </div>
+       )}
+     </div>
+
      <div className="space-y-6 pb-12">
       <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -567,68 +622,4 @@ const App: React.FC = () => {
   }
  };
 
- const SidebarContent = () => (
-  <div className="p-8 md:p-10 h-full flex flex-col">
-   <div className="flex items-center space-x-3 mb-12 px-2"><div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10"><Eye className="text-black" size={24} /></div><span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
-   <nav className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
-    <SidebarItem icon={HomeIcon} label="Home" active={currentPage === 'home' && !selectedOffer} onClick={() => navigateToPage('home')} />
-    <SidebarItem icon={Star} label="SEUS FAVORITOS" active={currentPage === 'favorites'} onClick={() => navigateToPage('favorites')} />
-    <div className="pt-8 pb-4">
-     <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Módulos VIP</p>
-     <SidebarItem icon={Tag} label="OFERTAS" active={currentPage === 'offers'} onClick={() => navigateToPage('offers')} />
-     <SidebarItem icon={Video} label="VSL" active={currentPage === 'vsl'} onClick={() => navigateToPage('vsl')} />
-     <SidebarItem icon={Palette} label="CRIATIVOS" active={currentPage === 'creatives'} onClick={() => navigateToPage('creatives')} />
-     <SidebarItem icon={FileText} label="PÁGINAS" active={currentPage === 'pages'} onClick={() => navigateToPage('pages')} />
-     <SidebarItem icon={Library} label="BIBLIOTECA" active={currentPage === 'ads_library'} onClick={() => navigateToPage('ads_library')} />
-    </div>
-    <div className="pt-4 pb-4">
-     <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Ferramentas</p>
-     <SidebarItem icon={Puzzle} label="EXTENSÃO 007" active={currentPage === 'extension'} onClick={() => navigateToPage('extension')} variant="gold" />
-     <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
-    </div>
-   </nav>
-   <div className="mt-8 space-y-3"><SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" /></div>
-  </div>
- );
-
- if (showAdmin) return <PainelAdmin onBack={() => setShowAdmin(false)} />;
- if (showRecuperar) return <RecuperarID onBack={() => setShowRecuperar(false)} />;
-
- return (
-  <div className="flex min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37] selection:text-black">
-   <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-   {isLoggedIn ? (
-    <>
-     {isMobileMenuOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300" onClick={() => setIsMobileMenuOpen(false)} />}
-     <aside className={`w-72 bg-[#121212] border-r border-white/5 flex flex-col fixed h-screen z-[110] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}><SidebarContent /></aside>
-     <main className="flex-1 lg:ml-72 relative w-full">
-      <header className="h-auto py-6 md:py-8 flex flex-col px-4 md:px-10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-[80] border-b border-white/5 gap-4">
-       <div className="flex items-center justify-between gap-4">
-        <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 bg-[#121212] border border-white/5 rounded-xl text-[#D4AF37] hover:bg-[#1a1a1a] transition-colors"><Menu size={24} /></button>
-        <div className="flex-1"></div>
-        <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0"><div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div><div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p></div></div>
-       </div>
-       {showFilters && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-2">
-         <div className="flex flex-col gap-1.5 w-full">
-          <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">BUSCAR</label>
-          <div className="relative w-full"><input type="text" placeholder="Pesquisar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl pl-4 pr-10 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all h-[38px] placeholder:text-zinc-700" /><Search className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} /></div>
-         </div>
-         {[ { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] }, { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] }, { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }, { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] } ].map((f, i) => (
-          <div key={i} className="flex flex-col gap-1.5 w-full"><label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label><select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all h-[38px]">{f.options.map(n => <option key={n} value={n}>{n}</option>)}</select></div>
-         ))}
-        </div>
-       )}
-      </header>
-      
-      <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
-     </main>
-    </>
-   ) : (
-    <LandingPage onLogin={handleLogin} onRecover={() => setShowRecuperar(true)} onAdmin={() => setShowAdmin(true)} isSuccess={isSuccess} agentId={agentId} onDismissSuccess={() => setIsSuccess(false)} />
-   )}
-  </div>
- );
-};
-
-export default App;
+ export default App;
