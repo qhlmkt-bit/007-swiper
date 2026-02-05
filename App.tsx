@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
- Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle, AlertTriangle
+ Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle, AlertTriangle, MessageCircle
 } from 'lucide-react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
@@ -18,7 +18,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- COMPONENTS ---
+// --- CONFIGURAÇÕES ---
+const WHATSAPP_NUMBER = "5500000000000"; // COLOQUE SEU NÚMERO AQUI
+const LINKS = {
+    KIWIFY: "https://pay.hotmart.com/H104019113G?bid=1769103375372", // Link Padrão
+    HOTMART: "https://pay.hotmart.com/H104019113G?off=afiliado" // Link Alternativo
+};
+
+// --- COMPONENTES AUXILIARES ---
 const RecuperarID = ({ onBack }: { onBack: () => void }) => {
   const [email, setEmail] = useState('');
   const [resultado, setResultado] = useState<string | null>(null);
@@ -68,6 +75,7 @@ const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
+// --- TYPES & CONSTANTS ---
 export type ProductType = string;
 export type Niche = string;
 export type Trend = 'Em Alta' | 'Escalando' | 'Estável' | string;
@@ -77,8 +85,6 @@ export interface Offer { id: string; title: string; niche: Niche; language: stri
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6N1u2xV-Of_muP_LJY9OGC77qXDOJ254TVzwpYAb-Ew8X-6-ZL3ZurlTiAwy19w/pub?output=csv';
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
 const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
-const KIWIFY_MENSAL = 'https://pay.hotmart.com/H104019113G?bid=1769103375372';
-const KIWIFY_TRIMESTRAL = 'https://pay.hotmart.com/H104019113G?off=fc7oudim';
 
 const STYLES = `
  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -96,6 +102,7 @@ const STYLES = `
 const getDriveDirectLink = (url: string) => { if (!url) return ''; const trimmed = url.trim(); if (trimmed.includes('drive.google.com')) { const idMatch = trimmed.match(/[-\w]{25,}/); if (idMatch) return `https://lh3.googleusercontent.com/u/0/d/${idMatch[0]}`; } return trimmed; };
 const isDirectVideo = (url: string) => { const clean = url.trim().toLowerCase(); return clean.includes('.mp4') || clean.includes('.m3u8') || clean.includes('bunny.net') || clean.includes('b-cdn.net') || clean.includes('mediapack'); };
 
+// Download Rápido (Tenta 480p)
 const getFastDownloadUrl = (url: string) => {
   if (!url) return ''; const trimmed = url.trim(); 
   if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
@@ -105,6 +112,7 @@ const getFastDownloadUrl = (url: string) => {
   } return trimmed;
 };
 
+// Download Original (Backup)
 const getOriginalDownloadUrl = (url: string) => {
   if (!url) return ''; const trimmed = url.trim(); 
   if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
@@ -121,17 +129,21 @@ const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normalized = source.toLowerCase().trim(); if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />; if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />; if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />; if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />; return <Target size={14} className="text-[#D4AF37]" />; };
 
+// *** VIDEO PLAYER ADAPTATIVO (CORRIGE ASPECTO) ***
 const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creative' }> = ({ url, title, type = 'vsl' }) => { 
   const trimmed = url ? url.trim() : '';
+  
   if (!trimmed) return (
-    <div className="w-full h-full relative group bg-[#0a0a0a] flex items-center justify-center border border-white/5 rounded-2xl">
-      <img src={NO_VSL_PLACEHOLDER} className="absolute w-full h-full object-cover opacity-10" />
+    <div className="w-full aspect-video bg-[#0a0a0a] flex items-center justify-center border border-white/5 rounded-2xl relative overflow-hidden">
       <div className="relative z-10 flex flex-col items-center justify-center p-6 text-center">
         <div className="bg-black/50 p-4 rounded-full backdrop-blur-sm border border-white/10 mb-4"><ZapOff size={32} className="text-gray-500" /></div>
         <p className="text-gray-500 font-black uppercase text-xs tracking-[0.2em]">{type === 'vsl' ? "ESSA OFERTA NÃO TEM VSL" : "VÍDEO INDISPONÍVEL"}</p>
       </div>
     </div>
   ); 
+
+  let content;
+  // PLAYER COM ASPECTO CORRIGIDO (object-contain)
   if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
     let baseUrl = trimmed;
     if (baseUrl.includes('playlist.m3u8')) baseUrl = baseUrl.replace('playlist.m3u8', '');
@@ -140,23 +152,23 @@ const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creat
     else if (baseUrl.includes('play_360p.mp4')) baseUrl = baseUrl.replace('play_360p.mp4', '');
     else if (baseUrl.endsWith('original')) baseUrl = baseUrl.replace('original', '');
     if (!baseUrl.endsWith('/')) baseUrl += '/';
-    return (
-      <video className="w-full h-full object-cover bg-black" controls playsInline controlsList="nodownload" poster={NO_VSL_PLACEHOLDER}>
+
+    content = (
+      <video className="w-full h-full max-h-[70vh] bg-black object-contain" controls playsInline controlsList="nodownload">
         <source src={`${baseUrl}play_720p.mp4`} type="video/mp4" />
         <source src={`${baseUrl}play_480p.mp4`} type="video/mp4" />
         <source src={`${baseUrl}play_360p.mp4`} type="video/mp4" />
         <source src={`${baseUrl}original`} type="video/mp4" />
-        Seu navegador não suporta a tag de vídeo.
       </video>
     );
+  } else if (isDirectVideo(trimmed)) {
+    content = <video className="w-full h-full max-h-[70vh] bg-black object-contain" controls playsInline><source src={trimmed} type="video/mp4" /></video>;
+  } else {
+    const embedUrl = trimmed.includes('vimeo.com') ? `https://player.vimeo.com/video/${trimmed.match(/(?:vimeo\.com\/|video\/)([0-9]+)/)?.[1]}` : (trimmed.includes('youtube.com') ? `https://www.youtube.com/embed/${trimmed.match(/(?:v=|youtu\.be\/)([^&?]+)/)?.[1]}` : trimmed);
+    content = <iframe className="w-full aspect-video" src={embedUrl} frameBorder="0" allowFullScreen></iframe>;
   }
-  if (isDirectVideo(trimmed)) return <video className="w-full h-full object-cover bg-black" controls playsInline controlsList="nodownload" poster={NO_VSL_PLACEHOLDER}><source src={trimmed} type="video/mp4" /></video>;
-  const embedUrl = (() => {
-      if (trimmed.includes('vimeo.com')) { const match = trimmed.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/|video\/)([0-9]+)/); return match ? `https://player.vimeo.com/video/${match[1]}?title=0&byline=0&portrait=0&badge=0&autopause=0` : trimmed; } 
-      if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) { const match = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/); return match ? `https://www.youtube.com/embed/${match[1]}` : trimmed; }
-      return trimmed;
-  })();
-  return <iframe className="w-full h-full" src={embedUrl} title={title || "Video Player"} frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen></iframe>; 
+
+  return <div className="w-full flex items-center justify-center bg-black rounded-2xl overflow-hidden shadow-2xl">{content}</div>;
 };
 
 const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; onClick: () => void; }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
@@ -185,40 +197,10 @@ const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite:
  );
 };
 
-const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess, onRecover, onAdmin }: any) => (
- <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
-  <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-  {isSuccess && (<div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500"><div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div><div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]"><ShieldCheck size={48} className="text-black" /></div><h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO À INTELIGÊNCIA LIBERADO!</h2><p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10 leading-relaxed">Sua operação de rastreio de elite começa agora. Sua credencial é única e privada.</p><div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-12"><p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">ESTA É SUA CREDENCIAL ÚNICA E PRIVADA</p><div className="flex items-center justify-center gap-4"><span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic selection:bg-[#D4AF37] selection:text-black">{agentId}</span><button onClick={() => {navigator.clipboard.writeText(agentId);alert('ID COPIADO! 🛡️');}} className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"><Copy size={20} /></button></div></div><button onClick={onDismissSuccess} className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter animate-btn-pulse">[ACESSAR ARSENAL]</button></div></div>)}
-  <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
-   <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2 rounded-xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div><span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
-   <div className="flex items-center gap-4">
-    <button onClick={onRecover} className="text-gray-500 hover:text-[#D4AF37] text-[10px] font-black uppercase italic tracking-widest hidden md:block">Recuperar ID</button>
-    <button onClick={onLogin} className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter italic"><Lock size={14} className="inline mr-2" /> Entrar</button>
-   </div>
-  </nav>
-  <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative mx-auto">
-   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#D4AF37]/10 via-transparent to-transparent -z-10 pointer-events-none opacity-40"></div>
-   <div className="inline-block px-5 py-2 mb-10 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mx-auto">Inteligência de Mercado em Tempo Real</div>
-   <h1 className="text-4xl md:text-7xl lg:text-8xl font-black text-white mb-10 leading-[1.0] tracking-tighter uppercase italic max-w-6xl mx-auto text-center">ACESSE SEM LIMITES AS OFERTAS MAIS LUCRATIVAS E ESCALADAS DO MERCADO DE RESPOSTA DIRETA <span className="text-[#D4AF37]">ANTES DA CONCORRÊNCIA.</span></h1>
-   <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed px-2 mx-auto text-center">Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. O fim do "achismo" na sua escala digital.</p>
-   <section className="w-full max-w-4xl aspect-video bg-[#121212] rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center group cursor-pointer transition-all hover:border-[#D4AF37]/40 mx-auto mb-32"><div className="bg-[#D4AF37] p-6 rounded-full shadow-[0_0_40px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-500 mb-6 flex items-center justify-center"><Play size={40} fill="black" className="text-black ml-1" /></div><p className="text-white font-black uppercase text-[10px] md:text-xs tracking-[0.25em] italic max-w-md px-8 leading-relaxed text-center">Descubra como rastreamos e organizamos ofertas escaladas em tempo real</p></section>
-   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 px-4 justify-center items-stretch mx-auto">
-    <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)]"><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black text-white italic">R$ 197</span><span className="text-gray-500 font-black text-sm uppercase">/mês</span></div><ul className="space-y-4 mb-12 flex-1">{['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(KIWIFY_MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter animate-btn-pulse shadow-xl italic">QUERO ACESSO MENSAL</button></div>
-    <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-[#D4AF37]"><div className="absolute top-6 right-8 bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">Economize R$ 94</div><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black italic">R$ 497</span><span className="text-gray-400 font-black text-sm uppercase">/trimestre</span></div><ul className="space-y-4 mb-12 flex-1">{['Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter animate-btn-pulse italic">ASSINAR PLANO TRIMESTRAL</button></div>
-   </div>
-   <div className="w-full max-w-5xl mx-auto mb-40 px-4 font-black"><div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]"><div className="flex flex-col items-center shrink-0"><div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative shadow-[0_0_40px_rgba(212,175,55,0.2)]"><span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span></div><div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] -mt-5 relative z-10 shadow-xl">DIAS</div></div><div className="flex-1 text-center md:text-left space-y-6"><h2 className="text-white text-3xl md:text-5xl font-black italic uppercase tracking-tighter">GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span></h2><p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investimento. Sem perguntas.</p></div></div></div>
-   <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto"><p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic text-center">© 2026 007 SWIPER Intelligence Platform. Todos os direitos reservados.</p><div onDoubleClick={onAdmin} className="h-10 w-full opacity-0 cursor-default">.</div></footer>
-  </main>
- </div>
-);
-
-// *** COMPONENTE SELECTION GRID (RESOLVE TELA PRETA) ***
+// --- COMPONENTES EXTERNOS (SOLUÇÃO TELA PRETA) ---
 const SelectionGrid = ({ items, onSelect, Icon, label }: any) => (
   <div className="animate-in fade-in duration-500">
-   <div className="flex flex-col mb-12">
-    <h2 className="text-3xl font-black text-white uppercase italic flex items-center gap-4"><Icon className="text-[#D4AF37]" size={32} />{label}</h2>
-    <p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 italic">Selecione uma categoria para infiltrar nos dados</p>
-   </div>
+   <div className="flex flex-col mb-12"><h2 className="text-3xl font-black text-white uppercase italic flex items-center gap-4"><Icon className="text-[#D4AF37]" size={32} />{label}</h2><p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 italic">Selecione uma categoria para infiltrar nos dados</p></div>
    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     {items.map((item: string, idx: number) => (
      <button key={idx} onClick={() => onSelect(item)} className="group bg-[#121212] border border-white/5 hover:border-[#D4AF37]/50 p-8 rounded-[32px] text-left transition-all hover:scale-[1.02] shadow-xl flex flex-col justify-between h-48 relative overflow-hidden">
@@ -232,7 +214,6 @@ const SelectionGrid = ({ items, onSelect, Icon, label }: any) => (
   </div>
 );
 
-// *** COMPONENTE SIDEBAR (RESOLVE BUILD) ***
 const SidebarContent = ({ currentPage, selectedOffer, navigateToPage, handleLogout }: any) => (
   <div className="p-8 md:p-10 h-full flex flex-col">
    <div className="flex items-center space-x-3 mb-12 px-2"><div className="bg-[#D4AF37] p-2 rounded-xl shadow-xl shadow-[#D4AF37]/10"><Eye className="text-black" size={24} /></div><span className="text-2xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
@@ -249,13 +230,48 @@ const SidebarContent = ({ currentPage, selectedOffer, navigateToPage, handleLogo
     </div>
     <div className="pt-4 pb-4">
      <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Ferramentas</p>
-     <SidebarItem icon={Puzzle} label="EXTENSÃO 007" active={currentPage === 'extension'} onClick={() => navigateToPage('extension')} variant="gold" />
+     <SidebarItem icon={LifeBuoy} label="CENTRAL 007" active={currentPage === 'support'} onClick={() => navigateToPage('support')} variant="gold" />
+     <SidebarItem icon={Puzzle} label="EXTENSÃO 007" active={currentPage === 'extension'} onClick={() => navigateToPage('extension')} />
      <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
     </div>
    </nav>
    <div className="mt-8 space-y-3"><SidebarItem icon={LogOut} label="Sair" active={false} onClick={handleLogout} variant="danger" /></div>
   </div>
 );
+
+const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess, onRecover, onAdmin }: any) => {
+    // LÓGICA DE DUAS LANDINGPAGES
+    const params = new URLSearchParams(window.location.search);
+    const isHotmart = params.get('src') === 'hotmart' || params.get('src') === 'afiliado';
+    const checkoutLink = isHotmart ? LINKS.HOTMART : LINKS.KIWIFY;
+
+    return (
+        <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
+        <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+        {isSuccess && (<div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500"><div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div><div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]"><ShieldCheck size={48} className="text-black" /></div><h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO À INTELIGÊNCIA LIBERADO!</h2><p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10 leading-relaxed">Sua operação de rastreio de elite começa agora. Sua credencial é única e privada.</p><div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-12"><p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">ESTA É SUA CREDENCIAL ÚNICA E PRIVADA</p><div className="flex items-center justify-center gap-4"><span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic selection:bg-[#D4AF37] selection:text-black">{agentId}</span><button onClick={() => {navigator.clipboard.writeText(agentId);alert('ID COPIADO! 🛡️');}} className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"><Copy size={20} /></button></div></div><button onClick={onDismissSuccess} className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter animate-btn-pulse">[ACESSAR ARSENAL]</button></div></div>)}
+        <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
+        <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2 rounded-xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div><span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
+        <div className="flex items-center gap-4">
+            <button onClick={onRecover} className="text-gray-500 hover:text-[#D4AF37] text-[10px] font-black uppercase italic tracking-widest hidden md:block">Recuperar ID</button>
+            <button onClick={onLogin} className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter italic"><Lock size={14} className="inline mr-2" /> Entrar</button>
+        </div>
+        </nav>
+        <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative mx-auto">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#D4AF37]/10 via-transparent to-transparent -z-10 pointer-events-none opacity-40"></div>
+        <div className="inline-block px-5 py-2 mb-10 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mx-auto">Inteligência de Mercado em Tempo Real</div>
+        <h1 className="text-4xl md:text-7xl lg:text-8xl font-black text-white mb-10 leading-[1.0] tracking-tighter uppercase italic max-w-6xl mx-auto text-center">ACESSE SEM LIMITES AS OFERTAS MAIS LUCRATIVAS E ESCALADAS DO MERCADO DE RESPOSTA DIRETA <span className="text-[#D4AF37]">ANTES DA CONCORRÊNCIA.</span></h1>
+        <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed px-2 mx-auto text-center">Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. O fim do "achismo" na sua escala digital.</p>
+        <section className="w-full max-w-4xl aspect-video bg-[#121212] rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center group cursor-pointer transition-all hover:border-[#D4AF37]/40 mx-auto mb-32"><div className="bg-[#D4AF37] p-6 rounded-full shadow-[0_0_40px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-500 mb-6 flex items-center justify-center"><Play size={40} fill="black" className="text-black ml-1" /></div><p className="text-white font-black uppercase text-[10px] md:text-xs tracking-[0.25em] italic max-w-md px-8 leading-relaxed text-center">Descubra como rastreamos e organizamos ofertas escaladas em tempo real</p></section>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 px-4 justify-center items-stretch mx-auto">
+            <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)]"><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black text-white italic">R$ 197</span><span className="text-gray-500 font-black text-sm uppercase">/mês</span></div><ul className="space-y-4 mb-12 flex-1">{['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(checkoutLink, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter animate-btn-pulse shadow-xl italic">QUERO ACESSO MENSAL</button></div>
+            <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-[#D4AF37]"><div className="absolute top-6 right-8 bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">Economize R$ 94</div><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black italic">R$ 497</span><span className="text-gray-400 font-black text-sm uppercase">/trimestre</span></div><ul className="space-y-4 mb-12 flex-1">{['Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(KIWIFY_TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter animate-btn-pulse italic">ASSINAR PLANO TRIMESTRAL</button></div>
+        </div>
+        <div className="w-full max-w-5xl mx-auto mb-40 px-4 font-black"><div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]"><div className="flex flex-col items-center shrink-0"><div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative shadow-[0_0_40px_rgba(212,175,55,0.2)]"><span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span></div><div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] -mt-5 relative z-10 shadow-xl">DIAS</div></div><div className="flex-1 text-center md:text-left space-y-6"><h2 className="text-white text-3xl md:text-5xl font-black italic uppercase tracking-tighter">GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span></h2><p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investimento. Sem perguntas.</p></div></div></div>
+        <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto"><p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic text-center">© 2026 007 SWIPER Intelligence Platform. Todos os direitos reservados.</p><div onDoubleClick={onAdmin} className="h-10 w-full opacity-0 cursor-default">.</div></footer>
+        </main>
+    </div>
+);
+};
 
 // *** MAIN APP ***
 const App: React.FC = () => {
@@ -416,6 +432,27 @@ const App: React.FC = () => {
   setIsSuccess(false); const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname; window.history.replaceState({ path: newUrl }, '', newUrl); const cleanId = newlyGeneratedId; setAgentId(cleanId); setIsLoggedIn(true); localStorage.setItem('agente_token', cleanId); setFavorites([]); setRecentlyViewed([]);
  };
 
+ const renderSupportPage = () => (
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in pt-10">
+        <div className="text-center space-y-4">
+            <h2 className="text-4xl font-black italic uppercase tracking-tighter">Central <span className="text-[#D4AF37]">007</span></h2>
+            <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest italic">Escolha o canal de comunicação para sua missão</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-10">
+            <div className="bg-[#121212] border border-white/5 p-8 rounded-[40px] space-y-6 hover:border-[#D4AF37]/50 transition-all group">
+                <div className="bg-red-500/10 w-16 h-16 rounded-2xl flex items-center justify-center text-red-500"><AlertTriangle size={32} /></div>
+                <div><h3 className="text-white font-black uppercase italic text-xl">Reportar Falha</h3><p className="text-zinc-500 text-sm mt-2">Encontrou um link quebrado ou vídeo que não carrega? Avise nossa inteligência agora.</p></div>
+                <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Agente%20007,%20identifiquei%20uma%20falha%20no%20link:%20`, '_blank')} className="w-full py-4 bg-white text-black font-black rounded-2xl uppercase italic text-sm hover:scale-105 transition-all">Acionar Suporte</button>
+            </div>
+            <div className="bg-[#121212] border border-white/5 p-8 rounded-[40px] space-y-6 hover:border-[#D4AF37]/50 transition-all group">
+                <div className="bg-[#D4AF37]/10 w-16 h-16 rounded-2xl flex items-center justify-center text-[#D4AF37]"><Zap size={32} /></div>
+                <div><h3 className="text-white font-black uppercase italic text-xl">Sugerir Melhoria</h3><p className="text-zinc-500 text-sm mt-2">Tem alguma oferta em mente ou sugestão para a plataforma? Queremos ouvir você.</p></div>
+                <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Agente%20007,%20tenho%20uma%20sugestão:%20`, '_blank')} className="w-full py-4 bg-[#D4AF37] text-black font-black rounded-2xl uppercase italic text-sm hover:scale-105 transition-all">Enviar Sugestão</button>
+            </div>
+        </div>
+    </div>
+ );
+
  const renderContent = () => {
   if (loading) return (<div className="flex flex-col items-center justify-center py-40 gap-4 animate-pulse"><Loader2 className="text-[#D4AF37] animate-spin" size={48} /><p className="text-[#D4AF37] font-black uppercase text-xs tracking-widest italic">Interceptando pacotes de dados...</p></div>);
   if (selectedOffer) return (
@@ -485,6 +522,7 @@ const App: React.FC = () => {
    case 'favorites': return (<div className="animate-in fade-in duration-700"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">{offers.filter(o => favorites.includes(o.id)).map((o) => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div>{favorites.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center col-span-full">Sua lista privada de favoritos está vazia.</p>}</div>);
    case 'extension': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Puzzle className="text-[#D4AF37]" /> CENTRAL DE EXTENSÃO 007</h2><div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="lg:col-span-2 space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic border-l-2 border-[#D4AF37] pl-3">TUTORIAL DE INSTALAÇÃO & USO</h3><div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5"><iframe className="w-full h-full" src="https://www.youtube.com/embed/En_eE15WR3s?rel=0&modestbranding=1" title="Tutorial Extensão 007" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe></div><p className="mt-6 text-zinc-400 font-medium text-sm leading-relaxed italic">Aprenda como instalar a extensão no modo desenvolvedor e utilizar as funções de mineração de vídeo e desbloqueio de downloads em sites protegidos.</p></div></div><div className="space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col items-center text-center h-full justify-center"><div className="w-20 h-20 bg-[#1a1a1a] rounded-full flex items-center justify-center mb-6 border border-[#D4AF37]/20 shadow-[0_0_30px_rgba(212,175,55,0.15)]"><Puzzle size={40} className="text-[#D4AF37]" /></div><h3 className="text-white font-black uppercase text-xl italic mb-2">007 SWIPER SPY</h3><p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">Versão v23.0 (Estável)</p><a href="https://drive.google.com/file/d/1s0Jnth9iCVuwPyU1nMo7vssjPO7UtcZN/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="w-full py-4 bg-[#D4AF37] text-black font-black rounded-xl uppercase tracking-widest hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-3 italic animate-btn-pulse"><Download size={18} /> BAIXAR .ZIP</a><p className="mt-6 text-[10px] text-gray-600 font-bold uppercase leading-relaxed">Compatível com Google Chrome, Edge e Brave. Instalação manual necessária.</p></div></div></div></div>);
    case 'settings': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Settings className="text-[#D4AF37]" /> Painel do Agente</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 italic">Identidade Operacional</h3><div className="space-y-4"><div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SENHA</span><span className="text-white font-black uppercase italic text-lg">{agentId}</span></div><div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SESSÃO</span><span className="bg-[#D4AF37] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic">INDIVIDUAL / PRIVADA</span></div></div></div><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between"><div><h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">SUPORTE</h3><span className="text-white font-black text-xl italic mb-8 block">{SUPPORT_EMAIL}</span></div><button onClick={() => { navigator.clipboard.writeText(SUPPORT_EMAIL); alert('E-MAIL COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button></div></div></div>);
+   case 'support': return renderSupportPage();
    default: return null;
   }
  };
@@ -495,6 +533,9 @@ const App: React.FC = () => {
  return (
   <div className="flex min-h-screen bg-[#0a0a0a] text-white selection:bg-[#D4AF37] selection:text-black">
    <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+   {!isLoggedIn && (
+       <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Olá,%20tenho%20uma%20dúvida%20antes%20de%20assinar`, '_blank')} className="fixed bottom-8 right-8 z-[300] bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all"><MessageCircle size={32} /></button>
+   )}
    {isLoggedIn ? (
     <>
      {isMobileMenuOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] lg:hidden animate-in fade-in duration-300" onClick={() => setIsMobileMenuOpen(false)} />}
