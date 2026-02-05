@@ -22,8 +22,8 @@ const db = getFirestore(app);
 const LINKS = {
     // LINKS DA KIWIFY (VENDA DIRETA - PADRÃO)
     KIWIFY: {
-        MENSAL: "COLOQUE_AQUI_SEU_LINK_KIWIFY_MENSAL", // <--- COLE O LINK DA KIWIFY AQUI
-        TRIMESTRAL: "COLOQUE_AQUI_SEU_LINK_KIWIFY_TRIMESTRAL" // <--- COLE O LINK DA KIWIFY AQUI
+        MENSAL: "https://pay.kiwify.com.br/mtU9l7e", // <--- COLE O LINK DA KIWIFY AQUI
+        TRIMESTRAL: "https://pay.kiwify.com.br/ExDtrjE" // <--- COLE O LINK DA KIWIFY AQUI
     },
     // LINKS DA HOTMART (AFILIADOS - ?src=afiliado)
     HOTMART: {
