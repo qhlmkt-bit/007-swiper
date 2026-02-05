@@ -1,66 +1,78 @@
-// /api/webhook-kiwify.js
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { Resend } from 'resend';
 
-// --- CONFIGURAÇÕES SECRETAS (Você deve configurar na Vercel em Settings > Environment Variables) ---
-// FIREBASE_SERVICE_ACCOUNT: O JSON da sua conta de serviço do Firebase (não é a config pública!)
-// RESEND_API_KEY: Sua chave da Resend
-
+// 1. Configura o Resend com a chave que você colocou na Vercel
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Inicializa Firebase Admin (Backend)
+// 2. Configura o Firebase usando as variáveis que já estão na sua Vercel
 if (!getApps().length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    // O comando replace abaixo corrige as quebras de linha da chave privada (Essencial para Vercel)
+    privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+  };
+
   initializeApp({
-    credential: cert(serviceAccount)
+    credential: cert(serviceAccount),
   });
 }
 
 const db = getFirestore();
 
 export default async function handler(req, res) {
+  // Apenas aceita POST (Kiwify envia dados via POST)
   if (req.method !== 'POST') {
-    return res.status(405).send({ message: 'Only POST requests allowed' });
+    return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const data = req.body;
-  const { order_status, Customer, subscription_id } = data;
-  const email = Customer.email.trim().toLowerCase();
-  const nome = Customer.full_name;
-
   try {
-    // === CENÁRIO 1: COMPRA APROVADA ===
-    if (order_status === 'paid') {
-      // 1. Gerar ID do Agente
+    const data = req.body;
+    const orderStatus = data.order_status; // paid, refunded, chargedback
+    
+    // Dados do Cliente
+    const email = data.Customer ? data.Customer.email : null;
+    const nome = data.Customer ? data.Customer.full_name : 'Agente';
+    
+    // Se não tiver email, não tem o que fazer
+    if (!email) {
+      return res.status(400).json({ message: 'Email não encontrado' });
+    }
+
+    const emailFormatado = email.trim().toLowerCase();
+
+    // === CENÁRIO 1: COMPRA APROVADA (CRIAR ACESSO) ===
+    if (orderStatus === 'paid') {
+      // Gera ID aleatório (ex: AGENTE-48291)
       const agentId = `AGENTE-${Math.floor(10000 + Math.random() * 90000)}`;
-      
-      // 2. Salvar no Firebase
+
+      // Salva no Firebase
       await db.collection('agentes').doc(agentId).set({
         id: agentId,
-        email: email,
+        email: emailFormatado,
         nome: nome,
-        ativo: true, // LIBERA O ACESSO
+        ativo: true,
         origem: 'Kiwify',
         data_ativacao: new Date().toISOString(),
-        subscription_id: subscription_id || 'venda_unica'
+        kiwify_order_id: data.order_id || ''
       });
 
-      // 3. Enviar E-mail (Resend)
+      // Envia E-mail com a Senha (Resend)
       await resend.emails.send({
-        from: '007 Swiper <agente@007swiper.com>', // Seu remetente verificado
-        to: email,
-        subject: '🕵️‍♂️ MISSÃO INICIADA: Sua Credencial de Elite Chegou!',
+        from: '007 Swiper <agente@007swiper.com>',
+        to: emailFormatado,
+        subject: '🕵️‍♂️ ACESSO CONFIDENCIAL: Sua Credencial 007 Chegou',
         html: `
           <div style="background-color: #000; color: #fff; padding: 40px; font-family: sans-serif; text-align: center;">
-            <h1 style="color: #D4AF37;">ACESSO LIBERADO!</h1>
-            <p>Olá, Agente <strong>${nome}</strong>.</p>
-            <p>Sua inteligência de mercado foi aprovada. Use sua credencial única:</p>
+            <h1 style="color: #D4AF37;">ACESSO LIBERADO</h1>
+            <p>Bem-vindo à central de inteligência, Agente <strong>${nome}</strong>.</p>
             <div style="background: #111; border: 1px solid #D4AF37; padding: 20px; margin: 30px auto; width: fit-content; border-radius: 10px;">
-              <h2 style="margin: 0; letter-spacing: 2px;">${agentId}</h2>
+              <p style="margin:0; font-size:12px; color: #666; text-transform: uppercase;">Sua Credencial de Acesso</p>
+              <h2 style="margin: 5px 0 0 0; letter-spacing: 2px; color: #fff;">${agentId}</h2>
             </div>
-            <p>Acesse a central agora:</p>
-            <a href="https://www.007swiper.com" style="background: #D4AF37; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 5px;">ACESSAR PLATAFORMA</a>
+            <p>Clique abaixo para iniciar a operação:</p>
+            <a href="https://www.007swiper.com" style="background: #D4AF37; color: #000; padding: 15px 30px; text-decoration: none; font-weight: 900; border-radius: 5px; display: inline-block;">ACESSAR PLATAFORMA</a>
           </div>
         `
       });
@@ -68,30 +80,29 @@ export default async function handler(req, res) {
       return res.status(200).json({ status: 'Acesso Criado e Email Enviado' });
     }
 
-    // === CENÁRIO 2: REEMBOLSO OU CANCELAMENTO ===
-    if (order_status === 'refunded' || order_status === 'chargedback') {
-      // Procura o usuário pelo e-mail
-      const snapshot = await db.collection('agentes').where('email', '==', email).get();
-      
+    // === CENÁRIO 2: REEMBOLSO / CANCELAMENTO (CORTAR ACESSO) ===
+    if (orderStatus === 'refunded' || orderStatus === 'chargedback') {
+      // Procura o agente pelo e-mail
+      const snapshot = await db.collection('agentes').where('email', '==', emailFormatado).get();
+
       if (snapshot.empty) {
-        return res.status(200).json({ status: 'Usuário não encontrado para bloquear' });
+        return res.status(200).json({ status: 'Nenhum agente encontrado para bloquear' });
       }
 
-      // Bloqueia todos os agentes com esse e-mail (caso tenha duplicado)
+      // Bloqueia todos os acessos encontrados com esse e-mail
       const batch = db.batch();
       snapshot.docs.forEach(doc => {
-        batch.update(doc.ref, { ativo: false, status_pagamento: order_status });
+        batch.update(doc.ref, { ativo: false, motivo_bloqueio: orderStatus });
       });
       await batch.commit();
 
-      console.log(`🚫 Agente bloqueado por reembolso: ${email}`);
       return res.status(200).json({ status: 'Acesso Bloqueado com Sucesso' });
     }
 
-    return res.status(200).json({ status: 'Evento ignorado' });
+    return res.status(200).json({ status: 'Evento ignorado (não é venda nem reembolso)' });
 
   } catch (error) {
     console.error('Erro no Webhook:', error);
-    return res.status(500).json({ error: 'Erro interno' });
+    return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 }
