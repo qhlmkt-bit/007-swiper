@@ -2,15 +2,15 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { Resend } from 'resend';
 
-// 1. Configura o Resend com a chave que você colocou na Vercel
+// 1. Configura o Resend (lê a chave RESEND_API_KEY da Vercel)
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// 2. Configura o Firebase usando as variáveis que já estão na sua Vercel
+// 2. Configura o Firebase (lê as variáveis de ambiente da Vercel)
 if (!getApps().length) {
   const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    // O comando replace abaixo corrige as quebras de linha da chave privada (Essencial para Vercel)
+    // Corrige as quebras de linha da chave privada (Crucial para Vercel)
     privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
   };
 
@@ -22,7 +22,7 @@ if (!getApps().length) {
 const db = getFirestore();
 
 export default async function handler(req, res) {
-  // Apenas aceita POST (Kiwify envia dados via POST)
+  // Apenas aceita requisições POST (Padrão Kiwify)
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
@@ -31,23 +31,22 @@ export default async function handler(req, res) {
     const data = req.body;
     const orderStatus = data.order_status; // paid, refunded, chargedback
     
-    // Dados do Cliente
+    // Extrai dados do Cliente
     const email = data.Customer ? data.Customer.email : null;
     const nome = data.Customer ? data.Customer.full_name : 'Agente';
     
-    // Se não tiver email, não tem o que fazer
     if (!email) {
       return res.status(400).json({ message: 'Email não encontrado' });
     }
 
     const emailFormatado = email.trim().toLowerCase();
 
-    // === CENÁRIO 1: COMPRA APROVADA (CRIAR ACESSO) ===
+    // === 1. VENDA APROVADA (CRIAR ACESSO) ===
     if (orderStatus === 'paid') {
-      // Gera ID aleatório (ex: AGENTE-48291)
+      // Gera senha aleatória
       const agentId = `AGENTE-${Math.floor(10000 + Math.random() * 90000)}`;
 
-      // Salva no Firebase
+      // Salva no Banco de Dados
       await db.collection('agentes').doc(agentId).set({
         id: agentId,
         email: emailFormatado,
@@ -58,7 +57,7 @@ export default async function handler(req, res) {
         kiwify_order_id: data.order_id || ''
       });
 
-      // Envia E-mail com a Senha (Resend)
+      // Envia E-mail de Acesso
       await resend.emails.send({
         from: '007 Swiper <agente@007swiper.com>',
         to: emailFormatado,
@@ -80,16 +79,16 @@ export default async function handler(req, res) {
       return res.status(200).json({ status: 'Acesso Criado e Email Enviado' });
     }
 
-    // === CENÁRIO 2: REEMBOLSO / CANCELAMENTO (CORTAR ACESSO) ===
+    // === 2. REEMBOLSO / CANCELAMENTO (BLOQUEAR ACESSO) ===
     if (orderStatus === 'refunded' || orderStatus === 'chargedback') {
-      // Procura o agente pelo e-mail
+      // Busca o usuário pelo e-mail
       const snapshot = await db.collection('agentes').where('email', '==', emailFormatado).get();
 
       if (snapshot.empty) {
         return res.status(200).json({ status: 'Nenhum agente encontrado para bloquear' });
       }
 
-      // Bloqueia todos os acessos encontrados com esse e-mail
+      // Bloqueia o acesso
       const batch = db.batch();
       snapshot.docs.forEach(doc => {
         batch.update(doc.ref, { ativo: false, motivo_bloqueio: orderStatus });
@@ -99,10 +98,10 @@ export default async function handler(req, res) {
       return res.status(200).json({ status: 'Acesso Bloqueado com Sucesso' });
     }
 
-    return res.status(200).json({ status: 'Evento ignorado (não é venda nem reembolso)' });
+    return res.status(200).json({ status: 'Evento ignorado' });
 
   } catch (error) {
     console.error('Erro no Webhook:', error);
-    return res.status(500).json({ error: 'Erro interno no servidor' });
+    return res.status(500).json({ error: error.message });
   }
 }
