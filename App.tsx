@@ -18,12 +18,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- ⚠️ CONFIGURAÇÃO DOS LINKS (PREENCHA AQUI AGENTE) ⚠️ ---
+// --- ⚠️ CONFIGURAÇÃO DOS LINKS ⚠️ ---
 const LINKS = {
     // LINKS DA KIWIFY (VENDA DIRETA - PADRÃO)
     KIWIFY: {
-        MENSAL: "https://pay.kiwify.com.br/mtU9l7e", // <--- COLE O LINK DA KIWIFY AQUI
-        TRIMESTRAL: "https://pay.kiwify.com.br/ExDtrjE" // <--- COLE O LINK DA KIWIFY AQUI
+        MENSAL: "https://pay.kiwify.com.br/mtU9l7e", 
+        TRIMESTRAL: "https://pay.kiwify.com.br/ExDtrjE"
     },
     // LINKS DA HOTMART (AFILIADOS - ?src=afiliado)
     HOTMART: {
@@ -32,10 +32,14 @@ const LINKS = {
     }
 };
 
-const WHATSAPP_NUMBER = "5500000000000"; // SEU WHATSAPP AQUI
+// SEU NÚMERO DE SUPORTE NOVO
+const WHATSAPP_NUMBER = "5573981414083"; 
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
 const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6N1u2xV-Of_muP_LJY9OGC77qXDOJ254TVzwpYAb-Ew8X-6-ZL3ZurlTiAwy19w/pub?output=csv';
+
+// LINK DA COMUNIDADE 007
+const COMMUNITY_LINK = "https://chat.whatsapp.com/DVQrZLpHFR31KUgmPq6ibL";
 
 const STYLES = `
  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -187,7 +191,6 @@ const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite:
  );
 };
 
-// --- COMPONENTES EXTERNOS (SOLUÇÃO TELA PRETA) ---
 const SelectionGrid = ({ items, onSelect, Icon, label }: any) => (
   <div className="animate-in fade-in duration-500">
    <div className="flex flex-col mb-12"><h2 className="text-3xl font-black text-white uppercase italic flex items-center gap-4"><Icon className="text-[#D4AF37]" size={32} />{label}</h2><p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 italic">Selecione uma categoria para infiltrar nos dados</p></div>
@@ -220,8 +223,20 @@ const SidebarContent = ({ currentPage, selectedOffer, navigateToPage, handleLogo
     </div>
     <div className="pt-4 pb-4">
      <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Ferramentas</p>
-     <SidebarItem icon={LifeBuoy} label="CENTRAL 007" active={currentPage === 'support'} onClick={() => navigateToPage('support')} variant="gold" />
+     {/* Central 007 agora normal (sem destaque gold) */}
+     <SidebarItem icon={LifeBuoy} label="CENTRAL 007" active={currentPage === 'support'} onClick={() => navigateToPage('support')} />
      <SidebarItem icon={Puzzle} label="EXTENSÃO 007" active={currentPage === 'extension'} onClick={() => navigateToPage('extension')} />
+     
+     {/* BOTÃO COMUNIDADE VIP ADICIONADO AQUI */}
+     <button 
+        onClick={() => window.open(COMMUNITY_LINK, '_blank')} 
+        className="w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 text-[#25D366] hover:bg-[#25D366]/10 mb-1"
+     >
+        <MessageCircle size={20} />
+        <span className="text-sm uppercase tracking-tighter font-black">COMUNIDADE VIP</span>
+     </button>
+
+     {/* Painel do Agente Movido para o Final */}
      <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
     </div>
    </nav>
@@ -230,11 +245,8 @@ const SidebarContent = ({ currentPage, selectedOffer, navigateToPage, handleLogo
 );
 
 const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess, onRecover, onAdmin }: any) => {
-    // LÓGICA DE DUAS LANDINGPAGES
     const params = new URLSearchParams(window.location.search);
     const isHotmart = params.get('src') === 'afiliado' || params.get('src') === 'hotmart';
-    
-    // SELECIONA OS LINKS COM BASE NA ORIGEM
     const activeLinks = isHotmart ? LINKS.HOTMART : LINKS.KIWIFY;
 
     return (
@@ -260,12 +272,17 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess, onRecover,
         </div>
         <div className="w-full max-w-5xl mx-auto mb-40 px-4 font-black"><div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]"><div className="flex flex-col items-center shrink-0"><div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative shadow-[0_0_40px_rgba(212,175,55,0.2)]"><span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span></div><div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] -mt-5 relative z-10 shadow-xl">DIAS</div></div><div className="flex-1 text-center md:text-left space-y-6"><h2 className="text-white text-3xl md:text-5xl font-black italic uppercase tracking-tighter">GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span></h2><p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investimento. Sem perguntas.</p></div></div></div>
         <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto"><p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic text-center">© 2026 007 SWIPER Intelligence Platform. Todos os direitos reservados.</p><div onDoubleClick={onAdmin} className="h-10 w-full opacity-0 cursor-default">.</div></footer>
+        
+        {/* BOTÃO FLUTUANTE DO WHATSAPP */}
+        <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Olá,%20estou%20na%20página%20de%20vendas%20e%20tenho%20dúvidas!`, '_blank')} className="fixed bottom-8 right-8 z-[300] bg-[#25D366] text-white p-4 rounded-full shadow-[0_10px_40px_rgba(37,211,102,0.4)] hover:scale-110 transition-all group">
+           <MessageCircle size={32} />
+           <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white text-black px-4 py-2 rounded-xl text-xs font-black uppercase italic whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">Suporte Online</span>
+       </button>
         </main>
     </div>
 );
 };
 
-// *** MAIN APP ***
 const App: React.FC = () => {
  const [isLoggedIn, setIsLoggedIn] = useState(false);
  const [agentId, setAgentId] = useState<string>('');
@@ -278,7 +295,6 @@ const App: React.FC = () => {
  const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
  const [searchQuery, setSearchQuery] = useState('');
  
- // Filtering States
  const [selectedNiche, setSelectedNiche] = useState('Todos');
  const [selectedLanguage, setSelectedLanguage] = useState('Todos');
  const [selectedType, setSelectedType] = useState('Todos');
@@ -288,13 +304,11 @@ const App: React.FC = () => {
  const [activeNicheSelection, setActiveNicheSelection] = useState<string | null>(null);
  const [activeLanguageSelection, setActiveLanguageSelection] = useState<string | null>(null);
 
- // Success Modal State
  const [isSuccess, setIsSuccess] = useState(false);
  const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
  const [showRecuperar, setShowRecuperar] = useState(false);
  const [showAdmin, setShowAdmin] = useState(false);
 
- // Derived Values
  const allNiches = Array.from(new Set(offers.map(o => o.niche))).sort();
  const allLanguages = Array.from(new Set(offers.map(o => o.language))).sort();
  const allTypes = Array.from(new Set(offers.map(o => o.productType))).sort();
@@ -437,12 +451,12 @@ const App: React.FC = () => {
             <div className="bg-[#121212] border border-white/5 p-8 rounded-[40px] space-y-6 hover:border-[#D4AF37]/50 transition-all group">
                 <div className="bg-red-500/10 w-16 h-16 rounded-2xl flex items-center justify-center text-red-500"><AlertTriangle size={32} /></div>
                 <div><h3 className="text-white font-black uppercase italic text-xl">Reportar Falha</h3><p className="text-zinc-500 text-sm mt-2">Encontrou um link quebrado ou vídeo que não carrega? Avise nossa inteligência agora.</p></div>
-                <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Agente%20007,%20identifiquei%20uma%20falha%20no%20link:%20`, '_blank')} className="w-full py-4 bg-white text-black font-black rounded-2xl uppercase italic text-sm hover:scale-105 transition-all">Acionar Suporte</button>
+                <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Agente%20007,%20identifiquei%20uma%20falha%20na%20plataforma`, '_blank')} className="w-full py-4 bg-white text-black font-black rounded-2xl uppercase italic text-sm hover:scale-105 transition-all">Acionar Suporte</button>
             </div>
             <div className="bg-[#121212] border border-white/5 p-8 rounded-[40px] space-y-6 hover:border-[#D4AF37]/50 transition-all group">
                 <div className="bg-[#D4AF37]/10 w-16 h-16 rounded-2xl flex items-center justify-center text-[#D4AF37]"><Zap size={32} /></div>
                 <div><h3 className="text-white font-black uppercase italic text-xl">Sugerir Melhoria</h3><p className="text-zinc-500 text-sm mt-2">Tem alguma oferta em mente ou sugestão para a plataforma? Queremos ouvir você.</p></div>
-                <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Agente%20007,%20tenho%20uma%20sugestão:%20`, '_blank')} className="w-full py-4 bg-[#D4AF37] text-black font-black rounded-2xl uppercase italic text-sm hover:scale-105 transition-all">Enviar Sugestão</button>
+                <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Agente%20007,%20tenho%20uma%20sugestão`, '_blank')} className="w-full py-4 bg-[#D4AF37] text-black font-black rounded-2xl uppercase italic text-sm hover:scale-105 transition-all">Enviar Sugestão</button>
             </div>
         </div>
     </div>
