@@ -2,20 +2,18 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { Resend } from 'resend';
 
-// 1. Configura o Resend (lê a chave RESEND_API_KEY da Vercel)
-const resend = new Resend(process.env.RESEND_API_KEY);
+// 1. Configura o Firebase (lê as variáveis de ambiente da Vercel)
+// Mantemos a configuração fora para não reconectar a cada acesso (performance)
+const firebaseConfig = {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  // Corrige as quebras de linha da chave privada (Crucial para Vercel)
+  privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+};
 
-// 2. Configura o Firebase (lê as variáveis de ambiente da Vercel)
 if (!getApps().length) {
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    // Corrige as quebras de linha da chave privada (Crucial para Vercel)
-    privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
-  };
-
   initializeApp({
-    credential: cert(serviceAccount),
+    credential: cert(firebaseConfig),
   });
 }
 
@@ -27,11 +25,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
+  // 2. Configura o Resend DENTRO da função (Correção do erro "Missing API Key")
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+      console.error("ERRO CRÍTICO: RESEND_API_KEY não encontrada.");
+      return res.status(500).json({ error: 'Server Configuration Error' });
+  }
+  const resend = new Resend(resendApiKey);
+
   try {
     const data = req.body;
     const orderStatus = data.order_status; // paid, refunded, chargedback
     
-    // Extrai dados do Cliente
+    // Extrai dados do Cliente (proteção contra dados vazios)
     const email = data.Customer ? data.Customer.email : null;
     const nome = data.Customer ? data.Customer.full_name : 'Agente';
     
@@ -43,11 +49,21 @@ export default async function handler(req, res) {
 
     // === 1. VENDA APROVADA (CRIAR ACESSO) ===
     if (orderStatus === 'paid') {
+      
+      // Verifica se já existe para não duplicar
+      const agentsRef = db.collection('agentes');
+      const snapshot = await agentsRef.where('email', '==', emailFormatado).get();
+
+      if (!snapshot.empty) {
+          // Se já existe, apenas retorna sucesso (idempotência)
+          return res.status(200).json({ status: 'Usuário já existe' });
+      }
+
       // Gera senha aleatória
       const agentId = `AGENTE-${Math.floor(10000 + Math.random() * 90000)}`;
 
       // Salva no Banco de Dados
-      await db.collection('agentes').doc(agentId).set({
+      await agentsRef.doc(agentId).set({
         id: agentId,
         email: emailFormatado,
         nome: nome,
@@ -59,7 +75,7 @@ export default async function handler(req, res) {
 
       // Envia E-mail de Acesso
       await resend.emails.send({
-        from: '007 Swiper <agente@007swiper.com>',
+        from: '007 Swiper <naoresponder@007swiper.com>',
         to: emailFormatado,
         subject: '🕵️‍♂️ ACESSO CONFIDENCIAL: Sua Credencial 007 Chegou',
         html: `
