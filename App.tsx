@@ -3,7 +3,7 @@ import {
  Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle, AlertTriangle, MessageCircle
 } from 'lucide-react';
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc, serverTimestamp } from "firebase/firestore";
 
 const firebaseConfig = {
  apiKey: "AIzaSyAF94806dAwkSvPJSVHglfYMm9vE1Rnei4",
@@ -41,6 +41,32 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6N1u2xV-Of_mu
 // LINK DA COMUNIDADE 007
 const COMMUNITY_LINK = "https://chat.whatsapp.com/DVQrZLpHFR31KUgmPq6ibL";
 
+// TIPAGEM
+type Trend = 'Escalando' | 'Em Alta' | 'Estável';
+interface Offer {
+  id: string;
+  title: string;
+  niche: string;
+  productType: string;
+  description: string;
+  coverImage: string;
+  trend: Trend;
+  views: string;
+  vslLinks: { label: string; url: string }[];
+  vslDownloadUrl: string;
+  transcriptionUrl: string;
+  creativeEmbedUrls: string[];
+  creativeDownloadUrls: string[];
+  facebookUrl: string;
+  pageUrl: string;
+  language: string;
+  trafficSource: string[];
+  creativeZipUrl: string;
+  addedDate: string;
+  status: string;
+  creativeImages: string[];
+}
+
 const STYLES = `
  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
  :root { --brand-gold: #D4AF37; --brand-dark: #0a0a0a; --brand-card: #121212; --brand-hover: #1a1a1a; }
@@ -55,7 +81,7 @@ const STYLES = `
 `;
 
 // --- UTILS ---
-const getDriveDirectLink = (url: string) => { if (!url) return ''; const trimmed = url.trim(); if (trimmed.includes('drive.google.com')) { const idMatch = trimmed.match(/[-\w]{25,}/); if (idMatch) return `https://lh3.googleusercontent.com/u/0/d/${idMatch[0]}`; } return trimmed; };
+const getDriveDirectLink = (url: string) => { if (!url) return ''; const trimmed = url.trim(); if (trimmed.includes('drive.google.com')) { const idMatch = trimmed.match(/[-\w]{25,}/); if (idMatch) return `https://drive.google.com/uc?export=download&id=${idMatch[0]}`; } return trimmed; };
 const isDirectVideo = (url: string) => { const clean = url.trim().toLowerCase(); return clean.includes('.mp4') || clean.includes('.m3u8') || clean.includes('bunny.net') || clean.includes('b-cdn.net') || clean.includes('mediapack'); };
 
 const getFastDownloadUrl = (url: string) => {
@@ -118,9 +144,18 @@ const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
     <div className="min-h-screen bg-black text-white p-10 animate-in fade-in">
       <button onClick={onBack} className="mb-8 text-[#D4AF37] flex items-center gap-2 font-black uppercase italic text-xs"><ArrowLeft size={16}/> Sair</button>
       <h1 className="text-3xl font-black mb-10 italic uppercase text-center">Base <span className="text-[#D4AF37]">Agentes</span></h1>
-      <div className="max-w-4xl mx-auto overflow-x-auto border border-zinc-800 rounded-3xl bg-zinc-950">
-        <table className="w-full text-left text-sm"><thead className="bg-zinc-900 text-[10px] uppercase text-zinc-500"><tr><th className="p-4">ID</th><th className="p-4">Email</th><th className="p-4">Status</th></tr></thead>
-          <tbody>{agentes.map(a => <tr key={a.id} className="border-b border-zinc-900"><td className="p-4 text-[#D4AF37] font-bold">{a.id}</td><td className="p-4">{a.email}</td><td className="p-4 text-green-500">ATIVO</td></tr>)}</tbody>
+      <div className="max-w-5xl mx-auto overflow-x-auto border border-zinc-800 rounded-3xl bg-zinc-950">
+        <table className="w-full text-left text-sm"><thead className="bg-zinc-900 text-[10px] uppercase text-zinc-500"><tr><th className="p-4">ID</th><th className="p-4">Email</th><th className="p-4">Status</th><th className="p-4">Último Acesso</th></tr></thead>
+          <tbody>{agentes.map(a => (
+            <tr key={a.id} className="border-b border-zinc-900">
+                <td className="p-4 text-[#D4AF37] font-bold">{a.id}</td>
+                <td className="p-4">{a.email}</td>
+                <td className="p-4 text-green-500 font-black">ATIVO</td>
+                <td className="p-4 text-zinc-400">
+                    {a.ultimo_acesso ? a.ultimo_acesso.toDate().toLocaleString('pt-BR') : 'Sem registros'}
+                </td>
+            </tr>
+          ))}</tbody>
         </table>
       </div>
     </div>
@@ -384,6 +419,13 @@ const App: React.FC = () => {
         const docRef = doc(db, "agentes", cleanId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().ativo === true) {
+            
+            // --- 🚀 INÍCIO DO RASTREADOR DE SEGURANÇA ---
+            await updateDoc(docRef, {
+                ultimo_acesso: serverTimestamp()
+            });
+            // --- 🏁 FIM DO RASTREADOR ---
+
             setAgentId(cleanId);
             setIsLoggedIn(true);
             localStorage.setItem('agente_token', cleanId);
@@ -401,7 +443,9 @@ const App: React.FC = () => {
  useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   if (params.get('success') === 'true') {
-   setIsSuccess(true); setNewlyGeneratedId(generateAgentId());
+   setIsSuccess(true);
+   // Em caso de nova compra, o ID deve ser gerado ou capturado. 
+   // Manter lógica existente para newlyGeneratedId se houver.
   } else {
    const savedId = localStorage.getItem('agente_token');
    if (savedId) checkLogin(savedId, true);
