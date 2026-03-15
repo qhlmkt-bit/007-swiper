@@ -20,25 +20,20 @@ const db = getFirestore(app);
 
 // --- ⚠️ CONFIGURAÇÃO DOS LINKS ⚠️ ---
 const LINKS = {
-    // LINKS DA KIWIFY (VENDA DIRETA - PADRÃO)
     KIWIFY: {
         MENSAL: "https://pay.kiwify.com.br/mtU9l7e", 
         TRIMESTRAL: "https://pay.kiwify.com.br/ExDtrjE"
     },
-    // LINKS DA HOTMART (AFILIADOS - ?src=afiliado)
     HOTMART: {
         MENSAL: "https://pay.hotmart.com/H104019113G?bid=1769103375372",
         TRIMESTRAL: "https://pay.hotmart.com/H104019113G?off=fc7oudim"
     }
 };
 
-// SEU NÚMERO DE SUPORTE NOVO
 const WHATSAPP_NUMBER = "5573981414083"; 
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
 const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6N1u2xV-Of_muP_LJY9OGC77qXDOJ254TVzwpYAb-Ew8X-6-ZL3ZurlTiAwy19w/pub?output=csv';
-
-// LINK DA COMUNIDADE 007
 const COMMUNITY_LINK = "https://chat.whatsapp.com/DVQrZLpHFR31KUgmPq6ibL";
 
 // TIPAGEM
@@ -121,26 +116,64 @@ const RecuperarID = ({ onBack }: { onBack: () => void }) => {
 
 const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
   const [agentes, setAgentes] = useState<any[]>([]);
+
+  const buscarAgentes = async () => {
+    const q = query(collection(db, "agentes"), orderBy("data_ativacao", "desc"));
+    const snap = await getDocs(q);
+    setAgentes(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  };
+
   useEffect(() => {
-    const buscar = async () => {
-      const q = query(collection(db, "agentes"), orderBy("data_ativacao", "desc"));
-      const snap = await getDocs(q);
-      setAgentes(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }; buscar();
+    buscarAgentes();
   }, []);
+
+  const toggleStatus = async (id: string, currentStatus: boolean) => {
+    const action = currentStatus ? "SUSPENDER" : "REATIVAR";
+    if (!window.confirm(`Deseja realmente ${action} o acesso deste agente?`)) return;
+    
+    try {
+      const docRef = doc(db, "agentes", id);
+      await updateDoc(docRef, { ativo: !currentStatus });
+      alert(`Agente ${action === "SUSPENDER" ? "suspenso" : "reativado"} com sucesso!`);
+      buscarAgentes(); // Atualiza a lista na tela
+    } catch (err) {
+      alert("Erro ao atualizar status.");
+      console.error(err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-10 animate-in fade-in">
       <button onClick={onBack} className="mb-8 text-[#D4AF37] flex items-center gap-2 font-black uppercase italic text-xs"><ArrowLeft size={16}/> Sair</button>
       <h1 className="text-3xl font-black mb-10 italic uppercase text-center">Base <span className="text-[#D4AF37]">Agentes</span></h1>
-      <div className="max-w-5xl mx-auto overflow-x-auto border border-zinc-800 rounded-3xl bg-zinc-950">
-        <table className="w-full text-left text-sm"><thead className="bg-zinc-900 text-[10px] uppercase text-zinc-500"><tr><th className="p-4">ID</th><th className="p-4">Email</th><th className="p-4">Status</th><th className="p-4">Último Acesso</th></tr></thead>
+      <div className="max-w-6xl mx-auto overflow-x-auto border border-zinc-800 rounded-3xl bg-zinc-950 shadow-2xl">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-zinc-900 text-[10px] uppercase text-zinc-500">
+            <tr>
+              <th className="p-4">ID / Senha</th>
+              <th className="p-4">Email</th>
+              <th className="p-4">Status</th>
+              <th className="p-4">Último Acesso</th>
+              <th className="p-4 text-center">Ação</th>
+            </tr>
+          </thead>
           <tbody>{agentes.map(a => (
-            <tr key={a.id} className="border-b border-zinc-900">
+            <tr key={a.id} className="border-b border-zinc-900 hover:bg-white/5 transition-colors">
                 <td className="p-4 text-[#D4AF37] font-bold">{a.id}</td>
                 <td className="p-4">{a.email}</td>
-                <td className="p-4 text-green-500 font-black">ATIVO</td>
+                <td className={`p-4 font-black ${a.ativo ? 'text-green-500' : 'text-red-500'}`}>
+                    {a.ativo ? 'ATIVO' : 'SUSPENSO'}
+                </td>
                 <td className="p-4 text-zinc-400">
                     {a.ultimo_acesso ? a.ultimo_acesso.toDate().toLocaleString('pt-BR') : 'Sem registros'}
+                </td>
+                <td className="p-4 text-center">
+                    <button 
+                      onClick={() => toggleStatus(a.id, a.ativo)}
+                      className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all shadow-lg ${a.ativo ? 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white' : 'bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-white'}`}
+                    >
+                      {a.ativo ? 'Suspender' : 'Reativar'}
+                    </button>
                 </td>
             </tr>
           ))}</tbody>
@@ -248,15 +281,10 @@ const SidebarContent = ({ currentPage, selectedOffer, navigateToPage, handleLogo
      <p className="px-5 text-[10px] font-black uppercase text-gray-600 tracking-[0.3em] mb-4 italic">Ferramentas</p>
      <SidebarItem icon={LifeBuoy} label="CENTRAL 007" active={currentPage === 'support'} onClick={() => navigateToPage('support')} />
      <SidebarItem icon={Puzzle} label="EXTENSÃO 007" active={currentPage === 'extension'} onClick={() => navigateToPage('extension')} />
-     
-     <button 
-        onClick={() => window.open(COMMUNITY_LINK, '_blank')} 
-        className="w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 text-[#25D366] hover:bg-[#25D366]/10 mb-1"
-     >
+     <button onClick={() => window.open(COMMUNITY_LINK, '_blank')} className="w-full flex items-center space-x-3 px-5 py-3.5 rounded-xl transition-all duration-300 text-[#25D366] hover:bg-[#25D366]/10 mb-1">
         <MessageCircle size={20} />
         <span className="text-sm uppercase tracking-tighter font-black">COMUNIDADE VIP</span>
      </button>
-
      <SidebarItem icon={Settings} label="PAINEL DO AGENTE" active={currentPage === 'settings'} onClick={() => navigateToPage('settings')} />
     </div>
    </nav>
@@ -268,7 +296,6 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess, onRecover,
     const params = new URLSearchParams(window.location.search);
     const isHotmart = params.get('src') === 'afiliado' || params.get('src') === 'hotmart';
     const activeLinks = isHotmart ? LINKS.HOTMART : LINKS.KIWIFY;
-
     return (
         <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
         <style dangerouslySetInnerHTML={{ __html: STYLES }} />
@@ -290,9 +317,8 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess, onRecover,
             <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)]"><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black text-white italic">R$ 197</span><span className="text-gray-500 font-black text-sm uppercase">/mês</span></div><ul className="space-y-4 mb-12 flex-1">{['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(activeLinks.MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter animate-btn-pulse shadow-xl italic">QUERO ACESSO MENSAL</button></div>
             <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-[#D4AF37]"><div className="absolute top-6 right-8 bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">Economize R$ 94</div><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black italic">R$ 497</span><span className="text-gray-400 font-black text-sm uppercase">/trimestre</span></div><ul className="space-y-4 mb-12 flex-1">{['Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(activeLinks.TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter animate-btn-pulse italic">ASSINAR PLANO TRIMESTRAL</button></div>
         </div>
-        <div className="w-full max-w-5xl mx-auto mb-40 px-4 font-black"><div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]"><div className="flex flex-col items-center shrink-0"><div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative shadow-[0_0_40px_rgba(212,175,55,0.2)]"><span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span></div><div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] -mt-5 relative z-10 shadow-xl">DIAS</div></div><div className="flex-1 text-center md:text-left space-y-6"><h2 className="text-white text-3xl md:text-5xl font-black italic uppercase tracking-tighter">GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span></h2><p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investimento. Sem perguntas.</p></div></div></div>
-        <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto"><p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic text-center">© 2026 007 SWIPER Intelligence Platform. Todos os direitos reservados.</p><div onDoubleClick={onAdmin} className="h-10 w-full opacity-0 cursor-default">.</div></footer>
-        
+        <div className="w-full max-w-5xl mx-auto mb-40 px-4 font-black"><div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]"><div className="flex flex-col items-center shrink-0"><div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative shadow-[0_0_40px_rgba(212,175,55,0.2)]"><span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span></div><div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] -mt-5 relative z-10 shadow-xl">DIAS</div></div><div className="flex-1 text-center md:text-left space-y-6"><h2 className="text-white text-3xl md:text-5xl font-black italic uppercase tracking-tighter">GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span></h2><p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investmento. Sem perguntas.</p></div></div></div>
+        <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto text-center"><p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic">© 2026 007 SWIPER Intelligence Platform. Todos os direitos reservados.</p><div onDoubleClick={onAdmin} className="h-10 w-full opacity-0 cursor-default">.</div></footer>
         <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Olá,%20estou%20na%20página%20de%20vendas%20e%20tenho%20dúvidas!`, '_blank')} className="fixed bottom-8 right-8 z-[300] bg-[#25D366] text-white p-4 rounded-full shadow-[0_10px_40px_rgba(37,211,102,0.4)] hover:scale-110 transition-all group">
            <MessageCircle size={32} />
            <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white text-black px-4 py-2 rounded-xl text-xs font-black uppercase italic whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">Suporte Online</span>
@@ -313,16 +339,13 @@ const App: React.FC = () => {
  const [favorites, setFavorites] = useState<string[]>([]);
  const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
  const [searchQuery, setSearchQuery] = useState('');
- 
  const [selectedNiche, setSelectedNiche] = useState('Todos');
  const [selectedLanguage, setSelectedLanguage] = useState('Todos');
  const [selectedType, setSelectedType] = useState('Todos');
  const [selectedTraffic, setSelectedTraffic] = useState('Todos');
-
  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
  const [activeNicheSelection, setActiveNicheSelection] = useState<string | null>(null);
  const [activeLanguageSelection, setActiveLanguageSelection] = useState<string | null>(null);
-
  const [isSuccess, setIsSuccess] = useState(false);
  const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
  const [showRecuperar, setShowRecuperar] = useState(false);
@@ -403,10 +426,7 @@ const App: React.FC = () => {
         const docRef = doc(db, "agentes", cleanId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().ativo === true) {
-            
-            // --- 🚀 RASTREADOR DE LOGIN ---
             await updateDoc(docRef, { ultimo_acesso: serverTimestamp() });
-
             setAgentId(cleanId);
             setIsLoggedIn(true);
             localStorage.setItem('agente_token', cleanId);
