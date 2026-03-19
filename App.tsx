@@ -529,7 +529,6 @@ const App: React.FC = () => {
            <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#1a1a1a] text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:text-white hover:bg-white/5 transition-all border border-white/5 order-3"><FileText size={14} /> TRANSCRIÇÃO</a>
            <button onClick={() => toggleFavorite(selectedOffer.id)} className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border order-4 ${favorites.includes(selectedOffer.id) ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-[#1a1a1a] text-zinc-400 border-white/5 hover:text-white'}`}><Star size={14} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'FAVORITO' : 'FAVORITAR'}</button>
         </div>
-        <div className="mt-6 p-8 bg-[#1a1a1a] rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black text-xs italic mb-4 border-l-2 border-[#D4AF37] pl-4 uppercase">Dossiê Técnico</h3><p className="text-zinc-400 font-medium leading-relaxed text-lg whitespace-pre-line">{selectedOffer.description || "Descrição técnica em processamento..."}</p></div>
        </div>
       </div>
       <div className="w-full lg:w-[38%]">
