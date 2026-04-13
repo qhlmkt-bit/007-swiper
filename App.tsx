@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
- Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle, AlertTriangle, MessageCircle
+ Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle, AlertTriangle, MessageCircle, Bot, Calendar, CheckSquare
 } from 'lucide-react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc, serverTimestamp } from "firebase/firestore";
@@ -32,7 +32,6 @@ const LINKS = {
 
 const WHATSAPP_NUMBER = "5573981414083"; 
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
-const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6N1u2xV-Of_muP_LJY9OGC77qXDOJ254TVzwpYAb-Ew8X-6-ZL3ZurlTiAwy19w/pub?output=csv';
 const COMMUNITY_LINK = "https://chat.whatsapp.com/DVQrZLpHFR31KUgmPq6ibL";
 
@@ -135,7 +134,7 @@ const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
       const docRef = doc(db, "agentes", id);
       await updateDoc(docRef, { ativo: !currentStatus });
       alert(`Agente ${action === "SUSPENDER" ? "suspenso" : "reativado"} com sucesso!`);
-      buscarAgentes(); // Atualiza a lista na tela
+      buscarAgentes(); 
     } catch (err) {
       alert("Erro ao atualizar status.");
       console.error(err);
@@ -192,7 +191,7 @@ const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normal
 const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creative' }> = ({ url, title, type = 'vsl' }) => { 
   const trimmed = url ? url.trim() : '';
   if (!trimmed) return (
-    <div className="w-full aspect-video bg-[#0a0a0a] flex items-center justify-center border border-white/5 rounded-2xl relative overflow-hidden">
+    <div className="w-full h-full bg-[#0a0a0a] flex items-center justify-center border border-white/5 rounded-2xl relative overflow-hidden aspect-video">
       <div className="relative z-10 flex flex-col items-center justify-center p-6 text-center">
         <div className="bg-black/50 p-4 rounded-full backdrop-blur-sm border border-white/10 mb-4"><ZapOff size={32} className="text-gray-500" /></div>
         <p className="text-gray-500 font-black uppercase text-xs tracking-[0.2em]">{type === 'vsl' ? "ESSA OFERTA NÃO TEM VSL" : "VÍDEO INDISPONÍVEL"}</p>
@@ -201,11 +200,14 @@ const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creat
   ); 
 
   let content;
-  if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
+  // Trava extra para o caso de algum link de imagem vazar no futuro
+  if (trimmed.match(/\.(jpeg|jpg|gif|png)$/i)) {
+    content = <img src={trimmed} alt="Media" className="w-full h-full object-contain bg-black" />;
+  } else if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
     let baseUrl = trimmed.replace(/playlist\.m3u8|play_720p\.mp4|play_480p\.mp4|play_360p\.mp4|original/, '');
     if (!baseUrl.endsWith('/')) baseUrl += '/';
     content = (
-      <video className="max-w-full max-h-[70vh] object-contain bg-black" controls playsInline controlsList="nodownload">
+      <video className="w-full h-full object-contain bg-black" controls playsInline controlsList="nodownload">
         <source src={`${baseUrl}play_720p.mp4`} type="video/mp4" />
         <source src={`${baseUrl}play_480p.mp4`} type="video/mp4" />
         <source src={`${baseUrl}play_360p.mp4`} type="video/mp4" />
@@ -213,32 +215,39 @@ const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creat
       </video>
     );
   } else if (isDirectVideo(trimmed)) {
-    content = <video className="max-w-full max-h-[70vh] object-contain bg-black" controls playsInline><source src={trimmed} type="video/mp4" /></video>;
+    content = <video className="w-full h-full object-contain bg-black" controls playsInline><source src={trimmed} type="video/mp4" /></video>;
   } else {
     const embedUrl = trimmed.includes('vimeo.com') ? `https://player.vimeo.com/video/${trimmed.match(/(?:vimeo\.com\/|video\/)([0-9]+)/)?.[1]}` : (trimmed.includes('youtube.com') ? `https://www.youtube.com/embed/${trimmed.match(/(?:v=|youtu\.be\/)([^&?]+)/)?.[1]}` : trimmed);
-    content = <iframe className="w-full aspect-video" src={embedUrl} frameBorder="0" allowFullScreen></iframe>;
+    content = <iframe className="w-full h-full" src={embedUrl} frameBorder="0" allowFullScreen></iframe>;
   }
-  return <div className="w-full flex items-center justify-center bg-black rounded-2xl overflow-hidden shadow-2xl min-h-[300px]">{content}</div>;
+  
+  return <div className="w-full aspect-video flex items-center justify-center bg-black rounded-2xl overflow-hidden shadow-2xl relative">{content}</div>;
 };
 
 const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; onClick: () => void; }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
- const getBadgeInfo = () => { if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false }; const dataOferta = new Date(offer.addedDate + 'T00:00:00'); const hoje = new Date(); hoje.setHours(0, 0, 0, 0); const diffTempo = hoje.getTime() - dataOferta.getTime(); const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24)); if (diffDias <= 0) return { text: "ADICIONADO: HOJE", isNew: true }; if (diffDias === 1) return { text: "ADICIONADO: HÁ 1 DIA", isNew: true }; if (diffDias >= 2 && diffDias <= 7) return { text: `ADICIONADO: HÁ ${diffDias} DIAS`, isNew: true }; return { text: "OFERTA: +7 DIAS", isNew: false }; };
+ const getBadgeInfo = () => { if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false, dias: 30 }; const dataOferta = new Date(offer.addedDate + 'T00:00:00'); const hoje = new Date(); hoje.setHours(0, 0, 0, 0); const diffTempo = hoje.getTime() - dataOferta.getTime(); const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24)); if (diffDias <= 0) return { text: "ADICIONADO: HOJE", isNew: true, dias: 1 }; if (diffDias === 1) return { text: "ADICIONADO: HÁ 1 DIA", isNew: true, dias: 1 }; if (diffDias >= 2 && diffDias <= 7) return { text: `ADICIONADO: HÁ ${diffDias} DIAS`, isNew: true, dias: diffDias }; return { text: "OFERTA: +7 DIAS", isNew: false, dias: diffDias > 0 ? diffDias : 30 }; };
  const badge = getBadgeInfo();
+ 
  return (
-  <div onClick={onClick} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl flex flex-col">
+  <div onClick={onClick} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl flex flex-col relative">
    <div className="relative aspect-video overflow-hidden shrink-0">
     <img src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} alt={offer.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
     <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
      <div className={`px-2.5 py-1 text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-400 border border-white/10'}`}><Clock size={10} fill={badge.isNew ? "currentColor" : "none"} /> {badge.text}</div>
      {offer.trend.trim().toLowerCase() === 'escalando' && (<div className="px-2.5 py-1 bg-green-600 text-white text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-2xl"><Zap size={10} fill="currentColor" /> Escalando</div>)}
      {offer.trend.trim().toLowerCase() === 'em alta' && (<div className="px-2.5 py-1 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-2xl"><TrendingUp size={10} className="w-3 h-3" /> Em Alta</div>)}
-     {offer.views && offer.views.trim() !== '' && (<div className="px-2.5 py-1 bg-[#0a0a0a]/90 backdrop-blur-xl text-[#D4AF37] text-[9px] font-black rounded uppercase flex items-center gap-1.5 shadow-2xl border border-[#D4AF37]/30"><Flame size={10} fill="currentColor" className="text-[#D4AF37] animate-pulse" /> {offer.views.trim()}</div>)}
     </div>
     <div className="absolute top-3 right-3"><button onClick={onToggleFavorite} className={`p-2 rounded-xl backdrop-blur-xl transition-all duration-300 ${isFavorite ? 'bg-[#D4AF37] text-black scale-110' : 'bg-[#D4AF37]/20 text-white hover:bg-[#D4AF37] hover:text-black'}`}><Star size={16} fill={isFavorite ? "currentColor" : "none"} /></button></div>
     <div className="absolute bottom-3 left-3"><div className="px-2 py-0.5 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase shadow-lg">{offer.niche}</div></div>
    </div>
    <div className="p-4 flex flex-col flex-1">
-    <h3 className="font-bold text-white mb-3 line-clamp-2 text-[13px] md:text-sm tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors">{offer.title}</h3>
+    <h3 className="font-bold text-white mb-2 line-clamp-2 text-[13px] md:text-sm tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors">{offer.title}</h3>
+    
+    <div className="flex flex-wrap items-center gap-2 mb-3 mt-1">
+      <span className="text-gray-400 text-[9px] uppercase font-black bg-white/5 px-2 py-1 rounded border border-white/5 flex items-center gap-1"><Calendar size={10}/> +{badge.dias} DIAS ATIVO</span>
+      <span className="text-[#D4AF37] text-[9px] uppercase font-black bg-[#D4AF37]/10 px-2 py-1 rounded border border-[#D4AF37]/20 flex items-center gap-1"><Flame size={10} className={offer.views ? "animate-pulse" : ""}/> {offer.views ? `${offer.views} CÓPIAS` : 'TESTANDO'}</span>
+    </div>
+
     <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-3">
      <div className="flex items-center gap-2">{offer.trafficSource.slice(0, 2).map((source, idx) => <TrafficIcon key={idx} source={source} />)}<span className="text-gray-500 text-[9px] font-bold uppercase tracking-widest">{offer.productType}</span></div>
     </div>
@@ -455,15 +464,68 @@ const App: React.FC = () => {
     setLoading(true);
     const res = await fetch(CSV_URL);
     const text = await res.text();
-    const lines = text.split(/\r?\n/).filter(l => l.trim());
-    if (lines.length < 2) return;
-    const parsed: Offer[] = lines.slice(2).map((l, i) => {
-     const v = l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.trim().replace(/^"|"$/g, '').trim());
+    
+    // 🛡️ NOVO PARSER DE DADOS (À Prova de Quebras de Linha no CSV)
+    const parseCSV = (csvText: string) => {
+      const rows = [];
+      let currentRow = [];
+      let currentCell = '';
+      let inQuotes = false;
+      for (let i = 0; i < csvText.length; i++) {
+        const char = csvText[i];
+        const nextChar = csvText[i + 1];
+        if (char === '"' && inQuotes && nextChar === '"') {
+          currentCell += '"'; i++;
+        } else if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          currentRow.push(currentCell.trim()); currentCell = '';
+        } else if ((char === '\n' || char === '\r') && !inQuotes) {
+          if (char === '\r' && nextChar === '\n') i++; 
+          currentRow.push(currentCell.trim());
+          if (currentRow.some(cell => cell !== '')) rows.push(currentRow);
+          currentRow = []; currentCell = '';
+        } else {
+          currentCell += char;
+        }
+      }
+      if (currentCell || currentRow.length > 0) {
+        currentRow.push(currentCell.trim());
+        if (currentRow.some(cell => cell !== '')) rows.push(currentRow);
+      }
+      return rows;
+    };
+
+    const parsedRows = parseCSV(text);
+    if (parsedRows.length < 2) return;
+
+    const parsed: Offer[] = parsedRows.slice(2).map((v, i) => {
      if (!v[1] || v[1].toLowerCase() === 'undefined') return null;
      return {
-      id: v[0] || String(i), title: v[1], niche: v[2] || 'Geral', productType: v[3] || 'Geral', description: v[4] || '', coverImage: v[5] || '', trend: (v[6] as Trend) || 'Estável', views: v[7] || '', vslLinks: (v[8] || '').split(',').map(u => ({ label: 'VSL Principal', url: u.trim() })).filter(link => link.url), vslDownloadUrl: v[9] || '#', transcriptionUrl: v[10] || '#', creativeEmbedUrls: (v[11] || '').split(',').map(s => s.trim()).filter(Boolean), creativeDownloadUrls: (v[12] || '').split(',').map(s => s.trim()).filter(Boolean), facebookUrl: v[13] || '#', pageUrl: v[14] || '#', language: v[15] || 'Português', trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), creativeZipUrl: v[17] || '#', addedDate: v[18] || '', status: (v[19] || '').toUpperCase(), creativeImages: [],
+      id: v[0] || String(i), 
+      title: v[1] || '', 
+      niche: v[2] || 'Geral', 
+      productType: v[3] || 'Geral', 
+      description: v[4] || '', 
+      coverImage: v[5] || '', 
+      trend: (v[6] as Trend) || 'Estável', 
+      views: v[7] || '', 
+      vslLinks: (v[8] || '').split(',').map(u => ({ label: 'VSL Principal', url: u.trim() })).filter(link => link.url), 
+      vslDownloadUrl: v[9] || '#', 
+      transcriptionUrl: v[10] || '#', 
+      creativeEmbedUrls: (v[11] || '').split(',').map(s => s.trim()).filter(Boolean), 
+      creativeDownloadUrls: (v[12] || '').split(',').map(s => s.trim()).filter(Boolean), 
+      facebookUrl: v[13] || '#', 
+      pageUrl: v[14] || '#', 
+      language: v[15] || 'Português', 
+      trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), 
+      creativeZipUrl: v[17] || '#', 
+      addedDate: v[18] || '', 
+      status: (v[19] || '').toUpperCase(), 
+      creativeImages: [],
      };
     }).filter((o): o is Offer => o !== null);
+    
     const ofertasAtivas = parsed.filter(o => o.status === 'ATIVO');
     setOffers([...ofertasAtivas].reverse());
    } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -511,7 +573,12 @@ const App: React.FC = () => {
    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10"><button onClick={closeOffer} className="flex items-center text-gray-500 hover:text-[#D4AF37] transition-all font-black uppercase text-xs tracking-widest group"><div className="bg-[#1a1a1a] p-2 rounded-lg mr-3 group-hover:bg-[#D4AF37] group-hover:text-black transition-all"><ArrowLeft size={16} /></div>Voltar</button></div>
     <div className="space-y-12 italic font-black uppercase">
-     {selectedOffer.views && selectedOffer.views.trim() !== '' && (<div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-[#D4AF37]/40 w-fit shadow-[0_10px_30px_rgba(0,0,0,0.5)]"><Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-pulse" /><span className="text-[#D4AF37] font-black text-sm md:text-base italic tracking-[0.1em]">{selectedOffer.views} ANÚNCIOS ATIVOS</span></div>)}
+     
+     <div className="flex flex-wrap items-center gap-3">
+       {selectedOffer.views && selectedOffer.views.trim() !== '' && (<div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-[#D4AF37]/40 w-fit shadow-[0_10px_30px_rgba(0,0,0,0.5)]"><Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-pulse" /><span className="text-[#D4AF37] font-black text-sm md:text-base italic tracking-[0.1em]">{selectedOffer.views} ANÚNCIOS ATIVOS</span></div>)}
+       <div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-white/10 w-fit shadow-[0_10px_30px_rgba(0,0,0,0.5)]"><Calendar size={20} className="text-gray-400" /><span className="text-gray-400 font-black text-sm md:text-base italic tracking-[0.1em]">ESTRUTURA DE ALTA ESCALA</span></div>
+     </div>
+
      <div className="flex flex-col lg:flex-row gap-8 items-stretch">
       <div className="w-full lg:w-[62%] space-y-6">
        <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
@@ -522,8 +589,12 @@ const App: React.FC = () => {
             </button>
           ))}
         </div>
-        <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl"><VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" type="vsl" /></div>
-        <div className="mt-5 grid grid-cols-2 lg:flex lg:flex-row gap-3">
+        
+        <div className="w-full shrink-0 aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 shadow-2xl">
+            <VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" type="vsl" />
+        </div>
+        
+        <div className="mt-auto pt-5 grid grid-cols-2 lg:flex lg:flex-row gap-3 shrink-0">
            <a href={getFastDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] transition-all shadow-lg border border-[#D4AF37] order-1"><Download size={14} /> VSL (LEVE)</a>
            <a href={getOriginalDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#1a1a1a] text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:text-white hover:bg-white/5 transition-all border border-white/5 order-2"><Video size={14} /> VSL (ORIGINAL)</a>
            <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#1a1a1a] text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:text-white hover:bg-white/5 transition-all border border-white/5 order-3"><FileText size={14} /> TRANSCRIÇÃO</a>
@@ -534,17 +605,59 @@ const App: React.FC = () => {
       <div className="w-full lg:w-[38%]">
        <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full flex flex-col">
         <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0"><ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO</h3>
-        <div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">{[{ icon: Info, label: 'NOME', value: selectedOffer.description || selectedOffer.title }, { icon: Tag, label: 'NICHO', value: selectedOffer.niche }, { icon: Lock, label: 'TIPO', value: selectedOffer.productType }, { icon: Globe, label: 'IDIOMA', value: selectedOffer.language }, { icon: Target, label: 'FONTE', value: selectedOffer.trafficSource.join(', ') }].map((item, idx) => (<div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0"><div className="flex items-center gap-3"><item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" /><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span></div><span className="text-white text-sm font-black uppercase italic tracking-tight whitespace-normal break-words leading-relaxed">{item.value}</span></div>))}</div>
+        
+        <div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">{[{ icon: Info, label: 'NOME', value: selectedOffer.title }, { icon: Tag, label: 'NICHO', value: selectedOffer.niche }, { icon: Lock, label: 'TIPO', value: selectedOffer.productType }, { icon: Globe, label: 'IDIOMA', value: selectedOffer.language }, { icon: Target, label: 'FONTE', value: selectedOffer.trafficSource.join(', ') }].map((item, idx) => (<div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0"><div className="flex items-center gap-3"><item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" /><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span></div><span className="text-white text-sm font-black uppercase italic tracking-tight whitespace-normal break-words leading-relaxed">{item.value}</span></div>))}</div>
        </div>
       </div>
      </div>
-     <div className="space-y-6">
+
+     <div className="space-y-6 pt-6">
+      <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Bot className="text-[#D4AF37] w-6 h-6" /> MODO COPILOTO 007 (EXECUÇÃO)</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-xl flex flex-col">
+           <h4 className="text-[#D4AF37] text-xs font-black uppercase tracking-widest mb-6 border-l-2 border-[#D4AF37] pl-3">Protocolo 48 Horas</h4>
+           <div className="space-y-4 flex-1">
+             {[
+               "Baixar a transcrição oficial da oferta.",
+               "Hackear a estrutura usando o Prompt de IA ao lado.",
+               "Gravar a voz e montar o seu novo VSL.",
+               "Clonar o esqueleto da Página Oficial (Link abaixo).",
+               "Modelar a Biblioteca de Anúncios e subir campanha."
+             ].map((step, i) => (
+               <div key={i} className="flex items-start gap-3 bg-[#1a1a1a] p-4 rounded-xl border border-white/5">
+                 <CheckSquare size={16} className="text-gray-500 shrink-0 mt-0.5" />
+                 <span className="text-gray-300 text-xs tracking-wider leading-relaxed">{step}</span>
+               </div>
+             ))}
+           </div>
+        </div>
+        <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-xl flex flex-col">
+           <h4 className="text-[#D4AF37] text-xs font-black uppercase tracking-widest mb-6 border-l-2 border-[#D4AF37] pl-3">Hackear com IA (Mega-Prompt)</h4>
+           <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Copie o texto abaixo e cole no ChatGPT ou Claude:</p>
+           <div className="flex-1 bg-[#0a0a0a] rounded-xl p-5 border border-white/10 relative group">
+              <p className="text-gray-300 text-xs italic leading-loose">
+                "Atue como um Copywriter de Resposta Direta Sênior especializado no nicho de {selectedOffer.niche.toUpperCase()}.<br/><br/>
+                Eu vou te entregar a transcrição exata de uma oferta milionária que está escalando forte agora. A sua missão não é copiar as palavras, mas sim **decodificar a estrutura lógica e os gatilhos mentais** utilizados (Gancho, Problema, Mecanismo Único, Oferta e Escassez).<br/><br/>
+                Após mapear essa estrutura, crie um novo roteiro (VSL) de alta conversão seguindo o mesmo ritmo e agressividade, mas adaptado para o meu novo produto."
+              </p>
+              <button onClick={() => {
+                navigator.clipboard.writeText(`Atue como um Copywriter de Resposta Direta Sênior especializado no nicho de ${selectedOffer.niche.toUpperCase()}.\n\nEu vou te entregar a transcrição exata de uma oferta milionária que está escalando forte agora. A sua missão não é copiar as palavras, mas sim decodificar a estrutura lógica e os gatilhos mentais utilizados (Gancho, Problema, Mecanismo Único, Oferta e Escassez).\n\nApós mapear essa estrutura, crie um novo roteiro (VSL) de alta conversão seguindo o mesmo ritmo e agressividade, mas adaptado para o meu novo produto.`);
+                alert('MEGA-PROMPT COPIADO! 🤖');
+              }} className="absolute top-4 right-4 p-3 bg-[#D4AF37] text-black rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-xl flex items-center gap-2 font-black text-[9px] uppercase tracking-widest">
+                <Copy size={14}/> Copiar Prompt
+              </button>
+           </div>
+        </div>
+      </div>
+     </div>
+
+     <div className="space-y-6 pt-6">
        <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><ImageIcon className="text-[#D4AF37] w-6 h-6" /> PRINCIPAIS CRIATIVOS</h3>
        {selectedOffer.creativeEmbedUrls.length > 0 ? (
          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
            {selectedOffer.creativeEmbedUrls.map((url, i) => (
              <div key={i} className="bg-[#121212] p-4 rounded-2xl border border-white/5 flex flex-col gap-4 shadow-xl">
-               <div className="aspect-video bg-black rounded-xl overflow-hidden"><VideoPlayer url={url} title={`Creative ${i + 1}`} type="creative" /></div>
+               <div className="w-full aspect-video bg-black rounded-xl overflow-hidden relative"><VideoPlayer url={url} title={`Creative ${i + 1}`} type="creative" /></div>
                <a href={getFastDownloadUrl(selectedOffer.creativeDownloadUrls[i] || '#')} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 flex items-center justify-center gap-2"><Download size={14} /> Download Criativo {i + 1}</a>
              </div>
            ))}
@@ -556,10 +669,10 @@ const App: React.FC = () => {
          </div>
        )}
      </div>
-     <div className="space-y-6 pb-12">
+     <div className="space-y-6 pb-12 pt-6">
       <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-       <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl"><div className="flex items-center gap-4"><div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Monitor size={20} /></div><div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p></div></div><ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" /></a>
+       <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl"><div className="flex items-center gap-4"><div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Monitor size={20} /></div><div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL (FUNIL)</p></div></div><ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" /></a>
        <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl"><div className="flex items-center gap-4"><div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Facebook size={20} /></div><div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">BIBLIOTECA DE ANÚNCIOS</p></div></div><ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" /></a>
       </div>
      </div>
@@ -570,8 +683,8 @@ const App: React.FC = () => {
   switch (currentPage) {
    case 'home': return (<div className="animate-in fade-in duration-700 space-y-16 md:space-y-20"><div><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Zap className="text-[#D4AF37]" fill="currentColor" /> OPERAÇÕES EM ESCALA</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8">{offers.filter(o => o.trend.trim().toLowerCase() === 'escalando').slice(0, 5).map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div></div><div><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Monitor className="text-[#D4AF37]" /> VISTOS RECENTEMENTE</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8">{offers.filter(o => recentlyViewed.includes(o.id)).map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div>{recentlyViewed.length === 0 && <p className="text-gray-600 font-bold uppercase text-xs italic">Nenhuma atividade recente registrada.</p>}</div></div>);
    case 'offers': return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8 animate-in fade-in duration-700">{filtered.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}{filtered.length === 0 && <div className="col-span-full py-40 text-center text-gray-600 font-black uppercase text-sm italic">Nenhuma inteligência corresponde aos critérios aplicados.</div>}</div>);
-   case 'vsl': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={Video} label="CENTRAL DE VSL" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">VSL:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => offer.vslLinks.map((link, idx) => (<div key={`${offer.id}-vsl-${idx}`} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 flex flex-col gap-6 shadow-2xl group"><div className="flex items-center gap-3"><span className="bg-[#D4AF37] text-black px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 shadow-lg"><Video size={12} /> {offer.title}</span></div><div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl group-hover:border-[#D4AF37]/30 border border-transparent transition-all"><VideoPlayer url={link.url} title={`${offer.title}`} /></div><div className="flex flex-col gap-4"><div className="flex items-center justify-between"><div className="flex-1"></div><button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-xl ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={16} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button></div><div className="grid grid-cols-2 gap-3"><a href={getFastDownloadUrl(offer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="py-3.5 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg"><Download size={14} className="inline mr-2" /> Baixar VSL</a><button onClick={() => openOffer(offer)} className="py-3.5 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div></div>)))}</div></div>);
-   case 'creatives': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={Palette} label="ARSENAL DE CRIATIVOS" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">CRIATIVOS:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => offer.creativeEmbedUrls.map((embedUrl, idx) => (<div key={`${offer.id}-creative-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 flex flex-col gap-5 group shadow-xl hover:border-[#D4AF37]/50 transition-all"><div className="flex items-center gap-3"><span className="bg-[#D4AF37] text-black px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 shadow-lg truncate"><Video size={10} /> {offer.title}</span></div><div className="aspect-video bg-black rounded-xl overflow-hidden shadow-xl border border-white/5"><VideoPlayer url={embedUrl} title={`Creative ${idx + 1} - ${offer.title}`} /></div><div className="flex flex-col gap-4"><div className="flex items-center justify-between"><div className="flex-1"></div><div className="flex gap-2"><button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-lg ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={14} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button><a href={getFastDownloadUrl(offer.creativeDownloadUrls[idx] || '#')} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#D4AF37] text-black rounded-lg hover:scale-110 transition-transform"><Download size={14} /></a></div></div><button onClick={() => openOffer(offer)} className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20">Ver Oferta Completa</button></div></div>)))}</div></div>);
+   case 'vsl': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={Video} label="CENTRAL DE VSL" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">VSL:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => offer.vslLinks.map((link, idx) => (<div key={`${offer.id}-vsl-${idx}`} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 flex flex-col gap-6 shadow-2xl group"><div className="flex items-center gap-3"><span className="bg-[#D4AF37] text-black px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 shadow-lg"><Video size={12} /> {offer.title}</span></div><div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl group-hover:border-[#D4AF37]/30 border border-transparent transition-all relative"><VideoPlayer url={link.url} title={`${offer.title}`} /></div><div className="flex flex-col gap-4"><div className="flex items-center justify-between"><div className="flex-1"></div><button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-xl ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={16} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button></div><div className="grid grid-cols-2 gap-3"><a href={getFastDownloadUrl(offer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="py-3.5 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg"><Download size={14} className="inline mr-2" /> Baixar VSL</a><button onClick={() => openOffer(offer)} className="py-3.5 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div></div>)))}</div></div>);
+   case 'creatives': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={Palette} label="ARSENAL DE CRIATIVOS" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">CRIATIVOS:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => offer.creativeEmbedUrls.map((embedUrl, idx) => (<div key={`${offer.id}-creative-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 flex flex-col gap-5 group shadow-xl hover:border-[#D4AF37]/50 transition-all"><div className="flex items-center gap-3"><span className="bg-[#D4AF37] text-black px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 shadow-lg truncate"><Video size={10} /> {offer.title}</span></div><div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-xl border border-white/5 relative"><VideoPlayer url={embedUrl} title={`Creative ${idx + 1} - ${offer.title}`} /></div><div className="flex flex-col gap-4"><div className="flex items-center justify-between"><div className="flex-1"></div><div className="flex gap-2"><button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-lg ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={14} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button><a href={getFastDownloadUrl(offer.creativeDownloadUrls[idx] || '#')} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#D4AF37] text-black rounded-lg hover:scale-110 transition-transform"><Download size={14} /></a></div></div><button onClick={() => openOffer(offer)} className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20">Ver Oferta Completa</button></div></div>)))}</div></div>);
    case 'pages': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={FileText} label="PÁGINAS DE ALTA CONVERSÃO" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">PÁGINAS:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">{offers.filter(o => o.niche === activeNicheSelection && o.pageUrl && o.pageUrl !== '#').map((o) => (<div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden border border-white/5 group hover:border-[#D4AF37]/50 transition-all flex flex-col shadow-2xl h-full"><div className="aspect-[4/3] bg-black relative"><img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" /><div className="absolute inset-0 flex items-center justify-center"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="p-5 bg-[#D4AF37] text-black rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 shadow-2xl"><Monitor size={28} /></a></div></div><div className="p-6 flex-1 flex flex-col justify-between"><div className="mb-6"><h3 className="text-white font-bold uppercase text-sm mb-2 tracking-tight group-hover:text-[#D4AF37] transition-colors">{o.title}</h3><p className="text-gray-500 text-[10px] font-bold uppercase italic truncate">{o.pageUrl}</p></div><div className="space-y-2"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg block">Acessar Link Externo</a><button onClick={() => openOffer(o)} className="w-full py-3 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div></div>))}</div></div>);
    case 'ads_library': if (!activeLanguageSelection) return <SelectionGrid items={allLanguages} onSelect={(val: string) => { setActiveLanguageSelection(val); pushNavState({ als: val }); }} Icon={Library} label="BIBLIOTECA DE ANÚNCIOS" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveLanguageSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">IDIOMA:</span> {activeLanguageSelection}</h2></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.language === activeLanguageSelection && o.facebookUrl && o.facebookUrl !== '#').map(o => (<div key={o.id} className="bg-[#121212] p-8 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex flex-col gap-8 shadow-2xl group"><div className="flex items-center justify-between"><div className="flex items-center gap-5"><div className="p-5 bg-[#1a1a1a] rounded-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-xl"><Facebook size={32} /></div><div><p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest mb-1 italic">FACEBOOK ADS LIBRARY</p><h3 className="text-white font-bold uppercase text-[15px] tracking-tight">{o.title}</h3></div></div><button onClick={(e) => toggleFavorite(o.id, e)} className={`p-3 rounded-xl ${favorites.includes(o.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={20} fill={favorites.includes(o.id) ? "currentColor" : "none"} /></button></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><a href={o.facebookUrl} target="_blank" rel="noopener noreferrer" className="py-4 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-2"><ExternalLink size={16} /> Acessar Link Externo</a><button onClick={() => openOffer(o)} className="py-4 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div>))}</div></div>);
    case 'favorites': return (<div className="animate-in fade-in duration-700"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8">{offers.filter(o => favorites.includes(o.id)).map((o) => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div>{favorites.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center col-span-full">Sua lista privada de favoritos está vazia.</p>}</div>);
