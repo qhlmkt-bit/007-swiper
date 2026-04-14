@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
- Home as HomeIcon, Star, Settings, Tag, Palette, FileText, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle, AlertTriangle, MessageCircle, Calendar
+ Home as HomeIcon, Star, Settings, Tag, Palette, FileText, Search, LogOut, ChevronRight, Monitor, Eye, Lock, Trophy, Download, Video, Zap, ZapOff, Globe, X, ExternalLink, ImageIcon, Layout, TrendingUp, ShieldCheck, CheckCircle, Play, Facebook, Youtube, Smartphone, Clock, Target, Menu, Filter, Library, Loader2, Info, Files, Copy, Flame, ArrowLeft, LifeBuoy, Puzzle, AlertTriangle, MessageCircle, Calendar
 } from 'lucide-react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc, serverTimestamp } from "firebase/firestore";
@@ -18,26 +18,36 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- CONFIGURAÇÃO DOS LINKS ---
+// --- ⚠️ CONFIGURAÇÃO DOS LINKS ⚠️ ---
 const LINKS = {
-    KIWIFY: { MENSAL: "https://pay.kiwify.com.br/mtU9l7e", TRIMESTRAL: "https://pay.kiwify.com.br/ExDtrjE" },
-    HOTMART: { MENSAL: "https://pay.hotmart.com/H104019113G?bid=1769103375372", TRIMESTRAL: "https://pay.hotmart.com/H104019113G?off=fc7oudim" }
+    KIWIFY: {
+        MENSAL: "https://pay.kiwify.com.br/mtU9l7e", 
+        TRIMESTRAL: "https://pay.kiwify.com.br/ExDtrjE"
+    },
+    HOTMART: {
+        MENSAL: "https://pay.hotmart.com/H104019113G?bid=1769103375372",
+        TRIMESTRAL: "https://pay.hotmart.com/H104019113G?off=fc7oudim"
+    }
 };
 
 const WHATSAPP_NUMBER = "5573981414083"; 
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
+const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6N1u2xV-Of_muP_LJY9OGC77qXDOJ254TVzwpYAb-Ew8X-6-ZL3ZurlTiAwy19w/pub?output=csv';
 const COMMUNITY_LINK = "https://chat.whatsapp.com/DVQrZLpHFR31KUgmPq6ibL";
 
+// TIPAGEM
 type Trend = 'Escalando' | 'Em Alta' | 'Estável';
 interface Offer {
-  id: string; title: string; niche: string; productType: string; description: string; coverImage: string; trend: Trend; views: string; vslLinks: { label: string; url: string }[]; vslDownloadUrl: string; transcriptionUrl: string; creativeEmbedUrls: string[]; creativeDownloadUrls: string[]; facebookUrl: string; pageUrl: string; language: string; trafficSource: string[]; creativeZipUrl: string; addedDate: string; status: string;
+  id: string; title: string; niche: string; productType: string; description: string; coverImage: string; trend: Trend; views: string; vslLinks: { label: string; url: string }[]; vslDownloadUrl: string; transcriptionUrl: string; creativeEmbedUrls: string[]; creativeDownloadUrls: string[]; facebookUrl: string; pageUrl: string; language: string; trafficSource: string[]; creativeZipUrl: string; addedDate: string; status: string; creativeImages: string[];
 }
 
 const STYLES = `
  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
- :root { --brand-gold: #D4AF37; --brand-dark: #0a0a0a; --brand-card: #121212; }
+ :root { --brand-gold: #D4AF37; --brand-dark: #0a0a0a; --brand-card: #121212; --brand-hover: #1a1a1a; }
  body { font-family: 'Inter', sans-serif; background-color: var(--brand-dark); color: #ffffff; margin: 0; overflow-x: hidden; }
+ .gold-border { border: 1px solid rgba(212, 175, 55, 0.3); }
+ .gold-text { color: #D4AF37; } .gold-bg { background-color: #D4AF37; }
  .btn-elite { background-color: #D4AF37; color: #000; font-weight: 900; text-transform: uppercase; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
  .btn-elite:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
  ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #0a0a0a; } ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
@@ -45,6 +55,7 @@ const STYLES = `
  .animate-btn-pulse { animation: btnPulse 2s infinite; }
 `;
 
+// --- UTILS ---
 const getDriveDirectLink = (url: string) => { 
   if (!url) return ''; 
   const trimmed = url.trim(); 
@@ -54,7 +65,6 @@ const getDriveDirectLink = (url: string) => {
   } 
   return trimmed; 
 };
-
 const isDirectVideo = (url: string) => { const clean = url.trim().toLowerCase(); return clean.includes('.mp4') || clean.includes('.m3u8') || clean.includes('bunny.net') || clean.includes('b-cdn.net') || clean.includes('mediapack'); };
 
 const getFastDownloadUrl = (url: string) => {
@@ -76,6 +86,7 @@ const getOriginalDownloadUrl = (url: string) => {
   } return trimmed;
 };
 
+// --- COMPONENTES ---
 const RecuperarID = ({ onBack }: { onBack: () => void }) => {
   const [email, setEmail] = useState('');
   const [resultado, setResultado] = useState<string | null>(null);
@@ -112,17 +123,23 @@ const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
     setAgentes(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   };
 
-  useEffect(() => { buscarAgentes(); }, []);
+  useEffect(() => {
+    buscarAgentes();
+  }, []);
 
   const toggleStatus = async (id: string, currentStatus: boolean) => {
     const action = currentStatus ? "SUSPENDER" : "REATIVAR";
     if (!window.confirm(`Deseja realmente ${action} o acesso deste agente?`)) return;
+    
     try {
       const docRef = doc(db, "agentes", id);
       await updateDoc(docRef, { ativo: !currentStatus });
       alert(`Agente ${action === "SUSPENDER" ? "suspenso" : "reativado"} com sucesso!`);
       buscarAgentes(); 
-    } catch (err) { alert("Erro ao atualizar status."); console.error(err); }
+    } catch (err) {
+      alert("Erro ao atualizar status.");
+      console.error(err);
+    }
   };
 
   return (
@@ -132,14 +149,32 @@ const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
       <div className="max-w-6xl mx-auto overflow-x-auto border border-zinc-800 rounded-3xl bg-zinc-950 shadow-2xl">
         <table className="w-full text-left text-sm">
           <thead className="bg-zinc-900 text-[10px] uppercase text-zinc-500">
-            <tr><th className="p-4">ID / Senha</th><th className="p-4">Email</th><th className="p-4">Status</th><th className="p-4">Último Acesso</th><th className="p-4 text-center">Ação</th></tr>
+            <tr>
+              <th className="p-4">ID / Senha</th>
+              <th className="p-4">Email</th>
+              <th className="p-4">Status</th>
+              <th className="p-4">Último Acesso</th>
+              <th className="p-4 text-center">Ação</th>
+            </tr>
           </thead>
           <tbody>{agentes.map(a => (
             <tr key={a.id} className="border-b border-zinc-900 hover:bg-white/5 transition-colors">
-                <td className="p-4 text-[#D4AF37] font-bold">{a.id}</td><td className="p-4">{a.email}</td>
-                <td className={`p-4 font-black ${a.ativo ? 'text-green-500' : 'text-red-500'}`}>{a.ativo ? 'ATIVO' : 'SUSPENSO'}</td>
-                <td className="p-4 text-zinc-400">{a.ultimo_acesso ? a.ultimo_acesso.toDate().toLocaleString('pt-BR') : 'Sem registros'}</td>
-                <td className="p-4 text-center"><button onClick={() => toggleStatus(a.id, a.ativo)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all shadow-lg ${a.ativo ? 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white' : 'bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-white'}`}>{a.ativo ? 'Suspender' : 'Reativar'}</button></td>
+                <td className="p-4 text-[#D4AF37] font-bold">{a.id}</td>
+                <td className="p-4">{a.email}</td>
+                <td className={`p-4 font-black ${a.ativo ? 'text-green-500' : 'text-red-500'}`}>
+                    {a.ativo ? 'ATIVO' : 'SUSPENSO'}
+                </td>
+                <td className="p-4 text-zinc-400">
+                    {a.ultimo_acesso ? a.ultimo_acesso.toDate().toLocaleString('pt-BR') : 'Sem registros'}
+                </td>
+                <td className="p-4 text-center">
+                    <button 
+                      onClick={() => toggleStatus(a.id, a.ativo)}
+                      className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all shadow-lg ${a.ativo ? 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white' : 'bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-white'}`}
+                    >
+                      {a.ativo ? 'Suspender' : 'Reativar'}
+                    </button>
+                </td>
             </tr>
           ))}</tbody>
         </table>
@@ -154,11 +189,11 @@ const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normalized = source.toLowerCase().trim(); if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />; if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />; if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />; if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />; return <Target size={14} className="text-[#D4AF37]" />; };
 
-// 🛡️ PLAYER BLINDADO CONTRA LINKS DE DRIVE ERRADOS
+// 🛡️ O VERDADEIRO ESCUDO DE VÍDEO (NÃO TRAVA COM IMAGENS)
 const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creative' }> = ({ url, title, type = 'vsl' }) => { 
   const trimmed = url ? url.trim() : '';
   if (!trimmed) return (
-    <div className="w-full aspect-video bg-[#0a0a0a] flex items-center justify-center border border-white/5 rounded-2xl relative overflow-hidden">
+    <div className="w-full aspect-video bg-[#0a0a0a] flex items-center justify-center border border-white/5 rounded-[24px] relative overflow-hidden">
       <div className="relative z-10 flex flex-col items-center justify-center p-6 text-center">
         <div className="bg-black/50 p-4 rounded-full backdrop-blur-sm border border-white/10 mb-4"><ZapOff size={32} className="text-gray-500" /></div>
         <p className="text-gray-500 font-black uppercase text-xs tracking-[0.2em]">{type === 'vsl' ? "ESSA OFERTA NÃO TEM VSL" : "VÍDEO INDISPONÍVEL"}</p>
@@ -167,7 +202,7 @@ const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creat
   ); 
 
   let content;
-  // Se for imagem ou um link bruto de arquivo do Drive, converte para imagem para não quebrar a tela
+  // Trava para evitar o bug de imagem gigante
   if (trimmed.match(/\.(jpeg|jpg|gif|png|webp)$/i) || trimmed.includes('drive.google.com/thumbnail') || trimmed.includes('drive.google.com/file') || trimmed.includes('drive.google.com/uc')) {
     const imgSrc = getDriveDirectLink(trimmed) || trimmed;
     content = <img src={imgSrc} alt="Media" loading="lazy" className="w-full h-full object-contain bg-black" />;
@@ -188,11 +223,12 @@ const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creat
     const embedUrl = trimmed.includes('vimeo.com') ? `https://player.vimeo.com/video/${trimmed.match(/(?:vimeo\.com\/|video\/)([0-9]+)/)?.[1]}` : (trimmed.includes('youtube.com') ? `https://www.youtube.com/embed/${trimmed.match(/(?:v=|youtu\.be\/)([^&?]+)/)?.[1]}` : trimmed);
     content = <iframe className="w-full h-full" src={embedUrl} frameBorder="0" allowFullScreen></iframe>;
   }
-  return <div className="w-full aspect-video flex items-center justify-center bg-black rounded-2xl overflow-hidden shadow-2xl relative">{content}</div>;
+  
+  return <div className="w-full aspect-video flex items-center justify-center bg-black rounded-[24px] overflow-hidden shadow-2xl relative border border-white/5">{content}</div>;
 };
 
 const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; onClick: () => void; }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
- const getBadgeInfo = () => { if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false, dias: 15 }; const dataOferta = new Date(offer.addedDate + 'T00:00:00'); const hoje = new Date(); hoje.setHours(0, 0, 0, 0); const diffTempo = hoje.getTime() - dataOferta.getTime(); const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24)); if (diffDias <= 0) return { text: "ADICIONADO: HOJE", isNew: true, dias: 1 }; if (diffDias === 1) return { text: "ADICIONADO: HÁ 1 DIA", isNew: true, dias: 1 }; if (diffDias >= 2 && diffDias <= 7) return { text: `ADICIONADO: HÁ ${diffDias} DIAS`, isNew: true, dias: diffDias }; return { text: "OFERTA: +7 DIAS", isNew: false, dias: diffDias }; };
+ const getBadgeInfo = () => { if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false, dias: 15 }; const dataOferta = new Date(offer.addedDate + 'T00:00:00'); const hoje = new Date(); hoje.setHours(0, 0, 0, 0); const diffTempo = hoje.getTime() - dataOferta.getTime(); const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24)); if (diffDias <= 0) return { text: "ADICIONADO: HOJE", isNew: true, dias: 1 }; if (diffDias === 1) return { text: "ADICIONADO: HÁ 1 DIA", isNew: true, dias: 1 }; if (diffDias >= 2 && diffDias <= 7) return { text: `ADICIONADO: HÁ ${diffDias} DIAS`, isNew: true, dias: diffDias }; return { text: "OFERTA: +7 DIAS", isNew: false, dias: diffDias > 0 ? diffDias : 15 }; };
  const badge = getBadgeInfo();
  return (
   <div onClick={onClick} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl flex flex-col h-full relative">
@@ -207,11 +243,13 @@ const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite:
     <div className="absolute bottom-3 left-3"><div className="px-2 py-0.5 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase shadow-lg">{offer.niche}</div></div>
    </div>
    <div className="p-4 flex flex-col flex-1">
-    <h3 className="font-bold text-white mb-2 line-clamp-2 text-[13px] md:text-sm tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors">{offer.title}</h3>
+    <h3 className="font-bold text-white mb-3 line-clamp-2 text-[13px] md:text-sm tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors">{offer.title}</h3>
+    
     <div className="flex flex-wrap items-center gap-2 mb-3 mt-1">
-      <span className="text-gray-400 text-[9px] uppercase font-black bg-white/5 px-2 py-1 rounded border border-white/5 flex items-center gap-1"><Calendar size={10}/> {badge.dias > 0 ? badge.dias : 1} DIAS ATIVO</span>
+      <span className="text-gray-400 text-[9px] uppercase font-black bg-white/5 px-2 py-1 rounded border border-white/5 flex items-center gap-1"><Calendar size={10}/> {badge.dias} DIAS ATIVO</span>
       <span className="text-[#D4AF37] text-[9px] uppercase font-black bg-[#D4AF37]/10 px-2 py-1 rounded border border-[#D4AF37]/20 flex items-center gap-1"><Flame size={10} className={offer.views ? "animate-pulse" : ""}/> {offer.views ? `${offer.views} CÓPIAS` : 'TESTANDO'}</span>
     </div>
+
     <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-3">
      <div className="flex items-center gap-2">{offer.trafficSource.slice(0, 2).map((source, idx) => <TrafficIcon key={idx} source={source} />)}<span className="text-gray-500 text-[9px] font-bold uppercase tracking-widest">{offer.productType}</span></div>
     </div>
@@ -311,6 +349,7 @@ const App: React.FC = () => {
  const [activeVslIndex, setActiveVslIndex] = useState(0);
  const [favorites, setFavorites] = useState<string[]>([]);
  const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
+ const [searchQuery, setSearchQuery] = useState('');
  const [selectedNiche, setSelectedNiche] = useState('Todos');
  const [selectedLanguage, setSelectedLanguage] = useState('Todos');
  const [selectedType, setSelectedType] = useState('Todos');
@@ -330,16 +369,18 @@ const App: React.FC = () => {
  const getFavKey = (id: string) => `favs_${id}`;
  const getViewedKey = (id: string) => `viewed_${id}`;
 
- // 🛡️ FILTRO APLICADO E BUSCA REMOVIDA
+ // 🛡️ FILTRO UNIVERSAL OTIMIZADO 
  const applyEliteFilters = useCallback((data: Offer[]) => {
   return data.filter(offer => {
+   const searchLower = searchQuery.toLowerCase();
+   const matchesSearch = offer.title.toLowerCase().includes(searchLower) || (offer.description && offer.description.toLowerCase().includes(searchLower)) || offer.niche.toLowerCase().includes(searchLower);
    const matchesNiche = selectedNiche === 'Todos' || offer.niche === selectedNiche;
    const matchesLanguage = selectedLanguage === 'Todos' || offer.language === selectedLanguage;
    const matchesType = selectedType === 'Todos' || offer.productType === selectedType;
    const matchesTraffic = selectedTraffic === 'Todos' || offer.trafficSource.some(t => t.toLowerCase().includes(selectedTraffic.toLowerCase()));
-   return matchesNiche && matchesLanguage && matchesType && matchesTraffic;
+   return matchesSearch && matchesNiche && matchesLanguage && matchesType && matchesTraffic;
   });
- }, [selectedNiche, selectedLanguage, selectedType, selectedTraffic]);
+ }, [searchQuery, selectedNiche, selectedLanguage, selectedType, selectedTraffic]);
 
  const showFilters = currentPage === 'offers' && !selectedOffer;
 
@@ -426,7 +467,7 @@ const App: React.FC = () => {
     const res = await fetch(CSV_URL);
     const text = await res.text();
 
-    // 🛡️ PARSER DE CSV ROBUSTO (Ignora quebras de linha nas células)
+    // 🛡️ PARSER DE CSV ROBUSTO 
     const parseCSVRobust = (csvText: string): string[][] => {
       const rows: string[][] = [];
       let currentRow: string[] = [];
@@ -524,7 +565,7 @@ const App: React.FC = () => {
             </button>
           ))}
         </div>
-        <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5 relative z-10 flex-1"><VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" type="vsl" /></div>
+        <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl"><VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" type="vsl" /></div>
         <div className="mt-5 grid grid-cols-2 lg:flex lg:flex-row gap-3">
            <a href={getFastDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] transition-all shadow-lg border border-[#D4AF37] order-1"><Download size={14} /> VSL (LEVE)</a>
            <a href={getOriginalDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#1a1a1a] text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:text-white hover:bg-white/5 transition-all border border-white/5 order-2"><Video size={14} /> VSL (ORIGINAL)</a>
@@ -546,7 +587,7 @@ const App: React.FC = () => {
          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
            {selectedOffer.creativeEmbedUrls.map((url, i) => (
              <div key={i} className="bg-[#121212] p-4 rounded-2xl border border-white/5 flex flex-col gap-4 shadow-xl">
-               <div className="w-full aspect-video bg-black rounded-xl overflow-hidden relative"><VideoPlayer url={url} title={`Creative ${i + 1}`} type="creative" /></div>
+               <div className="aspect-video bg-black rounded-xl overflow-hidden"><VideoPlayer url={url} title={`Creative ${i + 1}`} type="creative" /></div>
                <a href={getFastDownloadUrl(selectedOffer.creativeDownloadUrls[i] || '#')} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 flex items-center justify-center gap-2"><Download size={14} /> Download Criativo {i + 1}</a>
              </div>
            ))}
@@ -591,12 +632,12 @@ const App: React.FC = () => {
      </div>
    );
    case 'offers': return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8 animate-in fade-in duration-700">{filtered.map((o) => <OfferCard key={o.id} offer={o} isFavorite={favorites.includes(o.id)} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}{filtered.length === 0 && <div className="col-span-full py-40 text-center text-gray-600 font-black uppercase text-sm italic">Nenhuma inteligência corresponde aos critérios aplicados.</div>}</div>);
-   case 'vsl': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={Video} label="CENTRAL DE VSL" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">VSL:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => offer.vslLinks.map((link, idx) => (<div key={`${offer.id}-vsl-${idx}`} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 flex flex-col gap-6 shadow-2xl group"><div className="flex items-center gap-3"><span className="bg-[#D4AF37] text-black px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 shadow-lg"><Video size={12} /> {offer.title}</span></div><div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5 transition-all relative"><VideoPlayer url={link.url} title={`${offer.title} - ${link.label}`} /></div><div className="flex flex-col gap-4"><div className="flex items-center justify-between"><h3 className="text-white font-black uppercase text-lg italic tracking-tight">{offer.title} - {link.label}</h3><button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-xl ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={16} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button></div><div className="grid grid-cols-2 gap-3"><a href={getFastDownloadUrl(offer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="py-3.5 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg"><Download size={14} className="inline mr-2" /> Baixar VSL</a><button onClick={() => openOffer(offer)} className="py-3.5 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div></div>)))}</div></div>);
-   case 'creatives': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={Palette} label="ARSENAL DE CRIATIVOS" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">CRIATIVOS:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => offer.creativeEmbedUrls.map((embedUrl, idx) => (<div key={`${offer.id}-creative-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 flex flex-col gap-5 group shadow-xl hover:border-[#D4AF37]/50 transition-all"><div className="flex items-center gap-3"><span className="bg-[#D4AF37] text-black px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 shadow-lg truncate"><Video size={10} /> {offer.title}</span></div><div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-xl border border-white/5 relative"><VideoPlayer url={embedUrl} title={`Creative ${idx + 1} - ${offer.title}`} /></div><div className="flex flex-col gap-4"><div className="flex items-center justify-between"><span className="text-white font-black uppercase text-xs italic truncate flex-1 mr-4">{offer.title} - #{idx + 1}</span><div className="flex gap-2"><button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-lg ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={14} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button><a href={getFastDownloadUrl(offer.creativeDownloadUrls[idx] || '#')} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#D4AF37] text-black rounded-lg hover:scale-110 transition-transform"><Download size={14} /></a></div></div><button onClick={() => openOffer(offer)} className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20">Ver Oferta Completa</button></div></div>)))}</div></div>);
-   case 'pages': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={FileText} label="PÁGINAS DE ALTA CONVERSÃO" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">PÁGINAS:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">{offers.filter(o => o.niche === activeNicheSelection && o.pageUrl && o.pageUrl !== '#').map((o) => (<div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden border border-white/5 group hover:border-[#D4AF37]/50 transition-all flex flex-col shadow-2xl h-full"><div className="aspect-[4/3] bg-black relative"><img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" loading="lazy" /><div className="absolute inset-0 flex items-center justify-center"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="p-5 bg-[#D4AF37] text-black rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 shadow-2xl"><Monitor size={28} /></a></div></div><div className="p-6 flex-1 flex flex-col justify-between"><div className="mb-6"><h3 className="text-white font-bold uppercase text-sm mb-2 tracking-tight group-hover:text-[#D4AF37] transition-colors">{o.title}</h3><p className="text-gray-500 text-[10px] font-bold uppercase italic truncate">{o.pageUrl}</p></div><div className="space-y-2"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg block">Acessar Link Externo</a><button onClick={() => openOffer(o)} className="w-full py-3 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div></div>))}</div></div>);
+   case 'vsl': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={Video} label="CENTRAL DE VSL" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">VSL:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => offer.vslLinks.map((link, idx) => (<div key={`${offer.id}-vsl-${idx}`} className="bg-[#121212] p-6 rounded-[32px] border border-white/5 flex flex-col gap-6 shadow-2xl group"><div className="flex items-center gap-3"><span className="bg-[#D4AF37] text-black px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 shadow-lg"><Video size={12} /> {offer.title}</span></div><div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl group-hover:border-[#D4AF37]/30 border border-transparent transition-all"><VideoPlayer url={link.url} title={`${offer.title} - ${link.label}`} /></div><div className="flex flex-col gap-4"><div className="flex items-center justify-between"><h3 className="text-white font-black uppercase text-lg italic tracking-tight">{offer.title} - {link.label}</h3><button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-xl ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={16} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button></div><div className="grid grid-cols-2 gap-3"><a href={getFastDownloadUrl(offer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="py-3.5 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg"><Download size={14} className="inline mr-2" /> Baixar VSL</a><button onClick={() => openOffer(offer)} className="py-3.5 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div></div>)))}</div></div>);
+   case 'creatives': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={Palette} label="ARSENAL DE CRIATIVOS" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">CRIATIVOS:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{offers.filter(o => o.niche === activeNicheSelection).flatMap(offer => offer.creativeEmbedUrls.map((embedUrl, idx) => (<div key={`${offer.id}-creative-${idx}`} className="bg-[#121212] p-5 rounded-[28px] border border-white/5 flex flex-col gap-5 group shadow-xl hover:border-[#D4AF37]/50 transition-all"><div className="flex items-center gap-3"><span className="bg-[#D4AF37] text-black px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg flex items-center gap-2 shadow-lg truncate"><Video size={10} /> {offer.title}</span></div><div className="aspect-video bg-black rounded-xl overflow-hidden shadow-xl border border-white/5"><VideoPlayer url={embedUrl} title={`Creative ${idx + 1} - ${offer.title}`} /></div><div className="flex flex-col gap-4"><div className="flex items-center justify-between"><span className="text-white font-black uppercase text-xs italic truncate flex-1 mr-4">{offer.title} - #{idx + 1}</span><div className="flex gap-2"><button onClick={(e) => toggleFavorite(offer.id, e)} className={`p-2 rounded-lg ${favorites.includes(offer.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={14} fill={favorites.includes(offer.id) ? "currentColor" : "none"} /></button><a href={getFastDownloadUrl(offer.creativeDownloadUrls[idx] || '#')} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#D4AF37] text-black rounded-lg hover:scale-110 transition-transform"><Download size={14} /></a></div></div><button onClick={() => openOffer(offer)} className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20">Ver Oferta Completa</button></div></div>)))}</div></div>);
+   case 'pages': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={FileText} label="PÁGINAS DE ALTA CONVERSÃO" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">PÁGINAS:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">{offers.filter(o => o.niche === activeNicheSelection && o.pageUrl && o.pageUrl !== '#').map((o) => (<div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden border border-white/5 group hover:border-[#D4AF37]/50 transition-all flex flex-col shadow-2xl h-full"><div className="aspect-[4/3] bg-black relative"><img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" /><div className="absolute inset-0 flex items-center justify-center"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="p-5 bg-[#D4AF37] text-black rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 shadow-2xl"><Monitor size={28} /></a></div></div><div className="p-6 flex-1 flex flex-col justify-between"><div className="mb-6"><h3 className="text-white font-bold uppercase text-sm mb-2 tracking-tight group-hover:text-[#D4AF37] transition-colors">{o.title}</h3><p className="text-gray-500 text-[10px] font-bold uppercase italic truncate">{o.pageUrl}</p></div><div className="space-y-2"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg block">Acessar Link Externo</a><button onClick={() => openOffer(o)} className="w-full py-3 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div></div>))}</div></div>);
    case 'ads_library': if (!activeLanguageSelection) return <SelectionGrid items={allLanguages} onSelect={(val: string) => { setActiveLanguageSelection(val); pushNavState({ als: val }); }} Icon={Library} label="BIBLIOTECA DE ANÚNCIOS" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveLanguageSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">IDIOMA:</span> {activeLanguageSelection}</h2></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.language === activeLanguageSelection && o.facebookUrl && o.facebookUrl !== '#').map(o => (<div key={o.id} className="bg-[#121212] p-8 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex flex-col gap-8 shadow-2xl group"><div className="flex items-center justify-between"><div className="flex items-center gap-5"><div className="p-5 bg-[#1a1a1a] rounded-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-xl"><Facebook size={32} /></div><div><p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest mb-1 italic">FACEBOOK ADS LIBRARY</p><h3 className="text-white font-bold uppercase text-[15px] tracking-tight">{o.title}</h3></div></div><button onClick={(e) => toggleFavorite(o.id, e)} className={`p-3 rounded-xl ${favorites.includes(o.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={20} fill={favorites.includes(o.id) ? "currentColor" : "none"} /></button></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><a href={o.facebookUrl} target="_blank" rel="noopener noreferrer" className="py-4 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-2"><ExternalLink size={16} /> Acessar Link Externo</a><button onClick={() => openOffer(o)} className="py-4 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div>))}</div></div>);
    case 'favorites': return (<div className="animate-in fade-in duration-700"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8">{offers.filter(o => favorites.includes(o.id)).map((o) => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div>{favorites.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center col-span-full">Sua lista privada de favoritos está vazia.</p>}</div>);
-   case 'extension': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Puzzle className="text-[#D4AF37]" /> CENTRAL DE EXTENSÃO 007</h2><div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="lg:col-span-2 space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic border-l-2 border-[#D4AF37] pl-3">TUTORIAL DE INSTALAÇÃO & USO</h3><div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5 relative"><iframe className="w-full h-full" src="https://www.youtube.com/embed/En_eE15WR3s?rel=0&modestbranding=1" title="Tutorial Extensão 007" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe></div><p className="mt-6 text-zinc-400 font-medium text-sm leading-relaxed italic">Aprenda como instalar a extensão no modo desenvolvedor e utilizar as funções de mineração de vídeo e desbloqueio de downloads em sites protegidos.</p></div></div><div className="space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col items-center text-center h-full justify-center"><div className="w-20 h-20 bg-[#1a1a1a] rounded-full flex items-center justify-center mb-6 border border-[#D4AF37]/20 shadow-[0_0_30px_rgba(212,175,55,0.15)]"><Puzzle size={40} className="text-[#D4AF37]" /></div><h3 className="text-white font-black uppercase text-xl italic mb-2">007 SWIPER SPY</h3><p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">Versão v23.0 (Estável)</p><a href="https://drive.google.com/file/d/1s0Jnth9iCVuwPyU1nMo7vssjPO7UtcZN/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="w-full py-4 bg-[#D4AF37] text-black font-black rounded-xl uppercase tracking-widest hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-3 italic animate-btn-pulse"><Download size={18} /> BAIXAR .ZIP</a><p className="mt-6 text-[10px] text-gray-600 font-bold uppercase leading-relaxed">Compatível com Google Chrome, Edge e Brave. Instalação manual necessária.</p></div></div></div></div>);
+   case 'extension': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Puzzle className="text-[#D4AF37]" /> CENTRAL DE EXTENSÃO 007</h2><div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="lg:col-span-2 space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic border-l-2 border-[#D4AF37] pl-3">TUTORIAL DE INSTALAÇÃO & USO</h3><div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5"><iframe className="w-full h-full" src="https://www.youtube.com/embed/En_eE15WR3s?rel=0&modestbranding=1" title="Tutorial Extensão 007" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe></div><p className="mt-6 text-zinc-400 font-medium text-sm leading-relaxed italic">Aprenda como instalar a extensão no modo desenvolvedor e utilizar as funções de mineração de vídeo e desbloqueio de downloads em sites protegidos.</p></div></div><div className="space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col items-center text-center h-full justify-center"><div className="w-20 h-20 bg-[#1a1a1a] rounded-full flex items-center justify-center mb-6 border border-[#D4AF37]/20 shadow-[0_0_30px_rgba(212,175,55,0.15)]"><Puzzle size={40} className="text-[#D4AF37]" /></div><h3 className="text-white font-black uppercase text-xl italic mb-2">007 SWIPER SPY</h3><p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">Versão v23.0 (Estável)</p><a href="https://drive.google.com/file/d/1s0Jnth9iCVuwPyU1nMo7vssjPO7UtcZN/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="w-full py-4 bg-[#D4AF37] text-black font-black rounded-xl uppercase tracking-widest hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-3 italic animate-btn-pulse"><Download size={18} /> BAIXAR .ZIP</a><p className="mt-6 text-[10px] text-gray-600 font-bold uppercase leading-relaxed">Compatível com Google Chrome, Edge e Brave. Instalação manual necessária.</p></div></div></div></div>);
    case 'settings': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Settings className="text-[#D4AF37]" /> Painel do Agente</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 italic">Identidade Operacional</h3><div className="space-y-4"><div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SENHA</span><span className="text-white font-black uppercase italic text-lg">{agentId}</span></div><div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SESSÃO</span><span className="bg-[#D4AF37] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic">INDIVIDUAL / PRIVADA</span></div></div></div><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between"><div><h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">SUPORTE</h3><span className="text-white font-black text-xl italic mb-8 block">{SUPPORT_EMAIL}</span></div><button onClick={() => { navigator.clipboard.writeText(SUPPORT_EMAIL); alert('E-MAIL COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button></div></div></div>);
    case 'support': return renderSupportPage();
    default: return null;
@@ -626,10 +667,14 @@ const App: React.FC = () => {
         <div className="flex-1"></div>
         <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0"><div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div><div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p></div></div>
        </div>
-       {!selectedOffer && showFilters && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-2 mt-4">
+       {showFilters && (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-2 mt-4">
+         <div className="flex flex-col gap-1.5 w-full">
+          <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">BUSCAR</label>
+          <div className="relative w-full"><input type="text" placeholder="Pesquisar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] focus:border-[#D4AF37]/50 transition-all h-[38px] placeholder:text-zinc-700" /><Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} /></div>
+         </div>
          {[ { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] }, { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] }, { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }, { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] } ].map((f, i) => (
-          <div key={i} className="flex flex-col gap-1.5 w-full"><label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label><select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-3 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all appearance-none"><option value="Todos" className="bg-[#0a0a0a]">Todos</option>{f.options.filter(x=>x!=='Todos').map(n => <option key={n} value={n} className="bg-[#0a0a0a] text-white">{n}</option>)}</select></div>
+          <div key={i} className="flex flex-col gap-1.5 w-full"><label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label><select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-3 text-[10px] md:text-[11px] font-black uppercase text-gray-400 outline-none hover:border-[#D4AF37] cursor-pointer transition-all appearance-none"><option value="Todos" className="bg-[#0a0a0a]">Todos</option>{f.options.filter(x=>x!=='Todos').map(n => <option key={n} value={n} className="bg-[#0a0a0a] text-white">{n}</option>)}</select></div>
          ))}
         </div>
        )}
