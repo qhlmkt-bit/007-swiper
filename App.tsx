@@ -59,9 +59,12 @@ const STYLES = `
 const getDriveDirectLink = (url: string) => { 
   if (!url) return ''; 
   const trimmed = url.trim(); 
-  if (trimmed.includes('drive.google.com')) { 
-    const idMatch = trimmed.match(/[-\w]{25,}/); 
-    if (idMatch) return `https://drive.google.com/thumbnail?id=${idMatch[0]}&sz=w1000`; 
+  if (trimmed.includes('drive.google.com')) {
+    // Suporta /d/ID/view, /d/ID/edit, uc?export=download&id=ID, e outros formatos
+    const byPath = trimmed.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+    if (byPath) return `https://drive.google.com/thumbnail?id=${byPath[1]}&sz=w800`;
+    const byParam = trimmed.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+    if (byParam) return `https://drive.google.com/thumbnail?id=${byParam[1]}&sz=w800`;
   } 
   return trimmed; 
 };
@@ -227,7 +230,7 @@ const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite:
  return (
   <div onClick={onClick} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl flex flex-col">
    <div className="relative aspect-video overflow-hidden shrink-0">
-    <img src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} alt={offer.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+    <img src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} alt={offer.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" decoding="async" />
     <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
      <div className={`px-2.5 py-1 text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-400 border border-white/10'}`}><Clock size={10} fill={badge.isNew ? "currentColor" : "none"} /> {badge.text}</div>
      {offer.trend.trim().toLowerCase() === 'escalando' && (<div className="px-2.5 py-1 bg-green-600 text-white text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-2xl"><Zap size={10} fill="currentColor" /> Escalando</div>)}
@@ -361,8 +364,11 @@ const App: React.FC = () => {
 
  const applyEliteFilters = useCallback((data: Offer[]) => {
   return data.filter(offer => {
-   const searchLower = searchQuery.toLowerCase();
-   const matchesSearch = offer.title.toLowerCase().includes(searchLower) || (offer.description && offer.description.toLowerCase().includes(searchLower));
+   const searchLower = searchQuery.toLowerCase().trim();
+   // Busca apenas por título e nicho — description é texto genérico e causa falsos positivos
+   const matchesSearch = !searchLower || 
+     offer.title.toLowerCase().includes(searchLower) || 
+     offer.niche.toLowerCase().includes(searchLower);
    const matchesNiche = selectedNiche === 'Todos' || offer.niche === selectedNiche;
    const matchesLanguage = selectedLanguage === 'Todos' || offer.language === selectedLanguage;
    const matchesType = selectedType === 'Todos' || offer.productType === selectedType;
@@ -396,6 +402,7 @@ const App: React.FC = () => {
   const newViewed = [offer.id, ...recentlyViewed.filter(id => id !== offer.id)].slice(0, 8);
   setRecentlyViewed(newViewed);
   if (agentId) localStorage.setItem(getViewedKey(agentId), JSON.stringify(newViewed));
+  setActiveVslIndex(0); // Sempre inicia no primeiro VSL
   setSelectedOffer(offer);
   pushNavState({ sid: offer.id });
   window.scrollTo({ top: 0, behavior: 'smooth' });
