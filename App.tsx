@@ -455,11 +455,35 @@ const App: React.FC = () => {
     setLoading(true);
     const res = await fetch(CSV_URL);
     const text = await res.text();
-    const lines = text.split(/\r?\n/).filter(l => l.trim());
-    if (lines.length < 2) return;
-    const parsed: Offer[] = lines.slice(2).map((l, i) => {
-     const v = l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.trim().replace(/^"|"$/g, '').trim());
-     if (!v[1] || v[1].toLowerCase() === 'undefined') return null;
+
+    // Parser robusto: suporta quebras de linha dentro de células com aspas
+    const parseCSVRobust = (csvText: string): string[][] => {
+      const rows: string[][] = [];
+      let currentRow: string[] = [];
+      let cell = '';
+      let inQuotes = false;
+      for (let i = 0; i < csvText.length; i++) {
+        const char = csvText[i];
+        const next = csvText[i + 1];
+        if (char === '"' && inQuotes && next === '"') { cell += '"'; i++; }
+        else if (char === '"') { inQuotes = !inQuotes; }
+        else if (char === ',' && !inQuotes) { currentRow.push(cell.trim()); cell = ''; }
+        else if ((char === '\n' || char === '\r') && !inQuotes) {
+          if (char === '\r' && next === '\n') i++;
+          currentRow.push(cell.trim());
+          if (currentRow.some(c => c.trim())) rows.push(currentRow);
+          currentRow = []; cell = '';
+        } else { cell += char; }
+      }
+      if (cell || currentRow.length > 0) { currentRow.push(cell.trim()); if (currentRow.some(c => c.trim())) rows.push(currentRow); }
+      return rows;
+    };
+
+    const allRows = parseCSVRobust(text);
+    if (allRows.length < 3) return;
+
+    const parsed: Offer[] = allRows.slice(2).map((v, i) => {
+     if (!v[1] || v[1].toLowerCase() === 'undefined' || v[1].trim() === '') return null;
      return {
       id: v[0] || String(i), title: v[1], niche: v[2] || 'Geral', productType: v[3] || 'Geral', description: v[4] || '', coverImage: v[5] || '', trend: (v[6] as Trend) || 'Estável', views: v[7] || '', vslLinks: (v[8] || '').split(',').map(u => ({ label: 'VSL Principal', url: u.trim() })).filter(link => link.url), vslDownloadUrl: v[9] || '#', transcriptionUrl: v[10] || '#', creativeEmbedUrls: (v[11] || '').split(',').map(s => s.trim()).filter(Boolean), creativeDownloadUrls: (v[12] || '').split(',').map(s => s.trim()).filter(Boolean), facebookUrl: v[13] || '#', pageUrl: v[14] || '#', language: v[15] || 'Português', trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), creativeZipUrl: v[17] || '#', addedDate: v[18] || '', status: (v[19] || '').toUpperCase(), creativeImages: [],
      };
@@ -481,7 +505,11 @@ const App: React.FC = () => {
  };
 
  const dismissSuccess = () => {
-  setIsSuccess(false); const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname; window.history.replaceState({ path: newUrl }, '', newUrl); const cleanId = newlyGeneratedId; setAgentId(cleanId); setIsLoggedIn(true); localStorage.setItem('agente_token', cleanId); setFavorites([]); setRecentlyViewed([]);
+  setIsSuccess(false);
+  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+  window.history.replaceState({ path: newUrl }, '', newUrl);
+  const savedId = localStorage.getItem('agente_token');
+  if (savedId) { checkLogin(savedId, true); }
  };
 
  const renderSupportPage = () => (
