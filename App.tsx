@@ -18,31 +18,44 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- CONFIGURAÇÃO DOS LINKS ---
+// --- ⚠️ CONFIGURAÇÃO DOS LINKS ⚠️ ---
 const LINKS = {
-    KIWIFY: { MENSAL: "https://pay.kiwify.com.br/mtU9l7e", TRIMESTRAL: "https://pay.kiwify.com.br/ExDtrjE" },
-    HOTMART: { MENSAL: "https://pay.hotmart.com/H104019113G?bid=1769103375372", TRIMESTRAL: "https://pay.hotmart.com/H104019113G?off=fc7oudim" }
+    KIWIFY: {
+        MENSAL: "https://pay.kiwify.com.br/mtU9l7e", 
+        TRIMESTRAL: "https://pay.kiwify.com.br/ExDtrjE"
+    },
+    HOTMART: {
+        MENSAL: "https://pay.hotmart.com/H104019113G?bid=1769103375372",
+        TRIMESTRAL: "https://pay.hotmart.com/H104019113G?off=fc7oudim"
+    }
 };
 
 const WHATSAPP_NUMBER = "5573981414083"; 
 const SUPPORT_EMAIL = 'suporte@007swiper.com';
+const NO_VSL_PLACEHOLDER = 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1600&auto=format&fit=crop'; 
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6N1u2xV-Of_muP_LJY9OGC77qXDOJ254TVzwpYAb-Ew8X-6-ZL3ZurlTiAwy19w/pub?output=csv';
 const COMMUNITY_LINK = "https://chat.whatsapp.com/DVQrZLpHFR31KUgmPq6ibL";
 
+// TIPAGEM
 type Trend = 'Escalando' | 'Em Alta' | 'Estável';
 interface Offer {
   id: string; title: string; niche: string; productType: string; description: string; coverImage: string; trend: Trend; views: string; vslLinks: { label: string; url: string }[]; vslDownloadUrl: string; transcriptionUrl: string; creativeEmbedUrls: string[]; creativeDownloadUrls: string[]; facebookUrl: string; pageUrl: string; language: string; trafficSource: string[]; creativeZipUrl: string; addedDate: string; status: string; creativeImages: string[];
 }
 
 const STYLES = `
- @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
- :root { --brand-gold: #D4AF37; --brand-dark: #050505; --brand-card: #0d0d0d; }
- body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--brand-dark); color: #ffffff; margin: 0; overflow-x: hidden; }
- .btn-elite { background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%); color: #000; font-weight: 800; text-transform: uppercase; transition: all 0.3s ease; }
- .btn-elite:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
- ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #050505; } ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+ :root { --brand-gold: #D4AF37; --brand-dark: #0a0a0a; --brand-card: #121212; --brand-hover: #1a1a1a; }
+ body { font-family: 'Inter', sans-serif; background-color: var(--brand-dark); color: #ffffff; margin: 0; overflow-x: hidden; }
+ .gold-border { border: 1px solid rgba(212, 175, 55, 0.3); }
+ .gold-text { color: #D4AF37; } .gold-bg { background-color: #D4AF37; }
+ .btn-elite { background-color: #D4AF37; color: #000; font-weight: 900; text-transform: uppercase; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
+ .btn-elite:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
+ ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #0a0a0a; } ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+ @keyframes btnPulse { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); } }
+ .animate-btn-pulse { animation: btnPulse 2s infinite; }
 `;
 
+// --- UTILS ---
 const getDriveDirectLink = (url: string) => { 
   if (!url) return ''; 
   const trimmed = url.trim(); 
@@ -52,7 +65,6 @@ const getDriveDirectLink = (url: string) => {
   } 
   return trimmed; 
 };
-
 const isDirectVideo = (url: string) => { const clean = url.trim().toLowerCase(); return clean.includes('.mp4') || clean.includes('.m3u8') || clean.includes('bunny.net') || clean.includes('b-cdn.net') || clean.includes('mediapack'); };
 
 const getFastDownloadUrl = (url: string) => {
@@ -74,6 +86,7 @@ const getOriginalDownloadUrl = (url: string) => {
   } return trimmed;
 };
 
+// --- COMPONENTES ---
 const RecuperarID = ({ onBack }: { onBack: () => void }) => {
   const [email, setEmail] = useState('');
   const [resultado, setResultado] = useState<string | null>(null);
@@ -89,13 +102,13 @@ const RecuperarID = ({ onBack }: { onBack: () => void }) => {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 animate-in fade-in">
       <button onClick={onBack} className="absolute top-10 left-10 text-[#D4AF37] flex items-center gap-2 font-black uppercase italic text-xs"><ArrowLeft size={16}/> Voltar</button>
-      <div className="max-w-md w-full border border-white/10 bg-[#0d0d0d] p-8 rounded-[32px] shadow-2xl">
+      <div className="max-w-md w-full border border-zinc-800 bg-zinc-950 p-8 rounded-[32px] shadow-2xl">
         <h2 className="text-2xl font-black text-[#D4AF37] italic uppercase mb-6 text-center">Recuperar Acesso</h2>
         <form onSubmit={buscarID} className="space-y-4">
-          <input type="email" placeholder="seu@email.com" className="w-full bg-black border border-white/10 p-4 rounded-xl focus:border-[#D4AF37] outline-none text-white" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <button className="w-full btn-elite p-4 rounded-xl uppercase italic">Consultar</button>
+          <input type="email" placeholder="seu@email.com" className="w-full bg-black border border-zinc-800 p-4 rounded-xl focus:border-[#D4AF37] outline-none text-white" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <button className="w-full bg-[#D4AF37] text-black font-black p-4 rounded-xl hover:bg-white transition-all uppercase italic">Consultar</button>
         </form>
-        {resultado && <div className="mt-8 p-6 bg-white/5 border border-[#D4AF37]/50 rounded-2xl text-center"><p className="text-xs text-zinc-500 uppercase mb-2">Sua Credencial:</p><p className="text-2xl font-black text-white">{resultado}</p></div>}
+        {resultado && <div className="mt-8 p-6 bg-zinc-900 border border-[#D4AF37] rounded-2xl text-center"><p className="text-xs text-zinc-500 uppercase mb-2">Sua Credencial:</p><p className="text-2xl font-black text-white">{resultado}</p></div>}
       </div>
     </div>
   );
@@ -110,34 +123,58 @@ const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
     setAgentes(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   };
 
-  useEffect(() => { buscarAgentes(); }, []);
+  useEffect(() => {
+    buscarAgentes();
+  }, []);
 
   const toggleStatus = async (id: string, currentStatus: boolean) => {
     const action = currentStatus ? "SUSPENDER" : "REATIVAR";
     if (!window.confirm(`Deseja realmente ${action} o acesso deste agente?`)) return;
+    
     try {
       const docRef = doc(db, "agentes", id);
       await updateDoc(docRef, { ativo: !currentStatus });
       alert(`Agente ${action === "SUSPENDER" ? "suspenso" : "reativado"} com sucesso!`);
       buscarAgentes(); 
-    } catch (err) { alert("Erro ao atualizar status."); console.error(err); }
+    } catch (err) {
+      alert("Erro ao atualizar status.");
+      console.error(err);
+    }
   };
 
   return (
     <div className="min-h-screen bg-black text-white p-10 animate-in fade-in">
       <button onClick={onBack} className="mb-8 text-[#D4AF37] flex items-center gap-2 font-black uppercase italic text-xs"><ArrowLeft size={16}/> Sair</button>
       <h1 className="text-3xl font-black mb-10 italic uppercase text-center">Base <span className="text-[#D4AF37]">Agentes</span></h1>
-      <div className="max-w-6xl mx-auto overflow-x-auto border border-white/10 rounded-3xl bg-[#0d0d0d] shadow-2xl">
+      <div className="max-w-6xl mx-auto overflow-x-auto border border-zinc-800 rounded-3xl bg-zinc-950 shadow-2xl">
         <table className="w-full text-left text-sm">
-          <thead className="bg-white/5 text-[10px] uppercase text-gray-500">
-            <tr><th className="p-4">ID / Senha</th><th className="p-4">Email</th><th className="p-4">Status</th><th className="p-4">Último Acesso</th><th className="p-4 text-center">Ação</th></tr>
+          <thead className="bg-zinc-900 text-[10px] uppercase text-zinc-500">
+            <tr>
+              <th className="p-4">ID / Senha</th>
+              <th className="p-4">Email</th>
+              <th className="p-4">Status</th>
+              <th className="p-4">Último Acesso</th>
+              <th className="p-4 text-center">Ação</th>
+            </tr>
           </thead>
           <tbody>{agentes.map(a => (
-            <tr key={a.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                <td className="p-4 text-[#D4AF37] font-bold">{a.id}</td><td className="p-4">{a.email}</td>
-                <td className={`p-4 font-black ${a.ativo ? 'text-green-500' : 'text-red-500'}`}>{a.ativo ? 'ATIVO' : 'SUSPENSO'}</td>
-                <td className="p-4 text-gray-500">{a.ultimo_acesso ? a.ultimo_acesso.toDate().toLocaleString('pt-PT') : 'Sem registos'}</td>
-                <td className="p-4 text-center"><button onClick={() => toggleStatus(a.id, a.ativo)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all shadow-lg ${a.ativo ? 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white' : 'bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-white'}`}>{a.ativo ? 'Suspender' : 'Reativar'}</button></td>
+            <tr key={a.id} className="border-b border-zinc-900 hover:bg-white/5 transition-colors">
+                <td className="p-4 text-[#D4AF37] font-bold">{a.id}</td>
+                <td className="p-4">{a.email}</td>
+                <td className={`p-4 font-black ${a.ativo ? 'text-green-500' : 'text-red-500'}`}>
+                    {a.ativo ? 'ATIVO' : 'SUSPENSO'}
+                </td>
+                <td className="p-4 text-zinc-400">
+                    {a.ultimo_acesso ? a.ultimo_acesso.toDate().toLocaleString('pt-BR') : 'Sem registros'}
+                </td>
+                <td className="p-4 text-center">
+                    <button 
+                      onClick={() => toggleStatus(a.id, a.ativo)}
+                      className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all shadow-lg ${a.ativo ? 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white' : 'bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-white'}`}
+                    >
+                      {a.ativo ? 'Suspender' : 'Reativar'}
+                    </button>
+                </td>
             </tr>
           ))}</tbody>
         </table>
@@ -147,24 +184,25 @@ const PainelAdmin = ({ onBack }: { onBack: () => void }) => {
 };
 
 const SidebarItem: React.FC<{ icon: any; label: string; active: boolean; onClick: () => void; variant?: 'default' | 'danger' | 'gold'; }> = ({ icon: Icon, label, active, onClick, variant = 'default' }) => (
- <button onClick={onClick} className={`w-full flex items-center space-x-3 px-4 md:px-5 py-3.5 rounded-xl transition-all duration-300 ${active ? 'bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20' : variant === 'gold' ? 'text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black' : variant === 'danger' ? 'text-red-500 hover:bg-red-500/10' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}><Icon size={18} /><span className="text-xs uppercase tracking-tighter font-black">{label}</span></button>
+ <button onClick={onClick} className={`w-full flex items-center space-x-3 px-4 md:px-5 py-3.5 rounded-xl transition-all duration-300 ${active ? 'bg-[#D4AF37] text-black font-black shadow-lg shadow-[#D4AF37]/20' : variant === 'gold' ? 'text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37] hover:text-black' : variant === 'danger' ? 'text-red-500 hover:bg-red-500/10' : 'text-gray-400 hover:bg-[#1a1a1a] hover:text-white'}`}><Icon size={18} /><span className="text-xs uppercase tracking-tighter font-black">{label}</span></button>
 );
 
 const TrafficIcon: React.FC<{ source: string }> = ({ source }) => { const normalized = source.toLowerCase().trim(); if (normalized.includes('facebook')) return <Facebook size={14} className="text-blue-500" />; if (normalized.includes('youtube') || normalized.includes('google')) return <Youtube size={14} className="text-red-500" />; if (normalized.includes('tiktok')) return <Smartphone size={14} className="text-pink-500" />; if (normalized.includes('instagram')) return <Smartphone size={14} className="text-purple-500" />; return <Target size={14} className="text-[#D4AF37]" />; };
 
-// 🛡️ PLAYER DE VÍDEO CORRIGIDO: Se for imagem, renderiza imagem sem quebrar o layout. Usa aspect-video.
+// 🛡️ O ESCUDO ANTI-IMAGEM: Se a planilha injetar foto no lugar de vídeo, a plataforma não quebra.
 const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creative' }> = ({ url, title, type = 'vsl' }) => { 
   const trimmed = url ? url.trim() : '';
   if (!trimmed) return (
-    <div className="w-full aspect-video bg-[#0a0a0a] flex items-center justify-center border border-white/5 rounded-2xl relative overflow-hidden">
+    <div className="w-full aspect-video bg-[#0a0a0a] flex items-center justify-center border border-white/5 rounded-[24px] relative overflow-hidden">
       <div className="relative z-10 flex flex-col items-center justify-center p-6 text-center">
         <div className="bg-black/50 p-4 rounded-full backdrop-blur-sm border border-white/10 mb-4"><ZapOff size={32} className="text-gray-500" /></div>
-        <p className="text-gray-500 font-black uppercase text-xs tracking-[0.2em]">{type === 'vsl' ? "ESTA OFERTA NÃO TEM VSL" : "VÍDEO INDISPONÍVEL"}</p>
+        <p className="text-gray-500 font-black uppercase text-xs tracking-[0.2em]">{type === 'vsl' ? "ESSA OFERTA NÃO TEM VSL" : "VÍDEO INDISPONÍVEL"}</p>
       </div>
     </div>
   ); 
 
   let content;
+  // Identifica imagens ou miniaturas do Google Drive
   if (trimmed.match(/\.(jpeg|jpg|gif|png|webp)$/i) || trimmed.includes('drive.google.com/thumbnail')) {
     content = <img src={trimmed} alt="Media" className="w-full h-full object-contain bg-black" />;
   } else if (trimmed.includes('bunny.net') || trimmed.includes('b-cdn.net')) {
@@ -184,30 +222,34 @@ const VideoPlayer: React.FC<{ url: string; title?: string; type?: 'vsl' | 'creat
     const embedUrl = trimmed.includes('vimeo.com') ? `https://player.vimeo.com/video/${trimmed.match(/(?:vimeo\.com\/|video\/)([0-9]+)/)?.[1]}` : (trimmed.includes('youtube.com') ? `https://www.youtube.com/embed/${trimmed.match(/(?:v=|youtu\.be\/)([^&?]+)/)?.[1]}` : trimmed);
     content = <iframe className="w-full h-full" src={embedUrl} frameBorder="0" allowFullScreen></iframe>;
   }
-  return <div className="w-full aspect-video flex items-center justify-center bg-black rounded-2xl overflow-hidden shadow-2xl relative">{content}</div>;
+  
+  // O aspect-video assegura que o container respeite proporção 16:9 sempre.
+  return <div className="w-full aspect-video flex items-center justify-center bg-black rounded-[24px] overflow-hidden shadow-2xl relative border border-white/5">{content}</div>;
 };
 
 const OfferCard: React.FC<{ offer: Offer; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; onClick: () => void; }> = ({ offer, isFavorite, onToggleFavorite, onClick }) => {
- const getBadgeInfo = () => { if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false, dias: 15 }; const dataOferta = new Date(offer.addedDate + 'T00:00:00'); const hoje = new Date(); hoje.setHours(0, 0, 0, 0); const diffTempo = hoje.getTime() - dataOferta.getTime(); const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24)); if (diffDias <= 0) return { text: "ADICIONADO HOJE", isNew: true, dias: 1 }; if (diffDias <= 7) return { text: `HÁ ${diffDias} DIAS`, isNew: true, dias: diffDias }; return { text: "OFERTA VIP", isNew: false, dias: diffDias }; };
+ const getBadgeInfo = () => { if (!offer.addedDate) return { text: "OFERTA VIP", isNew: false, dias: 30 }; const dataOferta = new Date(offer.addedDate + 'T00:00:00'); const hoje = new Date(); hoje.setHours(0, 0, 0, 0); const diffTempo = hoje.getTime() - dataOferta.getTime(); const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24)); if (diffDias <= 0) return { text: "ADICIONADO: HOJE", isNew: true, dias: 1 }; if (diffDias === 1) return { text: "ADICIONADO: HÁ 1 DIA", isNew: true, dias: 1 }; if (diffDias >= 2 && diffDias <= 7) return { text: `ADICIONADO: HÁ ${diffDias} DIAS`, isNew: true, dias: diffDias }; return { text: "OFERTA: +7 DIAS", isNew: false, dias: diffDias }; };
  const badge = getBadgeInfo();
  return (
-  <div onClick={onClick} className="bg-[#0d0d0d] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl flex flex-col h-full">
+  <div onClick={onClick} className="bg-[#121212] rounded-2xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 transition-all duration-500 shadow-xl flex flex-col relative h-full">
    <div className="relative aspect-video overflow-hidden shrink-0">
-    <img src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} alt={offer.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+    <img src={getDriveDirectLink(offer.coverImage) || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800'} alt={offer.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
     <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
      <div className={`px-2.5 py-1 text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-2xl ${badge.isNew ? 'bg-[#D4AF37] text-black animate-pulse' : 'bg-[#1a1a1a] text-gray-400 border border-white/10'}`}><Clock size={10} fill={badge.isNew ? "currentColor" : "none"} /> {badge.text}</div>
      {offer.trend.trim().toLowerCase() === 'escalando' && (<div className="px-2.5 py-1 bg-green-600 text-white text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-2xl"><Zap size={10} fill="currentColor" /> Escalando</div>)}
      {offer.trend.trim().toLowerCase() === 'em alta' && (<div className="px-2.5 py-1 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase flex items-center gap-1 shadow-2xl"><TrendingUp size={10} className="w-3 h-3" /> Em Alta</div>)}
     </div>
-    <div className="absolute top-3 right-3"><button onClick={onToggleFavorite} className={`p-2 rounded-xl backdrop-blur-xl transition-all duration-300 ${isFavorite ? 'bg-[#D4AF37] text-black scale-110' : 'bg-black/40 text-white hover:bg-[#D4AF37] hover:text-black'}`}><Star size={16} fill={isFavorite ? "currentColor" : "none"} /></button></div>
+    <div className="absolute top-3 right-3"><button onClick={onToggleFavorite} className={`p-2 rounded-xl backdrop-blur-xl transition-all duration-300 ${isFavorite ? 'bg-[#D4AF37] text-black scale-110' : 'bg-[#D4AF37]/20 text-white hover:bg-[#D4AF37] hover:text-black'}`}><Star size={16} fill={isFavorite ? "currentColor" : "none"} /></button></div>
     <div className="absolute bottom-3 left-3"><div className="px-2 py-0.5 bg-[#D4AF37] text-black text-[9px] font-black rounded uppercase shadow-lg">{offer.niche}</div></div>
    </div>
    <div className="p-4 flex flex-col flex-1">
-    <h3 className="font-bold text-white mb-3 line-clamp-2 text-[13px] md:text-sm tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors">{offer.title}</h3>
+    <h3 className="font-bold text-white mb-2 line-clamp-2 text-[13px] md:text-sm tracking-tight uppercase group-hover:text-[#D4AF37] transition-colors">{offer.title}</h3>
+    
     <div className="flex flex-wrap items-center gap-2 mb-3 mt-1">
       <span className="text-gray-400 text-[9px] uppercase font-black bg-white/5 px-2 py-1 rounded border border-white/5 flex items-center gap-1"><Calendar size={10}/> {badge.dias > 0 ? badge.dias : 1} DIAS ATIVO</span>
       <span className="text-[#D4AF37] text-[9px] uppercase font-black bg-[#D4AF37]/10 px-2 py-1 rounded border border-[#D4AF37]/20 flex items-center gap-1"><Flame size={10} className={offer.views ? "animate-pulse" : ""}/> {offer.views ? `${offer.views} CÓPIAS` : 'TESTANDO'}</span>
     </div>
+
     <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-3">
      <div className="flex items-center gap-2">{offer.trafficSource.slice(0, 2).map((source, idx) => <TrafficIcon key={idx} source={source} />)}<span className="text-gray-500 text-[9px] font-bold uppercase tracking-widest">{offer.productType}</span></div>
     </div>
@@ -221,7 +263,7 @@ const SelectionGrid = ({ items, onSelect, Icon, label }: any) => (
    <div className="flex flex-col mb-12"><h2 className="text-3xl font-black text-white uppercase italic flex items-center gap-4"><Icon className="text-[#D4AF37]" size={32} />{label}</h2><p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 italic">Selecione uma categoria para infiltrar nos dados</p></div>
    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
     {items.map((item: string, idx: number) => (
-     <button key={idx} onClick={() => onSelect(item)} className="group bg-[#0d0d0d] border border-white/5 hover:border-[#D4AF37]/50 p-6 md:p-8 rounded-[32px] text-left transition-all hover:scale-[1.02] shadow-xl flex flex-col justify-between h-48 relative overflow-hidden">
+     <button key={idx} onClick={() => onSelect(item)} className="group bg-[#121212] border border-white/5 hover:border-[#D4AF37]/50 p-6 md:p-8 rounded-[32px] text-left transition-all hover:scale-[1.02] shadow-xl flex flex-col justify-between h-48 relative overflow-hidden">
       <div className="absolute -right-4 -bottom-4 text-white/5 group-hover:text-[#D4AF37]/10 transition-colors"><Icon size={120} /></div>
       <p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest italic mb-2">Categoria 00{idx + 1}</p>
       <span className="text-white text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none group-hover:text-[#D4AF37] transition-colors relative z-10">{item}</span>
@@ -267,14 +309,14 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess, onRecover,
     const isHotmart = params.get('src') === 'afiliado' || params.get('src') === 'hotmart';
     const activeLinks = isHotmart ? LINKS.HOTMART : LINKS.KIWIFY;
     return (
-        <div className="w-full bg-[#050505] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
+        <div className="w-full bg-[#0a0a0a] flex flex-col items-center selection:bg-[#D4AF37] selection:text-black overflow-x-hidden">
         <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-        {isSuccess && (<div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500"><div className="w-full max-w-2xl bg-[#0d0d0d] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div><div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]"><ShieldCheck size={48} className="text-black" /></div><h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO À INTELIGÊNCIA LIBERADO!</h2><p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10 leading-relaxed">Sua operação de rastreio de elite começa agora. Sua credencial é única e privada.</p><div className="bg-black border border-white/5 rounded-2xl p-6 mb-12"><p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">ESTA É A SUA CREDENCIAL</p><div className="flex items-center justify-center gap-4"><span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic">{agentId}</span><button onClick={() => {navigator.clipboard.writeText(agentId);alert('ID COPIADO! 🛡️');}} className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"><Copy size={20} /></button></div></div><button onClick={onDismissSuccess} className="w-full py-5 btn-elite rounded-2xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter">[ACESSAR ARSENAL]</button></div></div>)}
+        {isSuccess && (<div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-500"><div className="w-full max-w-2xl bg-[#121212] border-2 border-[#D4AF37] rounded-[40px] p-8 md:p-12 text-center shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div><div className="bg-[#D4AF37] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)]"><ShieldCheck size={48} className="text-black" /></div><h2 className="text-[#D4AF37] font-black uppercase text-2xl md:text-4xl tracking-tighter italic mb-4">ACESSO À INTELIGÊNCIA LIBERADO!</h2><p className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-10 leading-relaxed">Sua operação de rastreio de elite começa agora. Sua credencial é única e privada.</p><div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-12"><p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">ESTA É SUA CREDENCIAL ÚNICA E PRIVADA</p><div className="flex items-center justify-center gap-4"><span className="text-white text-3xl md:text-5xl font-black tracking-tighter italic selection:bg-[#D4AF37] selection:text-black">{agentId}</span><button onClick={() => {navigator.clipboard.writeText(agentId);alert('ID COPIADO! 🛡️');}} className="p-3 bg-white/5 hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl text-gray-400"><Copy size={20} /></button></div></div><button onClick={onDismissSuccess} className="w-full py-5 bg-[#D4AF37] text-black font-black rounded-2xl uppercase hover:scale-105 transition-all shadow-xl italic tracking-tighter animate-btn-pulse">[ACESSAR ARSENAL]</button></div></div>)}
         <nav className="w-full max-w-7xl px-4 md:px-8 py-10 flex justify-between items-center relative z-50 mx-auto">
         <div className="flex items-center space-x-3"><div className="bg-[#D4AF37] p-2 rounded-xl rotate-3 shadow-xl shadow-[#D4AF37]/20"><Eye className="text-black" size={28} /></div><span className="text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">007 SWIPER</span></div>
         <div className="flex items-center gap-4">
             <button onClick={onRecover} className="text-gray-500 hover:text-[#D4AF37] text-[10px] font-black uppercase italic tracking-widest hidden md:block">Recuperar ID</button>
-            <button onClick={onLogin} className="px-6 py-2.5 btn-elite rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter italic"><Lock size={14} className="inline mr-2" /> Entrar</button>
+            <button onClick={onLogin} className="px-6 py-2.5 bg-[#D4AF37] hover:bg-yellow-600 text-black font-black rounded-full transition-all shadow-xl uppercase text-xs tracking-tighter italic"><Lock size={14} className="inline mr-2" /> Entrar</button>
         </div>
         </nav>
         <main className="w-full max-w-7xl px-4 md:px-8 flex flex-col items-center justify-center text-center mt-12 mb-32 relative mx-auto">
@@ -282,12 +324,12 @@ const LandingPage = ({ onLogin, isSuccess, agentId, onDismissSuccess, onRecover,
         <div className="inline-block px-5 py-2 mb-10 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mx-auto">Inteligência de Mercado em Tempo Real</div>
         <h1 className="text-4xl md:text-7xl lg:text-8xl font-black text-white mb-10 leading-[1.0] tracking-tighter uppercase italic max-w-6xl mx-auto text-center">ACESSE SEM LIMITES AS OFERTAS MAIS LUCRATIVAS E ESCALADAS DO MERCADO DE RESPOSTA DIRETA <span className="text-[#D4AF37]">ANTES DA CONCORRÊNCIA.</span></h1>
         <p className="text-gray-400 text-lg md:text-2xl font-medium max-w-5xl mb-20 italic leading-relaxed px-2 mx-auto text-center">Rastreie, analise e modele VSLs, criativos e funis que estão gerando milhões em YouTube Ads, Facebook Ads e TikTok Ads. O fim do "achismo" na sua escala digital.</p>
-        <section className="w-full max-w-4xl aspect-video bg-[#0d0d0d] rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center group cursor-pointer transition-all hover:border-[#D4AF37]/40 mx-auto mb-32"><div className="bg-[#D4AF37] p-6 rounded-full shadow-[0_0_40px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-500 mb-6 flex items-center justify-center"><Play size={40} fill="black" className="text-black ml-1" /></div><p className="text-white font-black uppercase text-[10px] md:text-xs tracking-[0.25em] italic max-w-md px-8 leading-relaxed text-center">Descubra como rastreamos e organizamos ofertas escaladas em tempo real</p></section>
+        <section className="w-full max-w-4xl aspect-video bg-[#121212] rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center group cursor-pointer transition-all hover:border-[#D4AF37]/40 mx-auto mb-32"><div className="bg-[#D4AF37] p-6 rounded-full shadow-[0_0_40px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-500 mb-6 flex items-center justify-center"><Play size={40} fill="black" className="text-black ml-1" /></div><p className="text-white font-black uppercase text-[10px] md:text-xs tracking-[0.25em] italic max-w-md px-8 leading-relaxed text-center">Descubra como rastreamos e organizamos ofertas escaladas em tempo real</p></section>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 w-full max-w-5xl mb-40 px-4 justify-center items-stretch mx-auto">
-            <div className="bg-[#0d0d0d] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black text-white italic">R$ 197</span><span className="text-gray-500 font-black text-sm uppercase">/mês</span></div><ul className="space-y-4 mb-12 flex-1">{['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(activeLinks.MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter shadow-xl italic">QUERO ACESSO MENSAL</button></div>
-            <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-[#D4AF37]"><div className="absolute top-6 right-8 bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">Economize R$ 94</div><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black italic">R$ 497</span><span className="text-gray-400 font-black text-sm uppercase">/trimestre</span></div><ul className="space-y-4 mb-12 flex-1">{['Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(activeLinks.TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#050505] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter italic">ASSINAR PLANO TRIMESTRAL</button></div>
+            <div className="bg-[#121212] border border-white/5 rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group hover:border-[#D4AF37]/30 transition-all flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)]"><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO MENSAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black text-white italic">R$ 197</span><span className="text-gray-500 font-black text-sm uppercase">/mês</span></div><ul className="space-y-4 mb-12 flex-1">{['Banco de Ofertas VIP', 'Arsenal de Criativos', 'Histórico de Escala', 'Templates de Funil', 'Transcrições de VSL', 'Radar de Tendências', '007 Academy', 'Hub de Afiliação', 'Cloaker VIP', 'Suporte Prioritário'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-400 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(activeLinks.MENSAL, '_blank')} className="w-full py-5 bg-white text-black font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-tighter animate-btn-pulse shadow-xl italic">QUERO ACESSO MENSAL</button></div>
+            <div className="bg-white text-black rounded-[40px] p-8 md:p-12 text-left relative overflow-hidden group shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col scale-105 border-t-[8px] border-[#D4AF37]"><div className="absolute top-6 right-8 bg-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">Economize R$ 94</div><h3 className="text-[#D4AF37] font-black uppercase text-xl italic mb-1 tracking-tight">PLANO TRIMESTRAL</h3><div className="flex items-baseline gap-2 mb-10"><span className="text-5xl font-black italic">R$ 497</span><span className="text-gray-400 font-black text-sm uppercase">/trimestre</span></div><ul className="space-y-4 mb-12 flex-1">{['Acesso a Todas as Ofertas', 'Banco de Criativos Híbrido', 'Comunidade VIP Exclusiva', 'Checklist de Modelagem 007', '12% OFF na IDL Edições', 'Transcrições Ilimitadas', 'Radar de Tendências Global', 'Hub de Afiliação Premium', 'Academy Completo', 'Suporte Agente Black'].map((item, i) => (<li key={i} className="flex items-center gap-3 text-gray-700 text-sm font-bold italic"><CheckCircle size={16} className="text-[#D4AF37] shrink-0" /> {item}</li>))}</ul><button onClick={() => window.open(activeLinks.TRIMESTRAL, '_blank')} className="w-full py-5 bg-[#0a0a0a] text-[#D4AF37] font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl uppercase tracking-tighter animate-btn-pulse italic">ASSINAR PLANO TRIMESTRAL</button></div>
         </div>
-        <div className="w-full max-w-5xl mx-auto mb-40 px-4 font-black"><div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]"><div className="flex flex-col items-center shrink-0"><div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative shadow-[0_0_40px_rgba(212,175,55,0.2)]"><span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span></div><div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] -mt-5 relative z-10 shadow-xl">DIAS</div></div><div className="flex-1 text-center md:text-left space-y-6"><h2 className="text-white text-3xl md:text-5xl font-black italic uppercase tracking-tighter">GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span></h2><p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investimento. Sem perguntas.</p></div></div></div>
+        <div className="w-full max-w-5xl mx-auto mb-40 px-4 font-black"><div className="bg-[#050505] border border-[#D4AF37]/30 rounded-[40px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-[0_0_80px_rgba(212,175,55,0.1)]"><div className="flex flex-col items-center shrink-0"><div className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative shadow-[0_0_40px_rgba(212,175,55,0.2)]"><span className="text-[#D4AF37] text-6xl md:text-8xl font-black italic">7</span></div><div className="bg-[#D4AF37] text-black px-8 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] -mt-5 relative z-10 shadow-xl">DIAS</div></div><div className="flex-1 text-center md:text-left space-y-6"><h2 className="text-white text-3xl md:text-5xl font-black italic uppercase tracking-tighter">GARANTIA INCONDICIONAL DE <span className="text-[#D4AF37]">7 DIAS</span></h2><p className="text-gray-400 font-medium text-base md:text-xl leading-relaxed italic max-w-2xl">Estamos tão seguros da qualidade do nosso arsenal que oferecemos risco zero. Se em até 7 dias você não sentir que a plataforma é para você, devolvemos 100% do seu investmento. Sem perguntas.</p></div></div></div>
         <footer className="w-full max-w-7xl px-4 md:px-8 border-t border-white/5 pt-12 pb-20 mx-auto text-center"><p className="text-gray-600 text-xs font-bold uppercase tracking-widest italic">© 2026 007 SWIPER Intelligence Platform. Todos os direitos reservados.</p><div onDoubleClick={onAdmin} className="h-10 w-full opacity-0 cursor-default">.</div></footer>
         <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Olá,%20estou%20na%20página%20de%20vendas%20e%20tenho%20dúvidas!`, '_blank')} className="fixed bottom-8 right-8 z-[300] bg-[#25D366] text-white p-4 rounded-full shadow-[0_10px_40px_rgba(37,211,102,0.4)] hover:scale-110 transition-all group">
             <MessageCircle size={32} />
@@ -317,6 +359,7 @@ const App: React.FC = () => {
  const [activeNicheSelection, setActiveNicheSelection] = useState<string | null>(null);
  const [activeLanguageSelection, setActiveLanguageSelection] = useState<string | null>(null);
  const [isSuccess, setIsSuccess] = useState(false);
+ const [newlyGeneratedId, setNewlyGeneratedId] = useState<string>('');
  const [showRecuperar, setShowRecuperar] = useState(false);
  const [showAdmin, setShowAdmin] = useState(false);
 
@@ -328,7 +371,7 @@ const App: React.FC = () => {
  const getFavKey = (id: string) => `favs_${id}`;
  const getViewedKey = (id: string) => `viewed_${id}`;
 
- // 🛡️ FILTRO UNIVERSAL (Fix da pesquisa)
+ // 🛡️ O FILTRO OTIMIZADO PARA TODAS AS ABAS
  const applyEliteFilters = useCallback((data: Offer[]) => {
   return data.filter(offer => {
    const searchLower = searchQuery.toLowerCase();
@@ -426,7 +469,7 @@ const App: React.FC = () => {
     const res = await fetch(CSV_URL);
     const text = await res.text();
 
-    // 🛡️ PARSER DE CSV ROBUSTO (Ignora quebras de linha nas células)
+    // 🛡️ O PARSER DE TITÂNIO QUE NÃO TRAVA
     const parseCSVRobust = (csvText: string): string[][] => {
       const rows: string[][] = [];
       let currentRow: string[] = [];
@@ -445,10 +488,7 @@ const App: React.FC = () => {
           currentRow = []; cell = '';
         } else { cell += char; }
       }
-      if (cell || currentRow.length > 0) { 
-        currentRow.push(cell.trim()); 
-        if (currentRow.some(c => c.trim())) rows.push(currentRow); 
-      }
+      if (cell || currentRow.length > 0) { currentRow.push(cell.trim()); if (currentRow.some(c => c.trim())) rows.push(currentRow); }
       return rows;
     };
 
@@ -461,7 +501,6 @@ const App: React.FC = () => {
       id: v[0] || String(i), title: v[1], niche: v[2] || 'Geral', productType: v[3] || 'Geral', description: v[4] || '', coverImage: v[5] || '', trend: (v[6] as Trend) || 'Estável', views: v[7] || '', vslLinks: (v[8] || '').split(',').map(u => ({ label: 'VSL Principal', url: u.trim() })).filter(link => link.url), vslDownloadUrl: v[9] || '#', transcriptionUrl: v[10] || '#', creativeEmbedUrls: (v[11] || '').split(',').map(s => s.trim()).filter(Boolean), creativeDownloadUrls: (v[12] || '').split(',').map(s => s.trim()).filter(Boolean), facebookUrl: v[13] || '#', pageUrl: v[14] || '#', language: v[15] || 'Português', trafficSource: (v[16] || '').split(',').map(s => s.trim()).filter(Boolean), creativeZipUrl: v[17] || '#', addedDate: v[18] || '', status: (v[19] || '').toUpperCase(), creativeImages: [],
      };
     }).filter((o): o is Offer => o !== null);
-    
     const ofertasAtivas = parsed.filter(o => o.status === 'ATIVO');
     setOffers([...ofertasAtivas].reverse());
    } catch (e) { console.error(e); } finally { setLoading(false); }
@@ -493,15 +532,15 @@ const App: React.FC = () => {
             <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest italic">Escolha o canal de comunicação para sua missão</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-10">
-            <div className="bg-[#0d0d0d] border border-white/5 p-8 rounded-[40px] space-y-6 hover:border-[#D4AF37]/50 transition-all group shadow-2xl">
+            <div className="bg-[#121212] border border-white/5 p-8 rounded-[40px] space-y-6 hover:border-[#D4AF37]/50 transition-all group">
                 <div className="bg-red-500/10 w-16 h-16 rounded-2xl flex items-center justify-center text-red-500"><AlertTriangle size={32} /></div>
                 <div><h3 className="text-white font-black uppercase italic text-xl">Reportar Falha</h3><p className="text-zinc-500 text-sm mt-2">Encontrou um link quebrado ou vídeo que não carrega? Avise nossa inteligência agora.</p></div>
                 <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Agente%20007,%20identifiquei%20uma%20falha%20na%20plataforma`, '_blank')} className="w-full py-4 bg-white text-black font-black rounded-2xl uppercase italic text-sm hover:scale-105 transition-all">Acionar Suporte</button>
             </div>
-            <div className="bg-[#0d0d0d] border border-white/5 p-8 rounded-[40px] space-y-6 hover:border-[#D4AF37]/50 transition-all group shadow-2xl">
+            <div className="bg-[#121212] border border-white/5 p-8 rounded-[40px] space-y-6 hover:border-[#D4AF37]/50 transition-all group">
                 <div className="bg-[#D4AF37]/10 w-16 h-16 rounded-2xl flex items-center justify-center text-[#D4AF37]"><Zap size={32} /></div>
                 <div><h3 className="text-white font-black uppercase italic text-xl">Sugerir Melhoria</h3><p className="text-zinc-500 text-sm mt-2">Tem alguma oferta em mente ou sugestão para a plataforma? Queremos ouvir você.</p></div>
-                <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Agente%20007,%20tenho%20uma%20sugestão`, '_blank')} className="w-full py-4 btn-elite rounded-2xl uppercase italic text-sm hover:scale-105 transition-all">Enviar Sugestão</button>
+                <button onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=Agente%20007,%20tenho%20uma%20sugestão`, '_blank')} className="w-full py-4 bg-[#D4AF37] text-black font-black rounded-2xl uppercase italic text-sm hover:scale-105 transition-all">Enviar Sugestão</button>
             </div>
         </div>
     </div>
@@ -516,7 +555,7 @@ const App: React.FC = () => {
      {selectedOffer.views && selectedOffer.views.trim() !== '' && (<div className="flex items-center gap-3 bg-[#121212]/50 px-5 py-2.5 rounded-2xl border border-[#D4AF37]/40 w-fit shadow-[0_10px_30px_rgba(0,0,0,0.5)]"><Flame size={20} fill="currentColor" className="text-[#D4AF37] animate-pulse" /><span className="text-[#D4AF37] font-black text-sm md:text-base italic tracking-[0.1em]">{selectedOffer.views} ANÚNCIOS ATIVOS</span></div>)}
      <div className="flex flex-col lg:flex-row gap-8 items-stretch">
       <div className="w-full lg:w-[62%] space-y-6">
-       <div className="bg-[#0d0d0d] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
+       <div className="bg-[#121212] p-4 md:p-6 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden h-full flex flex-col">
         <div className="flex bg-black/40 p-1.5 gap-2 overflow-x-auto rounded-2xl mb-6 scrollbar-hide shrink-0">
           {selectedOffer.vslLinks.map((link, idx) => (
             <button key={idx} onClick={() => setActiveVslIndex(idx)} className={`px-5 py-2.5 text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 whitespace-nowrap ${activeVslIndex === idx ? 'bg-[#D4AF37] text-black' : 'text-gray-400 hover:text-white'}`}>
@@ -526,7 +565,7 @@ const App: React.FC = () => {
         </div>
         <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 relative z-10 flex-1 shadow-2xl"><VideoPlayer url={selectedOffer.vslLinks[activeVslIndex]?.url} title="VSL Player" type="vsl" /></div>
         <div className="mt-5 grid grid-cols-2 lg:flex lg:flex-row gap-3">
-           <a href={getFastDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 btn-elite text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] transition-all shadow-lg order-1"><Download size={14} /> VSL (LEVE)</a>
+           <a href={getFastDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] transition-all shadow-lg border border-[#D4AF37] order-1"><Download size={14} /> VSL (LEVE)</a>
            <a href={getOriginalDownloadUrl(selectedOffer.vslDownloadUrl)} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#1a1a1a] text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:text-white hover:bg-white/5 transition-all border border-white/5 order-2"><Video size={14} /> VSL (ORIGINAL)</a>
            <a href={selectedOffer.transcriptionUrl} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-[#1a1a1a] text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:text-white hover:bg-white/5 transition-all border border-white/5 order-3"><FileText size={14} /> TRANSCRIÇÃO</a>
            <button onClick={() => toggleFavorite(selectedOffer.id)} className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg border order-4 ${favorites.includes(selectedOffer.id) ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'bg-[#1a1a1a] text-zinc-400 border-white/5 hover:text-white'}`}><Star size={14} fill={favorites.includes(selectedOffer.id) ? "currentColor" : "none"} /> {favorites.includes(selectedOffer.id) ? 'FAVORITO' : 'FAVORITAR'}</button>
@@ -534,7 +573,7 @@ const App: React.FC = () => {
        </div>
       </div>
       <div className="w-full lg:w-[38%]">
-       <div className="bg-[#0d0d0d] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full flex flex-col">
+       <div className="bg-[#121212] p-6 md:p-8 rounded-[32px] border border-white/5 shadow-2xl h-full flex flex-col">
         <h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 flex items-center gap-3 italic shrink-0"><ShieldCheck className="w-4 h-4" /> INFORMAÇÕES DA OPERAÇÃO</h3>
         <div className="grid grid-cols-1 gap-4 md:gap-6 flex-1 overflow-y-auto pr-2 scrollbar-hide">{[{ icon: Info, label: 'NOME', value: selectedOffer.description || selectedOffer.title }, { icon: Tag, label: 'NICHO', value: selectedOffer.niche }, { icon: Lock, label: 'TIPO', value: selectedOffer.productType }, { icon: Globe, label: 'IDIOMA', value: selectedOffer.language }, { icon: Target, label: 'FONTE', value: selectedOffer.trafficSource.join(', ') }].map((item, idx) => (<div key={idx} className="flex flex-col p-4 bg-[#1a1a1a] rounded-2xl border border-white/5 gap-2 shrink-0"><div className="flex items-center gap-3"><item.icon className="text-[#D4AF37] w-5 h-5 shrink-0" /><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{item.label}</span></div><span className="text-white text-sm font-black uppercase italic tracking-tight whitespace-normal break-words leading-relaxed">{item.value}</span></div>))}</div>
        </div>
@@ -545,14 +584,14 @@ const App: React.FC = () => {
        {selectedOffer.creativeEmbedUrls.length > 0 ? (
          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
            {selectedOffer.creativeEmbedUrls.map((url, i) => (
-             <div key={i} className="bg-[#0d0d0d] p-4 rounded-2xl border border-white/5 flex flex-col gap-4 shadow-xl">
+             <div key={i} className="bg-[#121212] p-4 rounded-2xl border border-white/5 flex flex-col gap-4 shadow-xl">
                <div className="aspect-video bg-black rounded-xl overflow-hidden"><VideoPlayer url={url} title={`Creative ${i + 1}`} type="creative" /></div>
                <a href={getFastDownloadUrl(selectedOffer.creativeDownloadUrls[i] || '#')} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-[#1a1a1a] text-[#D4AF37] font-black text-[9px] uppercase tracking-widest rounded-xl text-center italic hover:bg-[#D4AF37] hover:text-black transition-all border border-[#D4AF37]/20 flex items-center justify-center gap-2"><Download size={14} /> Download Criativo {i + 1}</a>
              </div>
            ))}
          </div>
        ) : (
-         <div className="w-full p-12 bg-[#0d0d0d] rounded-[32px] border border-white/5 flex flex-col items-center justify-center text-center shadow-xl">
+         <div className="w-full p-12 bg-[#121212] rounded-[32px] border border-white/5 flex flex-col items-center justify-center text-center shadow-xl">
             <div className="bg-black/50 p-6 rounded-full mb-6 border border-white/10"><ZapOff size={48} className="text-gray-600" /></div>
             <p className="text-gray-500 font-black uppercase text-sm tracking-[0.25em] italic">ESSA OFERTA NÃO TEM CRIATIVOS EM VÍDEO</p>
          </div>
@@ -561,8 +600,8 @@ const App: React.FC = () => {
      <div className="space-y-6 pb-12">
       <h3 className="text-white font-black uppercase text-xl italic flex items-center gap-3 px-2"><Layout className="text-[#D4AF37] w-6 h-6" /> ESTRUTURA DE VENDAS</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-       <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#0d0d0d] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl"><div className="flex items-center gap-4"><div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Monitor size={20} /></div><div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p></div></div><ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" /></a>
-       <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#0d0d0d] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl"><div className="flex items-center gap-4"><div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Facebook size={20} /></div><div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">BIBLIOTECA DE ANÚNCIOS</p></div></div><ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" /></a>
+       <a href={selectedOffer.pageUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl"><div className="flex items-center gap-4"><div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Monitor size={20} /></div><div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">PÁGINA OFICIAL</p></div></div><ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" /></a>
+       <a href={selectedOffer.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-6 bg-[#121212] rounded-[28px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex items-center justify-between group shadow-xl"><div className="flex items-center gap-4"><div className="p-3 bg-[#1a1a1a] rounded-xl group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Facebook size={20} /></div><div><p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acessar</p><p className="text-white font-black uppercase text-base md:text-lg italic">BIBLIOTECA DE ANÚNCIOS</p></div></div><ExternalLink size={20} className="text-gray-600 group-hover:text-[#D4AF37]" /></a>
       </div>
      </div>
     </div>
@@ -605,7 +644,7 @@ const App: React.FC = () => {
    case 'pages': if (!activeNicheSelection) return <SelectionGrid items={allNiches} onSelect={(val: string) => { setActiveNicheSelection(val); pushNavState({ ans: val }); }} Icon={FileText} label="PÁGINAS DE ALTA CONVERSÃO" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveNicheSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">PÁGINAS:</span> {activeNicheSelection}</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">{offers.filter(o => o.niche === activeNicheSelection && o.pageUrl && o.pageUrl !== '#').map((o) => (<div key={o.id} className="bg-[#121212] rounded-[28px] overflow-hidden border border-white/5 group hover:border-[#D4AF37]/50 transition-all flex flex-col shadow-2xl h-full"><div className="aspect-[4/3] bg-black relative"><img src={getDriveDirectLink(o.coverImage)} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" /><div className="absolute inset-0 flex items-center justify-center"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="p-5 bg-[#D4AF37] text-black rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 shadow-2xl"><Monitor size={28} /></a></div></div><div className="p-6 flex-1 flex flex-col justify-between"><div className="mb-6"><h3 className="text-white font-bold uppercase text-sm mb-2 tracking-tight group-hover:text-[#D4AF37] transition-colors">{o.title}</h3><p className="text-gray-500 text-[10px] font-bold uppercase italic truncate">{o.pageUrl}</p></div><div className="space-y-2"><a href={o.pageUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg block">Acessar Link Externo</a><button onClick={() => openOffer(o)} className="w-full py-3 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div></div>))}</div></div>);
    case 'ads_library': if (!activeLanguageSelection) return <SelectionGrid items={allLanguages} onSelect={(val: string) => { setActiveLanguageSelection(val); pushNavState({ als: val }); }} Icon={Library} label="BIBLIOTECA DE ANÚNCIOS" />; return (<div className="animate-in slide-in-from-right duration-500 space-y-12"><div className="flex items-center gap-4"><button onClick={() => setActiveLanguageSelection(null)} className="p-3 bg-[#121212] border border-white/5 rounded-2xl text-gray-400 hover:bg-[#1a1a1a] hover:text-white transition-all"><ArrowLeft size={20} /></button><h2 className="text-3xl font-black text-white uppercase italic tracking-tighter"><span className="text-[#D4AF37] mr-3">IDIOMA:</span> {activeLanguageSelection}</h2></div><div className="grid grid-cols-1 md:grid-cols-2 gap-8">{offers.filter(o => o.language === activeLanguageSelection && o.facebookUrl && o.facebookUrl !== '#').map(o => (<div key={o.id} className="bg-[#121212] p-8 rounded-[32px] border border-white/5 hover:border-[#D4AF37]/50 transition-all flex flex-col gap-8 shadow-2xl group"><div className="flex items-center justify-between"><div className="flex items-center gap-5"><div className="p-5 bg-[#1a1a1a] rounded-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-xl"><Facebook size={32} /></div><div><p className="text-[#D4AF37] font-black uppercase text-[10px] tracking-widest mb-1 italic">FACEBOOK ADS LIBRARY</p><h3 className="text-white font-bold uppercase text-[15px] tracking-tight">{o.title}</h3></div></div><button onClick={(e) => toggleFavorite(o.id, e)} className={`p-3 rounded-xl ${favorites.includes(o.id) ? 'bg-[#D4AF37] text-black' : 'bg-[#1a1a1a] text-gray-500 hover:text-white'}`}><Star size={20} fill={favorites.includes(o.id) ? "currentColor" : "none"} /></button></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><a href={o.facebookUrl} target="_blank" rel="noopener noreferrer" className="py-4 bg-[#D4AF37] text-black font-black text-[10px] uppercase tracking-widest rounded-xl text-center italic hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-2"><ExternalLink size={16} /> Acessar Link Externo</a><button onClick={() => openOffer(o)} className="py-4 bg-[#1a1a1a] text-white font-black text-[10px] uppercase tracking-widest rounded-xl italic hover:bg-white hover:text-black transition-all border border-white/5">Ver Oferta Completa</button></div></div>))}</div></div>);
    case 'favorites': return (<div className="animate-in fade-in duration-700"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic mb-8 flex items-center gap-4"><Star className="text-[#D4AF37]" fill="currentColor" /> SEUS FAVORITOS</h2><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8">{offers.filter(o => favorites.includes(o.id)).map((o) => <OfferCard key={o.id} offer={o} isFavorite={true} onToggleFavorite={(e:any) => toggleFavorite(o.id, e)} onClick={() => openOffer(o)} />)}</div>{favorites.length === 0 && <p className="text-gray-600 font-black uppercase text-sm italic py-20 text-center col-span-full">Sua lista privada de favoritos está vazia.</p>}</div>);
-   case 'extension': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Puzzle className="text-[#D4AF37]" /> CENTRAL DE EXTENSÃO 007</h2><div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="lg:col-span-2 space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic border-l-2 border-[#D4AF37] pl-3">TUTORIAL DE INSTALAÇÃO & USO</h3><div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5"><iframe className="w-full h-full" src="https://www.youtube.com/embed/En_eE15WR3s?rel=0&modestbranding=1" title="Tutorial Extensão 007" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe></div><p className="mt-6 text-zinc-400 font-medium text-sm leading-relaxed italic">Aprenda como instalar a extensão no modo desenvolvedor e utilizar as funções de mineração de vídeo e desbloqueio de downloads em sites protegidos.</p></div></div><div className="space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col items-center text-center h-full justify-center"><div className="w-20 h-20 bg-[#1a1a1a] rounded-full flex items-center justify-center mb-6 border border-[#D4AF37]/20 shadow-[0_0_30px_rgba(212,175,55,0.15)]"><Puzzle size={40} className="text-[#D4AF37]" /></div><h3 className="text-white font-black uppercase text-xl italic mb-2">007 SWIPER SPY</h3><p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">Versão v23.0 (Estável)</p><a href="https://drive.google.com/file/d/1s0Jnth9iCVuwPyU1nMo7vssjPO7UtcZN/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="w-full py-4 btn-elite rounded-xl tracking-widest hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-3 italic animate-btn-pulse"><Download size={18} /> BAIXAR .ZIP</a><p className="mt-6 text-[10px] text-gray-600 font-bold uppercase leading-relaxed">Compatível com Google Chrome, Edge e Brave. Instalação manual necessária.</p></div></div></div></div>);
+   case 'extension': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Puzzle className="text-[#D4AF37]" /> CENTRAL DE EXTENSÃO 007</h2><div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="lg:col-span-2 space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-6 italic border-l-2 border-[#D4AF37] pl-3">TUTORIAL DE INSTALAÇÃO & USO</h3><div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5"><iframe className="w-full h-full" src="https://www.youtube.com/embed/En_eE15WR3s?rel=0&modestbranding=1" title="Tutorial Extensão 007" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe></div><p className="mt-6 text-zinc-400 font-medium text-sm leading-relaxed italic">Aprenda como instalar a extensão no modo desenvolvedor e utilizar as funções de mineração de vídeo e desbloqueio de downloads em sites protegidos.</p></div></div><div className="space-y-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col items-center text-center h-full justify-center"><div className="w-20 h-20 bg-[#1a1a1a] rounded-full flex items-center justify-center mb-6 border border-[#D4AF37]/20 shadow-[0_0_30px_rgba(212,175,55,0.15)]"><Puzzle size={40} className="text-[#D4AF37]" /></div><h3 className="text-white font-black uppercase text-xl italic mb-2">007 SWIPER SPY</h3><p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">Versão v23.0 (Estável)</p><a href="https://drive.google.com/file/d/1s0Jnth9iCVuwPyU1nMo7vssjPO7UtcZN/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="w-full py-4 bg-[#D4AF37] text-black font-black rounded-xl uppercase tracking-widest hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-3 italic animate-btn-pulse"><Download size={18} /> BAIXAR .ZIP</a><p className="mt-6 text-[10px] text-gray-600 font-bold uppercase leading-relaxed">Compatível com Google Chrome, Edge e Brave. Instalação manual necessária.</p></div></div></div></div>);
    case 'settings': return (<div className="animate-in fade-in duration-700 max-w-5xl mx-auto space-y-10"><h2 className="text-2xl md:text-3xl font-black text-white uppercase italic flex items-center gap-4"><Settings className="text-[#D4AF37]" /> Painel do Agente</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl"><h3 className="text-[#D4AF37] font-black uppercase text-xs tracking-widest mb-8 italic">Identidade Operacional</h3><div className="space-y-4"><div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SENHA</span><span className="text-white font-black uppercase italic text-lg">{agentId}</span></div><div className="flex justify-between items-center pb-4 border-b border-white/5"><span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">SESSÃO</span><span className="bg-[#D4AF37] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic">INDIVIDUAL / PRIVADA</span></div></div></div><div className="bg-[#121212] p-8 rounded-[32px] border border-white/5 shadow-2xl flex flex-col justify-between"><div><h3 className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic mb-6">SUPORTE</h3><span className="text-white font-black text-xl italic mb-8 block">{SUPPORT_EMAIL}</span></div><button onClick={() => { navigator.clipboard.writeText(SUPPORT_EMAIL); alert('E-MAIL COPIADO! 📡'); }} className="w-full py-4 bg-[#1a1a1a] rounded-2xl flex items-center justify-center gap-3 text-white font-black hover:bg-[#D4AF37] hover:text-black transition-all border border-white/5 uppercase text-xs tracking-widest"><Copy size={18} /> Copiar E-mail</button></div></div></div>);
    case 'support': return renderSupportPage();
    default: return null;
@@ -636,18 +675,18 @@ const App: React.FC = () => {
         <div className="flex items-center gap-3 bg-[#121212] p-1.5 pr-4 md:pr-6 rounded-[16px] md:rounded-[24px] border border-white/5 shadow-2xl ml-2 md:ml-6 shrink-0"><div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-lg md:rounded-xl flex items-center justify-center font-black text-black text-sm md:text-lg shadow-lg">007</div><div className="hidden sm:block"><p className="font-black text-[10px] uppercase tracking-tighter text-white leading-none">Agente Ativo</p></div></div>
        </div>
        {!selectedOffer && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-2 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-2">
          <div className="flex flex-col gap-1.5 w-full">
           <label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">BUSCAR</label>
-          <div className="relative w-full"><input type="text" placeholder="Pesquisar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] focus:border-[#D4AF37]/50 transition-all placeholder:text-gray-700" /><Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} /></div>
+          <div className="relative w-full"><input type="text" placeholder="Pesquisar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl pl-4 pr-10 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] transition-all h-[38px] placeholder:text-zinc-700" /><Search className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} /></div>
          </div>
          {[ { label: 'Nicho', value: selectedNiche, setter: setSelectedNiche, options: ['Todos', ...allNiches] }, { label: 'Tipo', value: selectedType, setter: setSelectedType, options: ['Todos', ...allTypes] }, { label: 'Idioma', value: selectedLanguage, setter: setSelectedLanguage, options: ['Todos', ...allLanguages] }, { label: 'Fonte', value: selectedTraffic, setter: setSelectedTraffic, options: ['Todos', ...allTrafficSources] } ].map((f, i) => (
-          <div key={i} className="flex flex-col gap-1.5 w-full"><label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label><select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-3 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all appearance-none"><option value="Todos" className="bg-[#050505]">Todos</option>{f.options.filter(x=>x!=='Todos').map(n => <option key={n} value={n} className="bg-[#050505] text-white">{n}</option>)}</select></div>
+          <div key={i} className="flex flex-col gap-1.5 w-full"><label className="text-[9px] font-black uppercase text-gray-600 px-1 italic">{f.label}</label><select value={f.value} onChange={(e) => f.setter(e.target.value)} className="w-full bg-[#121212] border border-white/10 rounded-xl px-4 py-2 text-[10px] md:text-[11px] font-black uppercase text-white outline-none hover:border-[#D4AF37] cursor-pointer transition-all appearance-none"><option value="Todos" className="bg-[#050505]">Todos</option>{f.options.filter(x=>x!=='Todos').map(n => <option key={n} value={n} className="bg-[#050505] text-white">{n}</option>)}</select></div>
          ))}
         </div>
        )}
       </header>
-      <div className="p-4 md:p-12 max-w-[1900px] mx-auto min-h-screen pb-32">{renderContent()}</div>
+      <div className="p-4 md:p-10 max-w-[1600px] mx-auto min-h-screen pb-32">{renderContent()}</div>
      </main>
     </>
    ) : (
