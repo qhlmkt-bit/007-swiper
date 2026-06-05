@@ -2011,8 +2011,8 @@ const App: React.FC = () => {
                     setCurrentPage('admin_dashboard');
                     setCurrentModule('admin');
                   }}
-                  className="w-[50px] h-[50px] mx-auto mt-2"
-                  style={{ opacity: 0 }}
+                  className="w-[100px] h-[100px] mx-auto mt-2 relative z-50 cursor-pointer"
+                  style={{ border: '1px solid red' }}
                 />
               </div>
             </footer>
