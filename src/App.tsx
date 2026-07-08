@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, Smartphone, Sparkles, HelpCircle, HomeIcon, 
+  Smartphone, Sparkles, HelpCircle, HomeIcon, 
   ShieldCheck, MessageCircle, Search, Star, FileText, ExternalLink,
   FolderOpen, Youtube, Facebook, Target, Radar, Download, Briefcase, Puzzle,
-  RefreshCw, TrendingUp, Sliders, Clock, Layers, Activity, Globe, CheckCircle2, Terminal, Award, LogOut, Beaker
+  RefreshCw, TrendingUp, Sliders, Clock, Layers, Activity, Globe, CheckCircle2, Terminal, LogOut, Video
 } from 'lucide-react';
-import { Sidebar } from './components/Sidebar';
 import { OfferDetails } from './components/OfferDetails';
-import { LabExpertDashboard } from './components/LabExpertDashboard';
 import { LandingPage } from './components/LandingPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdLibrary } from './components/AdLibrary';
@@ -282,217 +280,7 @@ const OfferCard = ({ offer, onClick, isFavorite, onFavoriteToggle }: { offer: an
     );
 };
 
-const buildSystemPrompt = (objective: string, language?: string) => {
-  if (objective === 'modelar') {
-    return (
-      "Você é um copywriter especialista de resposta direta de elite (padrão Stefan Georgi, Gary Halbert). " +
-      "Seu objetivo é modelar o script fornecido para torná-lo único (evitando plágio completo), mas mantendo a mesma estrutura lógica de conversão. " +
-      "Otimize agressivamente para aumentar a retenção de atenção nos primeiros 30 segundos, use frases curtas, punchlines fortes e gatilhos de curiosidade. " +
-      "Responda apenas com a versão final do script gerado."
-    );
-  }
-  if (objective === 'hooks') {
-    return (
-      "Você é um engenheiro de viralidade e redator especialista em vídeos curtos (TikTok, Reels, Shorts). " +
-      "Crie 3 variações de hooks de alta conversão e engajamento extremo com base no script fornecido. " +
-      "Variação 1: Foco em curiosidade disruptiva.\n" +
-      "Variação 2: Foco em quebra de padrão ou contra-intuitivo.\n" +
-      "Variação 3: Foco em dor extrema ou benefício imediato.\n" +
-      "Seja conciso, direto e use linguagem falada e natural de alta conversão. Responda apenas com as 3 opções de hooks numeradas."
-    );
-  }
-  if (objective === 'traduzir') {
-    return (
-      `Você é um tradutor nativo e copywriter especializado no idioma de destino: "${language || 'Inglês'}". ` +
-      "Seu objetivo é traduzir o script fornecido de forma não literal. Adapte as gírias, expressões locais, analogias e " +
-      "gatilhos psicológicos para que soem naturais e tenham alta conversão para o público nativo dessa língua. " +
-      "Responda apenas com o script adaptado e traduzido."
-    );
-  }
-  return "Você é um assistente de inteligência artificial especializado em copywriting de alta conversão.";
-};
-
-const LabIADashboard: React.FC = () => {
-  const [inputText, setInputText] = useState('');
-  const [objective, setObjective] = useState('modelar');
-  const [targetLanguage, setTargetLanguage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [outputText, setOutputText] = useState('');
-  const [isCopied, setIsCopied] = useState(false);
-
-  const runGeminiAPI = async () => {
-    const apiKey = ((import.meta as any).env.VITE_GEMINI_API_KEY || '').trim();
-
-    if (!apiKey) {
-      setOutputText('[ERRO] Chave de API não detectada no arquivo .env');
-      return;
-    }
-
-    setIsLoading(true);
-    setOutputText('');
-
-    try {
-      const apiCall = fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: buildSystemPrompt(objective, targetLanguage) + "\n\n" + inputText }
-              ]
-            }
-          ]
-        })
-      }).then(res => {
-        if (!res.ok) {
-          throw new Error(`Erro na API (${res.status})`);
-        }
-        return res.json();
-      });
-
-      const [json] = await Promise.all([
-        apiCall,
-        new Promise(resolve => setTimeout(resolve, 2500))
-      ]);
-
-      const reply = json.candidates?.[0]?.content?.parts?.[0]?.text || 'Nenhuma resposta gerada.';
-      setOutputText(reply);
-    } catch (error: any) {
-      console.error('API Error:', error);
-      setOutputText('[SISTEMA] Falha na rede ou na API do Google. Verifique sua chave no AI Studio.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCopy = () => {
-    if (!outputText) return;
-    navigator.clipboard.writeText(outputText);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
-  };
-
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-3 font-sans">
-          <Sparkles className="text-[#D4AF37]" size={16} /> 
-          LABORATÓRIO DE I.A. 007
-        </h2>
-        <p className="text-[10px] text-zinc-500 mt-1 uppercase font-semibold tracking-wider font-sans">
-          Engenharia reversa e modelagem de copy com Inteligência Artificial.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* Left Column (Inputs) */}
-        <div className="bg-[#0a0a0a] p-6 rounded-xl border border-white/5 space-y-6 font-sans">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block">Script ou Conteúdo Base</label>
-            <textarea
-              className="w-full min-h-[250px] bg-[#050505] border border-white/10 rounded-xl p-4 text-xs text-zinc-300 placeholder:text-zinc-600 focus:border-[#D4AF37]/50 outline-none resize-none transition-all font-mono leading-relaxed"
-              placeholder="Cole o script do concorrente ou hook viral aqui..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block">Objetivo da I.A.</label>
-            <select
-              className="w-full bg-[#050505] border border-white/10 rounded-xl py-3 px-4 text-xs text-zinc-300 outline-none focus:border-[#D4AF37]/50 font-medium cursor-pointer"
-              value={objective}
-              onChange={(e) => setObjective(e.target.value)}
-            >
-              <option value="modelar">Modelar Script</option>
-              <option value="hooks">Criar 3 Variações de Hook</option>
-              <option value="traduzir">Traduzir e Adaptar Copy</option>
-            </select>
-          </div>
-
-          {objective === 'traduzir' && (
-            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block">Idioma de Destino (Ex: Inglês)</label>
-              <input
-                type="text"
-                className="w-full bg-[#050505] border border-white/10 rounded-xl py-3 px-4 text-xs text-[#D4AF37] placeholder:text-zinc-600 focus:border-[#D4AF37]/50 outline-none transition-all"
-                placeholder="Digite o idioma de destino..."
-                value={targetLanguage}
-                onChange={(e) => setTargetLanguage(e.target.value)}
-              />
-            </div>
-          )}
-
-          <button
-            onClick={runGeminiAPI}
-            disabled={isLoading || !inputText.trim() || (objective === 'traduzir' && !targetLanguage.trim())}
-            className="w-full bg-[#D4AF37] hover:bg-white text-black font-black uppercase tracking-widest py-3 px-8 rounded-xl transition-all disabled:opacity-40 disabled:hover:bg-[#D4AF37] flex items-center justify-center gap-2 text-xs shadow-[0_4px_20px_rgba(212,175,55,0.15)] active:scale-[0.98]"
-          >
-            🤖 INICIAR PROCESSAMENTO I.A.
-          </button>
-        </div>
-
-        {/* Right Column (Output Terminal) */}
-        <div className="bg-[#0a0a0a] p-6 rounded-xl border border-[#D4AF37]/20 shadow-[0_0_15px_rgba(212,175,55,0.05)] flex flex-col min-h-[420px] justify-between relative overflow-hidden">
-          {/* Subtle Glow Decor */}
-          <div className="absolute top-0 right-0 w-48 h-48 bg-[#D4AF37]/2 rounded-full blur-3xl pointer-events-none"></div>
-          
-          <div className="w-full flex-1 flex flex-col">
-            <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
-              <span className="text-[9px] text-[#D4AF37] font-black tracking-widest uppercase">SAÍDA</span>
-              <div className="flex gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500/30"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/30"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500/30"></span>
-              </div>
-            </div>
-
-            <div className="flex-1 flex flex-col justify-center">
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-center space-y-4 py-12">
-                  <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest animate-pulse">
-                    Processando redes neurais e modelando copy...
-                  </p>
-                </div>
-              ) : outputText ? (
-                <div className="text-zinc-300 font-mono text-xs leading-relaxed whitespace-pre-line bg-[#050505] border border-white/5 p-4 rounded-lg overflow-y-auto max-h-[300px]">
-                  {outputText}
-                </div>
-              ) : (
-                <div className="text-center py-16">
-                  <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest">
-                    {inputText.trim() 
-                      ? "Aguardando início do processamento I.A...." 
-                      : "Insira um script na coluna esquerda para iniciar o laboratório."}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {outputText && !isLoading && (
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={handleCopy}
-                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded transition-all border ${
-                  isCopied
-                    ? 'bg-[#25D366] text-black border-[#25D366]'
-                    : 'bg-[#121212] text-zinc-400 border-white/5 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {isCopied ? 'COPIADO!' : 'COPIAR TEXTO'}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
+// Removed Laboratory AI dashboards
 
 
 // --- APP PRINCIPAL ---
@@ -717,29 +505,7 @@ const App: React.FC = () => {
 
 
 
-  const handleModuleChange = (mod: string) => {
-    if (mod === 'comunidade') { window.open(COMMUNITY_LINK, '_blank'); return; }
-    if (mod === 'lab_ia') {
-      setCurrentModule('laboratorio');
-      setCurrentPage('lab');
-      return;
-    }
-    if (mod === 'lab_expert') {
-      setCurrentModule('laboratorio');
-      setCurrentPage('expert');
-      return;
-    }
-    if (mod === 'laboratorio') {
-      setCurrentModule('laboratorio');
-      setCurrentPage('lab');
-      return;
-    }
-    setCurrentModule(mod);
-    if(mod === 'swiper') setCurrentPage('cofre');
-    if(mod === 'organicos') setCurrentPage('virais');
-    if(mod === 'central') setCurrentPage('suporte');
-    if(mod === 'home') setCurrentPage('dashboard');
-  };
+
 
   const handleScan = () => {
     if(!interceptorUrl) return;
@@ -1424,10 +1190,28 @@ const App: React.FC = () => {
                     </p>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 mb-8 bg-[#0a0a0a] p-5 rounded-xl border border-white/5 font-sans antialiased">
-                    <span className="text-[10px] text-[#D4AF37] font-black tracking-widest uppercase">
-                        CANAL SELECIONADO: {activeViralTab === 'TIKTOK' ? 'TIKTOK TRENDS' : activeViralTab === 'REELS' ? 'INSTAGRAM REELS' : 'YOUTUBE SHORTS'}
-                    </span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-[#0a0a0a] p-5 rounded-xl border border-white/5 font-sans antialiased">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+                        {[
+                            { id: 'TIKTOK', label: 'TikTok Trends', icon: Smartphone },
+                            { id: 'REELS', label: 'Instagram Reels', icon: Video },
+                            { id: 'SHORTS', label: 'YouTube Shorts', icon: Youtube }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveViralTab && setActiveViralTab(tab.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                                    activeViralTab === tab.id
+                                        ? 'bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/30'
+                                        : 'text-zinc-400 border-transparent hover:bg-white/5 hover:text-white'
+                                }`}
+                            >
+                                <tab.icon size={14} />
+                                <span className="text-xs uppercase font-semibold tracking-wider">{tab.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                    
                     <div className="flex items-center gap-3 shrink-0">
                         <span className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold font-sans antialiased">Nicho</span>
                         <select 
@@ -1506,21 +1290,7 @@ const App: React.FC = () => {
         );
     }
 
-    if (currentPage === 'lab') {
-        return (
-            <div className="pb-20 font-sans antialiased">
-                <LabIADashboard />
-            </div>
-        );
-    }
-
-    if (currentPage === 'expert') {
-        return (
-            <div className="pb-20 font-sans antialiased">
-                <LabExpertDashboard />
-            </div>
-        );
-    }
+    // Deleted routes
 
     if (currentModule === 'home' || currentPage === 'dashboard') {
         const baseOffers = offers.length > 0 ? offers.slice(0, 10) : [
@@ -1764,29 +1534,102 @@ const App: React.FC = () => {
                         <div className="space-y-4">
                             <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">FERRAMENTAS EXCLUSIVAS</h3>
                             
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 
-                                {/* 007 SWIPER */}
+                                {/* OFERTAS VALIDADAS */}
                                 <button 
-                                    onClick={() => handleModuleChange('swiper')}
+                                    onClick={() => {
+                                        setCurrentModule('swiper');
+                                        setCurrentPage('cofre');
+                                        setSelectedOffer(null);
+                                    }}
                                     className="bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl text-left flex flex-col justify-between min-h-[170px] relative overflow-hidden group hover:border-[#D4AF37]/40 hover:bg-[#0c0c0c] transition-all duration-300 shadow-xl cursor-pointer"
                                 >
                                     <div className="absolute top-0 right-0 w-20 h-20 bg-[#D4AF37]/2 rounded-bl-full pointer-events-none"></div>
                                     <div className="p-3 bg-[#121212] rounded-xl border border-white/5 text-[#D4AF37] w-fit">
-                                        <Flame size={20} />
+                                        <Briefcase size={20} />
                                     </div>
                                     <div className="mt-4 space-y-1.5">
-                                        <h4 className="text-xs font-black text-white uppercase tracking-wider group-hover:text-[#D4AF37] transition-all">007 SWIPER</h4>
-                                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Plataforma de Espionagem</p>
+                                        <h4 className="text-xs font-black text-white uppercase tracking-wider group-hover:text-[#D4AF37] transition-all">OFERTAS VALIDADAS</h4>
+                                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Base de Inteligência</p>
                                         <p className="text-[11px] text-zinc-400 leading-normal font-normal pt-1">
                                             Acesse ofertas validadas, scripts e infraestrutura de vendas dos concorrentes.
                                         </p>
                                     </div>
                                 </button>
 
+                                {/* BIBLIOTECA FACEBOOK */}
+                                <button 
+                                    onClick={() => {
+                                        setCurrentModule('swiper');
+                                        setCurrentPage('biblioteca');
+                                        setSelectedOffer(null);
+                                    }}
+                                    className="bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl text-left flex flex-col justify-between min-h-[170px] relative overflow-hidden group hover:border-[#D4AF37]/40 hover:bg-[#0c0c0c] transition-all duration-300 shadow-xl cursor-pointer"
+                                >
+                                    <div className="absolute top-0 right-0 w-20 h-20 bg-[#D4AF37]/2 rounded-bl-full pointer-events-none"></div>
+                                    <div className="p-3 bg-[#121212] rounded-xl border border-white/5 text-[#D4AF37] w-fit">
+                                        <Facebook size={20} />
+                                    </div>
+                                    <div className="mt-4 space-y-1.5">
+                                        <h4 className="text-xs font-black text-white uppercase tracking-wider group-hover:text-[#D4AF37] transition-all">BIBLIOTECA FACEBOOK</h4>
+                                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Espionagem de Criativos</p>
+                                        <p className="text-[11px] text-zinc-400 leading-normal font-normal pt-1">
+                                            Explore nossa biblioteca interna de anúncios para obter insights imediatos.
+                                        </p>
+                                    </div>
+                                </button>
+
+                                {/* INTERCEPTADOR WEB */}
+                                <button 
+                                    onClick={() => {
+                                        setCurrentModule('swiper');
+                                        setCurrentPage('interceptador');
+                                        setSelectedOffer(null);
+                                    }}
+                                    className="bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl text-left flex flex-col justify-between min-h-[170px] relative overflow-hidden group hover:border-[#D4AF37]/40 hover:bg-[#0c0c0c] transition-all duration-300 shadow-xl cursor-pointer"
+                                >
+                                    <div className="absolute top-0 right-0 w-20 h-20 bg-[#D4AF37]/2 rounded-bl-full pointer-events-none"></div>
+                                    <div className="p-3 bg-[#121212] rounded-xl border border-white/5 text-[#D4AF37] w-fit">
+                                        <Radar size={20} />
+                                    </div>
+                                    <div className="mt-4 space-y-1.5">
+                                        <h4 className="text-xs font-black text-white uppercase tracking-wider group-hover:text-[#D4AF37] transition-all">INTERCEPTADOR WEB</h4>
+                                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Análise de Tráfego</p>
+                                        <p className="text-[11px] text-zinc-400 leading-normal font-normal pt-1">
+                                            Analise checkouts e páginas de vendas em tempo real para extrair a infraestrutura e a escala do concorrente.
+                                        </p>
+                                    </div>
+                                </button>
+
+                                {/* EXTENSÃO */}
+                                <button 
+                                    onClick={() => {
+                                        setCurrentModule('swiper');
+                                        setCurrentPage('extensao');
+                                        setSelectedOffer(null);
+                                    }}
+                                    className="bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl text-left flex flex-col justify-between min-h-[170px] relative overflow-hidden group hover:border-[#D4AF37]/40 hover:bg-[#0c0c0c] transition-all duration-300 shadow-xl cursor-pointer"
+                                >
+                                    <div className="absolute top-0 right-0 w-20 h-20 bg-[#D4AF37]/2 rounded-bl-full pointer-events-none"></div>
+                                    <div className="p-3 bg-[#121212] rounded-xl border border-white/5 text-[#D4AF37] w-fit">
+                                        <Puzzle size={20} />
+                                    </div>
+                                    <div className="mt-4 space-y-1.5">
+                                        <h4 className="text-xs font-black text-white uppercase tracking-wider group-hover:text-[#D4AF37] transition-all">EXTENSÃO</h4>
+                                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Central de Captura</p>
+                                        <p className="text-[11px] text-zinc-400 leading-normal font-normal pt-1">
+                                            Baixe a extensão oficial do 007 Swiper para minerar vídeos e desbloquear downloads.
+                                        </p>
+                                    </div>
+                                </button>
+
                                 {/* VIRAIS ORGÂNICOS */}
                                 <button 
-                                    onClick={() => handleModuleChange('organicos')}
+                                    onClick={() => {
+                                        setCurrentModule('organicos');
+                                        setCurrentPage('virais');
+                                    }}
                                     className="bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl text-left flex flex-col justify-between min-h-[170px] relative overflow-hidden group hover:border-[#D4AF37]/40 hover:bg-[#0c0c0c] transition-all duration-300 shadow-xl cursor-pointer"
                                 >
                                     <div className="absolute top-0 right-0 w-20 h-20 bg-[#D4AF37]/2 rounded-bl-full pointer-events-none"></div>
@@ -1798,42 +1641,6 @@ const App: React.FC = () => {
                                         <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Mapeamento de Tendências</p>
                                         <p className="text-[11px] text-zinc-400 leading-normal font-normal pt-1">
                                             Monitore os criativos e vídeos orgânicos que estão viralizando nas redes sociais.
-                                        </p>
-                                    </div>
-                                </button>
-
-                                {/* LAB I.A. */}
-                                <button 
-                                    onClick={() => handleModuleChange('lab_ia')}
-                                    className="bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl text-left flex flex-col justify-between min-h-[170px] relative overflow-hidden group hover:border-[#D4AF37]/40 hover:bg-[#0c0c0c] transition-all duration-300 shadow-xl cursor-pointer"
-                                >
-                                    <div className="absolute top-0 right-0 w-20 h-20 bg-[#D4AF37]/2 rounded-bl-full pointer-events-none"></div>
-                                    <div className="p-3 bg-[#121212] rounded-xl border border-white/5 text-[#D4AF37] w-fit">
-                                        <Sparkles size={20} />
-                                    </div>
-                                    <div className="mt-4 space-y-1.5">
-                                        <h4 className="text-xs font-black text-white uppercase tracking-wider group-hover:text-[#D4AF37] transition-all">LAB I.A.</h4>
-                                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Modelador de Copy</p>
-                                        <p className="text-[11px] text-zinc-400 leading-normal font-normal pt-1">
-                                            Crie hooks, reescreva copys e adapte scripts com inteligência artificial avançada.
-                                        </p>
-                                    </div>
-                                </button>
-
-                                {/* LAB DE EXPERT */}
-                                <button 
-                                    onClick={() => handleModuleChange('lab_expert')}
-                                    className="bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl text-left flex flex-col justify-between min-h-[170px] relative overflow-hidden group hover:border-[#D4AF37]/40 hover:bg-[#0c0c0c] transition-all duration-300 shadow-xl cursor-pointer"
-                                >
-                                    <div className="absolute top-0 right-0 w-20 h-20 bg-[#D4AF37]/2 rounded-bl-full pointer-events-none"></div>
-                                    <div className="p-3 bg-[#121212] rounded-xl border border-white/5 text-[#D4AF37] w-fit">
-                                        <Award size={20} />
-                                    </div>
-                                    <div className="mt-4 space-y-1.5">
-                                        <h4 className="text-xs font-black text-white uppercase tracking-wider group-hover:text-[#D4AF37] transition-all">LAB DE EXPERT</h4>
-                                        <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Incubadora de Autoridade</p>
-                                        <p className="text-[11px] text-zinc-400 leading-normal font-normal pt-1">
-                                            Transforme o conhecimento de profissionais liberais em ofertas altamente lucrativas.
                                         </p>
                                     </div>
                                 </button>
@@ -1966,30 +1773,79 @@ const App: React.FC = () => {
     <div className="flex min-h-screen bg-[#050505] text-white overflow-hidden font-sans antialiased">
 
       <header className="h-[65px] bg-[#0a0a0a] border-b border-white/5 fixed top-0 left-0 w-full z-50 flex items-center px-6 shadow-xl">
-        <div className="flex items-center space-x-3 w-60 shrink-0">
+        <div className="flex items-center space-x-3 shrink-0">
           <div className="bg-[#D4AF37] p-1.5 rounded-md"><ShieldCheck className="text-black" size={20} /></div>
           <span className="text-lg font-black tracking-widest text-white uppercase italic">007 <span className="text-[#D4AF37]">SWIPER</span></span>
         </div>
         <nav className="flex-1 flex items-center justify-start gap-2 md:gap-4 overflow-x-auto scrollbar-hide px-6">
           {[
-            { id: 'home', icon: HomeIcon, label: 'Home' },
-            { id: 'swiper', icon: Flame, label: '007 Swiper' },
-            { id: 'organicos', icon: Smartphone, label: 'Virais Orgânicos' },
-            { id: 'laboratorio', icon: Beaker, label: 'Laboratório' },
-            { id: 'central', icon: HelpCircle, label: 'Central 007' },
-            { id: 'comunidade', icon: MessageCircle, label: 'Comunidade VIP', color: '#25D366' }
-          ].map(mod => (
-            <button key={mod.id} onClick={() => handleModuleChange(mod.id)} 
-              style={mod.color && currentModule !== mod.id ? { color: mod.color, borderColor: mod.color } : {}}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all border whitespace-nowrap ${
-                currentModule === mod.id && mod.id !== 'comunidade' 
-                  ? 'bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/30' 
-                  : 'text-white font-medium drop-shadow-md hover:text-zinc-200 border-transparent hover:bg-white/5'
-              }`}>
-              <mod.icon size={15} className={currentModule === mod.id && mod.id !== 'comunidade' ? 'text-[#D4AF37]' : 'text-white'} /> 
-              <span className="text-xs uppercase tracking-wide font-medium">{mod.label}</span>
-            </button>
-          ))}
+            { id: 'home', icon: HomeIcon, label: 'HOME', page: 'dashboard', module: 'home' },
+            { id: 'ofertas', icon: Briefcase, label: 'OFERTAS VALIDADAS', page: 'cofre', module: 'swiper' },
+            { id: 'biblioteca', icon: Facebook, label: 'BIBLIOTECA FACEBOOK', page: 'biblioteca', module: 'swiper' },
+            { id: 'interceptador', icon: Radar, label: 'INTERCEPTADOR WEB', page: 'interceptador', module: 'swiper' },
+            { id: 'extensao', icon: Puzzle, label: 'EXTENSÃO', page: 'extensao', module: 'swiper' },
+            { id: 'favoritos', icon: Star, label: 'FAVORITOS', page: 'favoritos', module: 'swiper' },
+            { id: 'organicos', icon: Smartphone, label: 'VIRAIS ORGÂNICOS', page: 'virais', module: 'organicos' },
+            { id: 'central', icon: HelpCircle, label: 'CENTRAL 007', page: 'suporte', module: 'central' },
+            { id: 'comunidade', icon: MessageCircle, label: 'COMUNIDADE VIP', page: 'comunidade', module: 'comunidade' }
+          ].map(item => {
+            const isActive = currentPage === item.page;
+            
+            if (item.id === 'comunidade') {
+              return (
+                <button 
+                  key={item.id} 
+                  onClick={() => window.open(COMMUNITY_LINK, '_blank')} 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all border border-green-500 text-green-500 hover:bg-green-500/10 whitespace-nowrap"
+                >
+                  <item.icon size={15} className="text-green-500" /> 
+                  <span className="text-xs uppercase tracking-wide font-medium">{item.label}</span>
+                </button>
+              );
+            }
+
+            if (item.id === 'favoritos') {
+              return (
+                <button 
+                  key={item.id} 
+                  onClick={() => {
+                    setCurrentModule(item.module);
+                    setCurrentPage(item.page);
+                    setSelectedOffer(null);
+                  }} 
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all border whitespace-nowrap ${
+                    isActive 
+                      ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30 font-semibold' 
+                      : 'text-yellow-500 border-transparent hover:text-yellow-500 hover:bg-yellow-500/5'
+                  }`}
+                >
+                  <item.icon size={15} className={isActive ? "fill-yellow-500 text-yellow-500" : "text-yellow-500"} /> 
+                  <span className="text-xs uppercase tracking-wide font-medium">{item.label}</span>
+                </button>
+              );
+            }
+
+            return (
+              <button 
+                key={item.id} 
+                onClick={() => {
+                  setCurrentModule(item.module);
+                  setCurrentPage(item.page);
+                  if (item.module === 'swiper') {
+                    setSelectedOffer(null);
+                  }
+                }} 
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all border whitespace-nowrap ${
+                  isActive 
+                    ? 'bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/30 font-semibold' 
+                    : 'text-white font-medium drop-shadow-md hover:text-zinc-200 border-transparent hover:bg-white/5'
+                }`}
+              >
+                <item.icon size={15} className={isActive ? 'text-[#D4AF37]' : 'text-zinc-400 group-hover:text-white'} /> 
+                <span className="text-xs uppercase tracking-wide font-medium">{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
         <div className="flex items-center shrink-0 pl-4">
           <button 
@@ -2007,13 +1863,10 @@ const App: React.FC = () => {
         </div>
       </header>
       <div className="flex flex-1 mt-[65px] w-full">
-        {currentModule !== 'home' && (
-          <Sidebar currentModule={currentModule} currentPage={currentPage} activeFolderId={null} folders={[]} setCurrentPage={setCurrentPage} setActiveFolderId={() => {}} createNewFolder={() => {}} activeViralTab={activeViralTab} setActiveViralTab={setActiveViralTab} />
-        )}
         <main className={
           currentPage === 'biblioteca'
-            ? `flex-1 h-[calc(100vh-65px)] overflow-hidden ${currentModule !== 'home' ? 'ml-60' : ''} flex flex-col`
-            : `flex-1 p-8 overflow-y-auto h-[calc(100vh-65px)] ${currentModule !== 'home' ? 'ml-60' : ''} flex flex-col justify-between`
+            ? `flex-1 h-[calc(100vh-65px)] overflow-hidden flex flex-col`
+            : `flex-1 p-8 overflow-y-auto h-[calc(100vh-65px)] flex flex-col justify-between`
         }>
             <div className={currentPage === 'biblioteca' ? "flex-1 h-full overflow-hidden" : "flex-1"}>
               {renderContent()}
