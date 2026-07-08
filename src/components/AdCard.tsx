@@ -35,7 +35,7 @@ export const AdCard: React.FC<AdCardProps> = ({ ad, isFavorite, onToggleFavorite
       {/* Top Header Card Info */}
       <div className="p-4 border-b border-zinc-800/60 space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             {/* Status Badge */}
             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
               ad.status === 'Ativo' 
@@ -69,7 +69,7 @@ export const AdCard: React.FC<AdCardProps> = ({ ad, isFavorite, onToggleFavorite
         </div>
 
         {/* Date & Runtime Stats */}
-        <div className="flex items-center justify-between text-[10px] text-zinc-500 font-medium tracking-wide">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-zinc-500 font-medium tracking-wide">
           <div className="flex items-center">
             <Calendar size={11} className="mr-1.5 text-zinc-600" />
             <span>Início: {ad.startDate}</span>
