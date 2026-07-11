@@ -16,6 +16,7 @@ export interface Ad {
   transcription?: string;
   fanPage?: string;
   destinationPage?: string;
+  videoThumbnail?: string;
 }
 
 interface AdCardProps {
@@ -85,10 +86,16 @@ export const AdCard: React.FC<AdCardProps> = ({ ad, isFavorite, onToggleFavorite
       <div className="p-4 flex items-center space-x-3 bg-zinc-900/40">
         <div className="relative shrink-0">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center border border-zinc-700 text-white font-black text-xs">
-            {ad.advertiserAvatar ? (
+            {ad.advertiserAvatar && ad.advertiserAvatar.startsWith('http') ? (
+              <img
+                src={ad.advertiserAvatar}
+                alt={ad.advertiserName}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : ad.advertiserAvatar ? (
               <span className="uppercase">{ad.advertiserAvatar}</span>
             ) : (
-              ad.advertiserName.substring(0, 2).toUpperCase()
+              <span className="uppercase">{ad.advertiserName.substring(0, 2).toUpperCase()}</span>
             )}
           </div>
           <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-blue-600 rounded-full border-2 border-zinc-900 flex items-center justify-center">
@@ -168,8 +175,16 @@ export const AdCard: React.FC<AdCardProps> = ({ ad, isFavorite, onToggleFavorite
             onClick={() => setIsPlaying(true)}
             className="absolute inset-0 w-full h-full flex flex-col items-center justify-center cursor-pointer group/media bg-gradient-to-b from-zinc-900/30 to-black/80"
           >
-            {/* Thumbnail simulator pattern */}
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ef4444_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            {/* Thumbnail simulator pattern / actual thumbnail image */}
+            {ad.videoThumbnail ? (
+              <img 
+                src={ad.videoThumbnail} 
+                alt="Ad Creative Thumbnail" 
+                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover/media:opacity-80 transition-opacity duration-300"
+              />
+            ) : (
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ef4444_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            )}
             
             {/* Play Button Glow Container */}
             <div className="relative z-10 w-16 h-16 rounded-full bg-zinc-950/80 border border-zinc-800 flex items-center justify-center group-hover/media:border-red-500 group-hover/media:scale-110 shadow-2xl transition-all duration-300">

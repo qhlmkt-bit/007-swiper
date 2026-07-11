@@ -95,9 +95,241 @@ const INITIAL_MOCK_ADS: Ad[] = [
   }
 ];
 
+const mapApifyAdToAd = (item: any, index: number): Ad => {
+  const id = item.ad_archive_id || item.id || item.adId || `apify_${index}_${Date.now()}`;
+  
+  let status: 'Ativo' | 'Inativo' = 'Ativo';
+  const rawStatus = item.status || item.adActiveStatus || (item.isActive ? 'ACTIVE' : '') || '';
+  if (rawStatus && typeof rawStatus === 'string') {
+    const s = rawStatus.toLowerCase();
+    if (s.includes('inact') || s.includes('inativ') || s.includes('off') || s.includes('inativo')) {
+      status = 'Inativo';
+    }
+  }
+
+  let startDate = 'Recente';
+  const rawDate = item.startDate || item.start_date || item.adStartDate || item.creationTime || item.adCreationTime;
+  if (rawDate) {
+    if (typeof rawDate === 'string') {
+      try {
+        const d = new Date(rawDate);
+        if (!isNaN(d.getTime())) {
+          startDate = d.toLocaleDateString('pt-BR');
+        } else {
+          startDate = rawDate;
+        }
+      } catch {
+        startDate = rawDate;
+      }
+    } else if (typeof rawDate === 'number') {
+      try {
+        const d = new Date(rawDate > 9999999999 ? rawDate : rawDate * 1000);
+        startDate = d.toLocaleDateString('pt-BR');
+      } catch {
+        startDate = String(rawDate);
+      }
+    }
+  }
+
+  let activeDays = 1;
+  const rawActiveDays = item.activeDays || item.active_days || item.daysActive;
+  if (typeof rawActiveDays === 'number') {
+    activeDays = rawActiveDays;
+  } else if (rawDate) {
+    try {
+      const d = new Date(rawDate);
+      if (!isNaN(d.getTime())) {
+        const diffTime = Math.abs(Date.now() - d.getTime());
+        activeDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+      }
+    } catch {}
+  } else {
+    activeDays = Math.floor(Math.random() * 15) + 1;
+  }
+
+  let copies = 1;
+  const rawCopies = item.copies || item.copiesCount || item.count || item.similiarAdsCount || item.similarAdsCount;
+  if (typeof rawCopies === 'number') {
+    copies = rawCopies;
+  } else if (typeof rawCopies === 'string') {
+    const parsed = parseInt(rawCopies, 10);
+    if (!isNaN(parsed)) copies = parsed;
+  }
+
+  const advertiserName = item.pageName || item.page_name || item.advertiserName || item.pageProfile?.name || 'Anunciante';
+
+  let advertiserAvatar = '';
+  const rawAvatar = item.pageProfile?.profileImageUrl || item.pageProfile?.profile_image_url || item.advertiserAvatar;
+  if (rawAvatar && typeof rawAvatar === 'string' && rawAvatar.startsWith('http')) {
+    advertiserAvatar = rawAvatar;
+  } else {
+    advertiserAvatar = advertiserName.substring(0, 2).toUpperCase();
+  }
+
+  const pageUrl = item.pageUrl || item.page_url || item.snapshot?.linkUrl || item.linkUrl || `https://facebook.com/ads/library/?id=${id}`;
+  const bodyText = item.bodyText || item.adText || item.text || item.adBody || item.snapshot?.body?.text || item.snapshot?.text || '';
+  const videoUrl = item.videoUrl || item.video_url || item.snapshot?.videos?.[0]?.video_hd_url || item.snapshot?.videos?.[0]?.url;
+  const videoThumbnail = item.videoThumbnail || item.video_thumbnail || item.snapshot?.images?.[0]?.url || item.snapshot?.images?.[0]?.resized_image_url;
+
+  let category = item.category || 'Geral';
+  if (category === 'Geral' && bodyText) {
+    const textLower = bodyText.toLowerCase();
+    if (textLower.includes('vsl') || textLower.includes('vídeo de 3 minutos')) {
+      category = 'VSL';
+    } else if (textLower.includes('pix') || textLower.includes('renda') || textLower.includes('ganhar')) {
+      category = 'Renda Extra';
+    } else if (textLower.includes('🚨') || textLower.includes('secreto') || textLower.includes('atenção')) {
+      category = 'Pressão';
+    }
+  }
+
+  const transcription = item.transcription || item.transcripts?.[0] || '';
+  const destinationPage = item.destinationPage || item.destination_page || item.snapshot?.linkUrl || item.linkUrl || '';
+
+  return {
+    id,
+    status,
+    startDate,
+    activeDays,
+    copies,
+    advertiserName,
+    advertiserAvatar,
+    pageUrl,
+    bodyText,
+    videoUrl,
+    category,
+    transcription,
+    fanPage: advertiserName,
+    destinationPage,
+    videoThumbnail
+  };
+};
+
+const AdCardSkeleton: React.FC = () => {
+  return (
+    <div className="bg-zinc-900 border border-zinc-800/80 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex flex-col h-fit relative animate-pulse">
+      <div className="p-4 border-b border-zinc-800/60 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-1.5">
+            <div className="h-4 w-12 bg-zinc-800 rounded-full"></div>
+            <div className="h-4 w-16 bg-zinc-800 rounded"></div>
+          </div>
+          <div className="h-6 w-6 bg-zinc-800 rounded-md"></div>
+        </div>
+        <div className="flex items-center justify-between mt-2">
+          <div className="h-3 w-20 bg-zinc-800 rounded"></div>
+          <div className="h-3 w-16 bg-zinc-800/60 rounded"></div>
+        </div>
+      </div>
+
+      <div className="p-4 flex items-center space-x-3 bg-zinc-900/40">
+        <div className="w-9 h-9 rounded-full bg-zinc-800 shrink-0"></div>
+        <div className="flex-1 space-y-1.5 min-w-0">
+          <div className="h-3 bg-zinc-800 rounded w-2/3"></div>
+          <div className="h-2 bg-zinc-800/60 rounded w-1/2"></div>
+        </div>
+      </div>
+
+      <div className="px-4 pb-3 flex-1 space-y-2 py-2">
+        <div className="h-3 bg-zinc-800 rounded w-full"></div>
+        <div className="h-3 bg-zinc-800 rounded w-5/6"></div>
+        <div className="h-3 bg-zinc-800 rounded w-2/3"></div>
+      </div>
+
+      <div className="relative aspect-[4/5] bg-zinc-950/90 overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#ef4444_1px,transparent_1px)] [background-size:16px_16px]"></div>
+        <div className="w-12 h-12 rounded-full bg-zinc-900/80 border border-zinc-800 flex items-center justify-center">
+          <div className="w-3 h-3 bg-zinc-800 rounded"></div>
+        </div>
+        <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-red-500/20 to-transparent skeleton-scanline"></div>
+      </div>
+    </div>
+  );
+};
+
 export const AdLibrary: React.FC = () => {
-  // Internal State Array of Mock Ads
-  const [ads] = useState<Ad[]>(INITIAL_MOCK_ADS);
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAdData = async () => {
+    setIsLoading(true);
+    setError(null);
+    const token = import.meta.env.VITE_APIFY_API_TOKEN;
+    if (!token) {
+      console.warn("VITE_APIFY_API_TOKEN não configurada no ambiente.");
+      setAds(INITIAL_MOCK_ADS);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+      const response = await fetch(
+        `https://api.apify.com/v2/acts/apify~facebook-ads-scraper/run-sync-get-dataset-items?token=${token}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            queries: ["marketing digital", "ganhar dinheiro", "dropshipping", "suplemento"],
+            country: "BR",
+            adActiveStatus: "ACTIVE",
+            resultsLimit: 20
+          }),
+          signal: controller.signal
+        }
+      );
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+
+      const rawItems = await response.json();
+      if (Array.isArray(rawItems) && rawItems.length > 0) {
+        const mapped = rawItems.map((item, idx) => mapApifyAdToAd(item, idx));
+        setAds(mapped);
+        setIsLoading(false);
+        return;
+      } else {
+        throw new Error("Payload is empty or not an array");
+      }
+
+    } catch (e: any) {
+      console.warn("Sync run failed/timed out, attempting fallback to last successful dataset run:", e.message || e);
+      
+      try {
+        const fallbackRes = await fetch(
+          `https://api.apify.com/v2/actors/apify~facebook-ads-scraper/runs/last/dataset/items?token=${token}`
+        );
+
+        if (fallbackRes.ok) {
+          const rawItems = await fallbackRes.json();
+          if (Array.isArray(rawItems) && rawItems.length > 0) {
+            const mapped = rawItems.map((item, idx) => mapApifyAdToAd(item, idx));
+            setAds(mapped);
+            setIsLoading(false);
+            return;
+          }
+        }
+        throw new Error("Last dataset items also empty or failed to load");
+      } catch (err: any) {
+        console.error("All Apify requests failed. Using local cached mock data.", err.message || err);
+        setAds(INITIAL_MOCK_ADS);
+        setError("Não foi possível carregar os dados ao vivo do Apify (limite de cota ou erro de API). Exibindo base de dados local salva.");
+        setIsLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchAdData();
+  }, []);
 
   // Search & Basic states
   const [searchQuery, setSearchQuery] = useState('');
@@ -253,8 +485,49 @@ export const AdLibrary: React.FC = () => {
             />
           </div>
 
+          {/* Stylesheet inline for custom skeleton scanline */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes skeleton-scan {
+              0% { top: 0%; }
+              50% { top: 100%; }
+              100% { top: 0%; }
+            }
+            .skeleton-scanline {
+              position: absolute;
+              height: 2px;
+              width: 100%;
+              background: linear-gradient(to right, transparent, rgba(239, 68, 68, 0.4), transparent);
+              animation: skeleton-scan 2s ease-in-out infinite;
+            }
+          ` }} />
+
+          {/* Error Banner */}
+          {error && (
+            <div className="bg-red-950/20 border border-red-500/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in duration-300">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0 animate-ping"></span>
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wide">
+                  {error}
+                </p>
+              </div>
+              <button 
+                onClick={() => fetchAdData()}
+                className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest bg-red-950/40 hover:bg-red-900/40 border border-red-500/20 px-3.5 py-1.5 rounded-lg text-red-400 hover:text-white transition-all cursor-pointer shrink-0"
+              >
+                <RefreshCw size={10} className="animate-spin" />
+                <span>Recarregar Ao Vivo</span>
+              </button>
+            </div>
+          )}
+
           {/* Ad Grid */}
-          {filteredAds.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {Array.from({ length: 10 }).map((_, idx) => (
+                <AdCardSkeleton key={idx} />
+              ))}
+            </div>
+          ) : filteredAds.length === 0 ? (
             <div className="py-20 flex flex-col items-center justify-center text-center border border-zinc-800/60 rounded-xl bg-zinc-900/10 space-y-4">
               <div className="p-4 bg-zinc-900/80 border border-zinc-800 text-zinc-500 rounded-full">
                 <Search size={28} className="animate-pulse" />
@@ -272,7 +545,7 @@ export const AdLibrary: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 animate-in fade-in duration-300">
               {filteredAds.map(ad => (
                 <AdCard
                   key={ad.id}
