@@ -1575,7 +1575,6 @@ const App: React.FC = () => {
             { id: 'interceptador', icon: Radar, label: 'INTERCEPTADOR WEB', page: 'interceptador', module: 'swiper' },
             { id: 'extensao', icon: Puzzle, label: 'EXTENSÃO', page: 'extensao', module: 'swiper' },
             { id: 'favoritos', icon: Star, label: 'FAVORITOS', page: 'favoritos', module: 'swiper' },
-            { id: 'organicos', icon: Smartphone, label: 'VIRAIS ORGÂNICOS', page: 'virais', module: 'organicos' },
             { id: 'central', icon: HelpCircle, label: 'CENTRAL 007', page: 'suporte', module: 'central' },
             { id: 'comunidade', icon: MessageCircle, label: 'COMUNIDADE VIP', page: 'comunidade', module: 'comunidade' }
           ].map(item => {
@@ -1594,14 +1593,13 @@ const App: React.FC = () => {
               );
             }
 
-            if (item.id === 'favoritos') {
+            if (item.id === 'central') {
               return (
                 <button 
                   key={item.id} 
                   onClick={() => {
                     setCurrentModule(item.module);
                     setCurrentPage(item.page);
-                    setSelectedOffer(null);
                   }} 
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all border whitespace-nowrap ${
                     isActive 
