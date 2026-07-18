@@ -156,7 +156,7 @@ const AdCardSkeleton: React.FC = () => {
 
 export const AdLibrary: React.FC = () => {
   const [ads, setAds] = useState<Ad[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchAdData = async (query?: string) => {
@@ -177,6 +177,18 @@ export const AdLibrary: React.FC = () => {
 
         const startUrl = `https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&search_type=keyword_unordered&q=${encodeURIComponent(query.trim())}`;
 
+        const payload = {
+          startUrls: [
+            { url: startUrl }
+          ],
+          searchTerms: [query.trim()],
+          country: "BR",
+          activeStatus: "active",
+          maxItems: 20
+        };
+
+        console.log("Apify request payload:", payload);
+
         const response = await fetch(
           `https://api.apify.com/v2/acts/apify~facebook-ads-scraper/run-sync-get-dataset-items?token=${token}`,
           {
@@ -184,15 +196,7 @@ export const AdLibrary: React.FC = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              startUrls: [
-                { url: startUrl }
-              ],
-              searchQueries: [query.trim()],
-              country: "BR",
-              activeStatus: "active",
-              maxItems: 20
-            }),
+            body: JSON.stringify(payload),
             signal: controller.signal
           }
         );
@@ -238,7 +242,8 @@ export const AdLibrary: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchAdData();
+    // A tela começa vazia por padrão para evitar consumo indesejado de créditos.
+    // O usuário pode digitar e buscar para carregar os dados ao vivo.
   }, []);
 
   // Search & Basic states
