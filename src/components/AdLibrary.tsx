@@ -2,99 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, Check, RefreshCw, Layers, Flame, HelpCircle } from 'lucide-react';
 import { AdCard, Ad } from './AdCard';
 
-const INITIAL_MOCK_ADS: Ad[] = [
-  {
-    id: 'ad_1',
-    status: 'Ativo',
-    startDate: '12/06/2026',
-    activeDays: 9,
-    copies: 5,
-    advertiserName: 'Nicho Black Caps',
-    advertiserAvatar: 'BC',
-    pageUrl: 'https://desafio-zero-barriga.online/promocao',
-    bodyText: '🚨 ÚLTIMA CHANCE: O método secreto que secou mais de 15.000 pessoas sem dietas malucas ou exercícios cansativos. Assista ao vídeo de 3 minutos e descubra como ativar o receptor de queima rápida hoje mesmo. Estoque limitado do ativador natural no Brasil!',
-    category: 'Pressão',
-    transcription: 'seja muito bem-vindo a essa apresentação hoje vou te revelar o segredo para ativar sua queima de gordura profunda de forma 100% natural',
-    fanPage: 'Nicho Black Caps Oficial',
-    destinationPage: 'https://desafio-zero-barriga.online/checkout-vip'
-  },
-  {
-    id: 'ad_2',
-    status: 'Inativo',
-    startDate: '15/04/2026',
-    activeDays: 60,
-    copies: 32,
-    advertiserName: 'Premium Dropshipping',
-    advertiserAvatar: 'PD',
-    pageUrl: 'https://lojapremium.com.br/relogio-tatico',
-    bodyText: '⌚️ Relógio Militar Titanium - O acessório indestrutível preferido das forças especiais americanas. À prova d\'água, ultra resistente e com vidro de safira anti-riscos. Garanta 50% de DESCONTO e Frete Grátis apenas hoje clicando no botão!',
-    category: 'Geral',
-    transcription: 'conheça o relógio de titânio indestrutível militar o mais resistente do mundo importado diretamente com preço de fábrica',
-    fanPage: 'Premium Dropshipping Brasil',
-    destinationPage: 'https://lojapremium.com.br/relogio-tatico/comprar'
-  },
-  {
-    id: 'ad_3',
-    status: 'Ativo',
-    startDate: '18/06/2026',
-    activeDays: 3,
-    copies: 1,
-    advertiserName: 'App Renda Extra',
-    advertiserAvatar: 'RE',
-    pageUrl: 'https://ganhos-diarios.app/cadastro',
-    bodyText: '💸 Trabalhe de casa avaliando marcas famosas e receba de R$ 50 a R$ 150 por dia diretamente no seu Pix. Sem taxas ocultas, faça sua primeira retirada ainda hoje. Restam apenas 17 vagas para novos testadores em sua região!',
-    category: 'Renda Extra',
-    transcription: 'olha só esse pix que acabou de cair na minha conta apenas por avaliar cinco peças de roupas no meu celular hoje mesmo',
-    fanPage: 'Trabalho Inteligente Inc',
-    destinationPage: 'https://ganhos-diarios.app/auth'
-  },
-  {
-    id: 'ad_4',
-    status: 'Ativo',
-    startDate: '05/06/2026',
-    activeDays: 16,
-    copies: 14,
-    advertiserName: 'Alfa Suplementos',
-    advertiserAvatar: 'AS',
-    pageUrl: 'https://alfa-testo.com/promocao-especial',
-    bodyText: '🔥 Recupere a energia de quando você tinha 20 anos. Fórmula 100% natural com feno grego e maca peruana concentrada. Sinta a diferença nas primeiras 48 horas de uso. Compre 3 potes e leve 5 com frete gratuito.',
-    category: 'Pressão',
-    transcription: 'se você se sente cansado sem energia ao longo do dia esse novo composto natural vai devolver toda a sua vitalidade e foco',
-    fanPage: 'Alfa Suplementos Saúde',
-    destinationPage: 'https://alfa-testo.com/checkout'
-  },
-  {
-    id: 'ad_5',
-    status: 'Inativo',
-    startDate: '20/05/2026',
-    activeDays: 12,
-    copies: 2,
-    advertiserName: 'Expert Launch Academy',
-    advertiserAvatar: 'EL',
-    pageUrl: 'https://expertlaunch.site/vsl-vendas',
-    bodyText: '🎯 Chega de tentar vender com páginas amadoras. Descubra a estrutura exata de VSL de 7 dígitos que converte tráfego frio em compradores recorrentes. Baixe o template em PDF e comece a gravar o seu roteiro validado hoje.',
-    category: 'VSL',
-    transcription: 'hoje eu vou te dar o modelo pronto de vsl de vendas que nós usamos nos bastidores para faturar múltiplos milhões de reais',
-    fanPage: 'Expert Launch Treinamentos',
-    destinationPage: 'https://expertlaunch.site/obrigado-vsl'
-  },
-  {
-    id: 'ad_6',
-    status: 'Ativo',
-    startDate: '21/06/2026',
-    activeDays: 1,
-    copies: 3,
-    advertiserName: 'Segredos da Conversão',
-    advertiserAvatar: 'SC',
-    pageUrl: 'https://segredosconversao.com/truque-secreto',
-    bodyText: '💡 O truque definitivo para triplicar as vendas da sua página. Revelamos o truque simples de design que os maiores e-commerces usam para reter os clientes. Clique em saiba mais e aplique hoje mesmo.',
-    category: 'Geral',
-    transcription: 'neste vídeo vou te mostrar o truque simples que aumentou nossas conversões em mais de trezentos por cento sem mudar o preço',
-    fanPage: 'Segredos da Conversão Fanpage',
-    destinationPage: 'https://segredosconversao.com/checkout-truque'
-  }
-];
-
 const mapApifyAdToAd = (item: any, index: number): Ad => {
   const id = item.ad_archive_id || item.id || item.adId || `apify_${index}_${Date.now()}`;
   
@@ -257,95 +164,75 @@ export const AdLibrary: React.FC = () => {
     setError(null);
     const token = import.meta.env.VITE_APIFY_API_TOKEN;
     if (!token) {
-      console.warn("VITE_APIFY_API_TOKEN não configurada no ambiente.");
-      setAds(INITIAL_MOCK_ADS);
+      setError("Token de acesso VITE_APIFY_API_TOKEN não configurado no arquivo .env.");
+      setAds([]);
       setIsLoading(false);
       return;
     }
 
-    const queryList = query && query.trim() !== '' 
-      ? [query.trim()] 
-      : ["marketing digital", "ganhar dinheiro", "dropshipping", "suplemento"];
-
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      if (query && query.trim() !== '') {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 35000); // 35 seconds timeout for live sync scraper run
 
-      const response = await fetch(
-        `https://api.apify.com/v2/acts/apify~facebook-ads-scraper/run-sync-get-dataset-items?token=${token}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            queries: queryList,
-            country: "BR",
-            adActiveStatus: "ACTIVE",
-            resultsLimit: 20
-          }),
-          signal: controller.signal
+        const response = await fetch(
+          `https://api.apify.com/v2/acts/apify~facebook-ads-scraper/run-sync-get-dataset-items?token=${token}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              queries: [query.trim()],
+              searchQueries: [query.trim()],
+              searchTerms: [query.trim()],
+              country: "BR",
+              adActiveStatus: "ACTIVE",
+              activeStatus: "active",
+              resultsLimit: 20,
+              maxResultsPerQuery: 20
+            }),
+            signal: controller.signal
+          }
+        );
+        
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`Erro na API do Apify (Status ${response.status})`);
         }
-      );
-      
-      clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-      }
-
-      const rawItems = await response.json();
-      if (Array.isArray(rawItems) && rawItems.length > 0) {
-        const mapped = rawItems.map((item, idx) => mapApifyAdToAd(item, idx));
-        setAds(mapped);
-        setIsLoading(false);
-        return;
+        const rawItems = await response.json();
+        if (Array.isArray(rawItems)) {
+          const mapped = rawItems.map((item, idx) => mapApifyAdToAd(item, idx));
+          setAds(mapped);
+        } else {
+          throw new Error("Resposta da API do Apify inválida ou vazia.");
+        }
       } else {
-        throw new Error("Payload is empty or not an array");
-      }
-
-    } catch (e: any) {
-      console.warn("Sync run failed/timed out, attempting fallback to last successful dataset run:", e.message || e);
-      
-      try {
-        const fallbackRes = await fetch(
+        // Fast initial/empty load from the last run dataset
+        const response = await fetch(
           `https://api.apify.com/v2/actors/apify~facebook-ads-scraper/runs/last/dataset/items?token=${token}`
         );
 
-        if (fallbackRes.ok) {
-          const rawItems = await fallbackRes.json();
-          if (Array.isArray(rawItems) && rawItems.length > 0) {
-            let filteredRaw = rawItems;
-            if (query && query.trim() !== '') {
-              const q = query.toLowerCase().trim();
-              filteredRaw = rawItems.filter((item: any) => {
-                const pageName = (item.pageName || item.page_name || item.pageProfile?.name || '').toLowerCase();
-                const bodyText = (item.bodyText || item.adText || item.text || item.adBody || item.snapshot?.body?.text || item.snapshot?.text || '').toLowerCase();
-                return pageName.includes(q) || bodyText.includes(q);
-              });
-            }
-            const mapped = filteredRaw.map((item, idx) => mapApifyAdToAd(item, idx));
-            setAds(mapped);
-            setIsLoading(false);
-            return;
-          }
+        if (!response.ok) {
+          throw new Error(`Erro ao buscar o último dataset (Status ${response.status})`);
         }
-        throw new Error("Last dataset items also empty or failed to load");
-      } catch (err: any) {
-        console.error("All Apify requests failed. Using local cached mock data.", err.message || err);
-        
-        let fallbackAds = INITIAL_MOCK_ADS;
-        if (query && query.trim() !== '') {
-          const q = query.toLowerCase().trim();
-          fallbackAds = INITIAL_MOCK_ADS.filter(ad => 
-            ad.advertiserName.toLowerCase().includes(q) || 
-            ad.bodyText.toLowerCase().includes(q)
-          );
+
+        const rawItems = await response.json();
+        if (Array.isArray(rawItems)) {
+          const mapped = rawItems.map((item, idx) => mapApifyAdToAd(item, idx));
+          setAds(mapped);
+        } else {
+          throw new Error("Nenhum item encontrado no último dataset.");
         }
-        setAds(fallbackAds);
-        setError("Não foi possível carregar os dados ao vivo do Apify (limite de cota ou erro de API). Exibindo base de dados local salva.");
-        setIsLoading(false);
       }
+    } catch (e: any) {
+      console.error("Erro ao buscar dados da biblioteca de anúncios:", e);
+      setError(e.message || "Ocorreu um erro ao carregar os dados ao vivo do Apify.");
+      setAds([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
