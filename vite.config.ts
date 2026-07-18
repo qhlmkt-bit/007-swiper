@@ -8,13 +8,4 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  server: {
-    proxy: {
-      '/api/apify': {
-        target: 'https://api.apify.com/v2',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/apify/, ''),
-      },
-    },
-  },
 })

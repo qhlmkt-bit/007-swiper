@@ -162,7 +162,6 @@ export const AdLibrary: React.FC = () => {
   const fetchAdData = async (query?: string) => {
     setIsLoading(true);
     setError(null);
-    const API_TOKEN = import.meta.env.VITE_APIFY_API_TOKEN;
 
     try {
       if (query && query.trim() !== '') {
@@ -181,18 +180,14 @@ export const AdLibrary: React.FC = () => {
           maxItems: 20
         };
 
-        console.log('Status do Token:', API_TOKEN ? 'Presente' : 'Vazio ou Undefined');
         console.log("Apify request payload:", payload);
 
-        if (!API_TOKEN) throw new Error('TOKEN_FALTANDO: A variável VITE_APIFY_API_TOKEN não foi encontrada no build.');
-
         const response = await fetch(
-          `/api/apify/acts/apify~facebook-ads-scraper/run-sync-get-dataset-items?token=${API_TOKEN}`,
+          '/api/apify',
           {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${API_TOKEN}`
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload),
             signal: controller.signal
@@ -213,19 +208,8 @@ export const AdLibrary: React.FC = () => {
           throw new Error("Resposta da API do Apify inválida ou vazia.");
         }
       } else {
-        console.log('Status do Token:', API_TOKEN ? 'Presente' : 'Vazio ou Undefined');
-        
-        if (!API_TOKEN) throw new Error('TOKEN_FALTANDO: A variável VITE_APIFY_API_TOKEN não foi encontrada no build.');
-
         // Fast initial/empty load from the last run dataset
-        const response = await fetch(
-          `/api/apify/actors/apify~facebook-ads-scraper/runs/last/dataset/items?token=${API_TOKEN}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${API_TOKEN}`
-            }
-          }
-        );
+        const response = await fetch('/api/apify');
 
         if (!response.ok) {
           throw new Error(`Erro ao buscar o último dataset (Status ${response.status})`);
