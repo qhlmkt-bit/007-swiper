@@ -3,7 +3,7 @@ import { Search, SlidersHorizontal, Check, RefreshCw, Layers, Flame, HelpCircle 
 import { AdCard, Ad } from './AdCard';
 
 const mapApifyAdToAd = (item: any, index: number): Ad => {
-  const id = item.ad_archive_id || item.id || item.adId || `apify_${index}_${Date.now()}`;
+  const id = item.ad_archive_id || item.adArchiveId || item.adArchiveID || item.id || item.adId || `apify_${index}_${Date.now()}`;
   
   let status: 'Ativo' | 'Inativo' = 'Ativo';
   const rawStatus = item.status || item.adActiveStatus || (item.isActive ? 'ACTIVE' : '') || '';
@@ -15,7 +15,7 @@ const mapApifyAdToAd = (item: any, index: number): Ad => {
   }
 
   let startDate = 'Recente';
-  const rawDate = item.startDate || item.start_date || item.adStartDate || item.creationTime || item.adCreationTime;
+  const rawDate = item.startDateFormatted || item.startDate || item.start_date || item.adStartDate || item.creationTime || item.adCreationTime;
   if (rawDate) {
     if (typeof rawDate === 'string') {
       try {
@@ -55,7 +55,7 @@ const mapApifyAdToAd = (item: any, index: number): Ad => {
   }
 
   let copies = 1;
-  const rawCopies = item.copies || item.copiesCount || item.count || item.similiarAdsCount || item.similarAdsCount;
+  const rawCopies = item.collationCount || item.copies || item.copiesCount || item.count || item.similiarAdsCount || item.similarAdsCount;
   if (typeof rawCopies === 'number') {
     copies = rawCopies;
   } else if (typeof rawCopies === 'string') {
@@ -66,7 +66,7 @@ const mapApifyAdToAd = (item: any, index: number): Ad => {
   const advertiserName = item.pageName || item.page_name || item.advertiserName || item.pageProfile?.name || 'Anunciante';
 
   let advertiserAvatar = '';
-  const rawAvatar = item.pageProfile?.profileImageUrl || item.pageProfile?.profile_image_url || item.advertiserAvatar;
+  const rawAvatar = item.snapshot?.pageProfilePictureUrl || item.pageProfile?.profileImageUrl || item.pageProfile?.profile_image_url || item.advertiserAvatar;
   if (rawAvatar && typeof rawAvatar === 'string' && rawAvatar.startsWith('http')) {
     advertiserAvatar = rawAvatar;
   } else {
@@ -75,8 +75,8 @@ const mapApifyAdToAd = (item: any, index: number): Ad => {
 
   const pageUrl = item.pageUrl || item.page_url || item.snapshot?.linkUrl || item.linkUrl || `https://facebook.com/ads/library/?id=${id}`;
   const bodyText = item.bodyText || item.adText || item.text || item.adBody || item.snapshot?.body?.text || item.snapshot?.text || '';
-  const videoUrl = item.videoUrl || item.video_url || item.snapshot?.videos?.[0]?.video_hd_url || item.snapshot?.videos?.[0]?.url;
-  const videoThumbnail = item.videoThumbnail || item.video_thumbnail || item.snapshot?.images?.[0]?.url || item.snapshot?.images?.[0]?.resized_image_url;
+  const videoUrl = item.videoUrl || item.video_url || item.snapshot?.videos?.[0]?.videoHdUrl || item.snapshot?.videos?.[0]?.video_hd_url || item.snapshot?.videos?.[0]?.videoSdUrl || item.snapshot?.videos?.[0]?.url;
+  const videoThumbnail = item.videoThumbnail || item.video_thumbnail || item.snapshot?.videos?.[0]?.videoPreviewImageUrl || item.snapshot?.images?.[0]?.url || item.snapshot?.images?.[0]?.resized_image_url;
 
   let category = item.category || 'Geral';
   if (category === 'Geral' && bodyText) {
@@ -175,6 +175,8 @@ export const AdLibrary: React.FC = () => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 35000); // 35 seconds timeout for live sync scraper run
 
+        const startUrl = `https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&search_type=keyword_unordered&q=${encodeURIComponent(query.trim())}`;
+
         const response = await fetch(
           `https://api.apify.com/v2/acts/apify~facebook-ads-scraper/run-sync-get-dataset-items?token=${token}`,
           {
@@ -183,14 +185,13 @@ export const AdLibrary: React.FC = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              queries: [query.trim()],
+              startUrls: [
+                { url: startUrl }
+              ],
               searchQueries: [query.trim()],
-              searchTerms: [query.trim()],
               country: "BR",
-              adActiveStatus: "ACTIVE",
               activeStatus: "active",
-              resultsLimit: 20,
-              maxResultsPerQuery: 20
+              maxItems: 20
             }),
             signal: controller.signal
           }
