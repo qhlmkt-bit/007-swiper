@@ -116,15 +116,9 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        maxResults: 10,
-        maxItems: 10,
-        limit: 10,
-        activeStatus: "ACTIVE",
-        proxyConfiguration: {
-          useApifyProxy: true,
-          apifyProxyGroups: ["RESIDENTIAL"]
-        },
-        useChrome: true
+        startUrls: [{ url: "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=BR&media_type=all" }],
+        maxResult: 10,
+        proxyConfiguration: { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] }
       })
     });
 
