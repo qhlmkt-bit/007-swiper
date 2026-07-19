@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Configurable Apify Task ID
-const APIFY_TASK_ID = 'SEU_TASK_ID';
+const APIFY_TASK_ID = process.env.APIFY_TASK_ID;
 
 // Create video on Bunny Stream and upload the video buffer
 async function uploadToBunnyStream(videoUrl, libraryId, apiKey) {
@@ -97,7 +97,9 @@ export default async function handler(req, res) {
   const libraryId = process.env.BUNNY_LIBRARY_ID;
   const apiKey = process.env.BUNNY_API_KEY;
 
-  if (!APIFY_TASK_ID || APIFY_TASK_ID === 'SEU_TASK_ID') {
+  console.log('DEBUG_VAR_TASK_ID:', process.env.APIFY_TASK_ID);
+
+  if (!APIFY_TASK_ID) {
     return res.status(500).json({ error: 'Erro: APIFY_TASK_ID do Actor não configurado. Execução abortada para prevenção de custos.' });
   }
   if (!API_TOKEN) {
