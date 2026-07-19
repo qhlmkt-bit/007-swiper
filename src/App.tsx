@@ -3,7 +3,7 @@ import {
   Smartphone, Sparkles, HelpCircle, HomeIcon, 
   ShieldCheck, MessageCircle, Search, Star, FileText, ExternalLink,
   FolderOpen, Youtube, Facebook, Target, Radar, Download, Briefcase, Puzzle,
-  RefreshCw, TrendingUp, Layers, Activity, Globe, CheckCircle2, Terminal, LogOut, Video
+  LogOut, Video, Flame
 } from 'lucide-react';
 import { OfferDetails } from './components/OfferDetails';
 import { LandingPage } from './components/LandingPage';
@@ -219,6 +219,51 @@ const OfferCard = ({ offer, onClick, isFavorite, onFavoriteToggle }: { offer: an
 
 // Removed Laboratory AI dashboards
 
+export type PlatformType = 'TikTok' | 'Reels' | 'Shorts';
+
+export interface OrganicHook {
+  id: string;
+  plataforma: PlatformType;
+  nicho: string;
+  linkVideo: string;
+  visualizacoes: string;
+  gancho: string;
+}
+
+const MOCK_ORGANIC_HOOKS: OrganicHook[] = [
+  {
+    id: 'hook_1',
+    plataforma: 'TikTok',
+    nicho: 'Emagrecimento',
+    linkVideo: 'https://www.tiktok.com/',
+    visualizacoes: '4.2M',
+    gancho: 'CURIOSIDADE'
+  },
+  {
+    id: 'hook_2',
+    plataforma: 'Reels',
+    nicho: 'Finanças',
+    linkVideo: 'https://www.instagram.com/',
+    visualizacoes: '850K',
+    gancho: 'ANTES E DEPOIS'
+  },
+  {
+    id: 'hook_3',
+    plataforma: 'Shorts',
+    nicho: 'Relacionamentos',
+    linkVideo: 'https://www.youtube.com/',
+    visualizacoes: '1.5M',
+    gancho: 'INFORMATIVO'
+  },
+  {
+    id: 'hook_4',
+    plataforma: 'TikTok',
+    nicho: 'Skincare',
+    linkVideo: 'https://www.tiktok.com/',
+    visualizacoes: '320K',
+    gancho: 'PROBLEMA E SOLUÇÃO'
+  }
+];
 
 // --- APP PRINCIPAL ---
 const App: React.FC = () => {
@@ -298,18 +343,9 @@ const App: React.FC = () => {
 
 
 
-  // Estados do Interceptador
-  const [interceptorUrl, setInterceptorUrl] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<boolean>(false);
-  const [scanPhase, setScanPhase] = useState(0);
-  const [interceptData, setInterceptData] = useState<{
-    checkoutText: string;
-    pixelId: string;
-    hosting: string;
-    statusText: string;
-    badgeStyle: string;
-  } | null>(null);
+  // Estados do Radar de Ganchos
+  const [hookFilterPlatform, setHookFilterPlatform] = useState<string>('Todos');
+  const [hookFilterType, setHookFilterType] = useState<string>('Todos');
 
   useEffect(() => {
     const fetchOffers = async () => {
@@ -400,56 +436,15 @@ const App: React.FC = () => {
     setActiveSubTab('OFERTAS');
     setActiveViralTab('TIKTOK');
     setViralNiche('Todos');
+    setHookFilterPlatform('Todos');
+    setHookFilterType('Todos');
   }, [currentPage, currentModule]);
 
 
 
 
 
-  const handleScan = async () => {
-    if(!interceptorUrl) return;
-    setIsScanning(true);
-    setScanResult(false);
-    setInterceptData(null);
-    setScanPhase(0);
 
-    // Terminal loading simulation phases
-    setTimeout(() => setScanPhase(1), 800);
-    setTimeout(() => setScanPhase(2), 1600);
-    setTimeout(() => setScanPhase(3), 2400);
-
-    try {
-      const response = await fetch('/api/intercept', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ url: interceptorUrl })
-      });
-
-      const data = await response.json();
-      
-      // Wait for the full tactical scan animation before rendering results
-      setTimeout(() => {
-        setInterceptData(data);
-        setIsScanning(false);
-        setScanResult(true);
-      }, 3500);
-    } catch (error) {
-      console.error("Erro no interceptador de URL:", error);
-      setTimeout(() => {
-        setInterceptData({
-          checkoutText: 'Erro ao conectar (Bloqueio de CORS/Rede)',
-          pixelId: 'Inacessível',
-          hosting: 'Desconhecido / Protegido',
-          statusText: '⚠️ CONEXÃO BLOQUEADA',
-          badgeStyle: 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.1)]'
-        });
-        setIsScanning(false);
-        setScanResult(true);
-      }, 3500);
-    }
-  };
 
   const renderContent = () => {
     // Admin Dashboard Route Protection
@@ -815,238 +810,143 @@ const App: React.FC = () => {
 
         // --- INTERCEPTADOR E EXTENSÃO CONTINUAM AQUI... (ocultos para poupar espaço visual, mas renderizam normalmente) ---
         if (currentPage === 'interceptador') {
+            const hookTypes = ['Todos', ...Array.from(new Set(MOCK_ORGANIC_HOOKS.map(item => item.gancho)))];
+            const platforms = ['Todos', 'TikTok', 'Reels', 'Shorts'];
+
+            const filteredHooks = MOCK_ORGANIC_HOOKS.filter(item => {
+                const matchPlatform = hookFilterPlatform === 'Todos' || item.plataforma === hookFilterPlatform;
+                const matchType = hookFilterType === 'Todos' || item.gancho === hookFilterType;
+                return matchPlatform && matchType;
+            });
+
             return (
-                <div className="animate-in fade-in max-w-4xl mx-auto mt-10 font-sans antialiased">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <Radar size={48} className="mx-auto text-[#D4AF37] mb-3 opacity-90 animate-pulse" />
-                        <h2 className="text-xl font-black text-white uppercase tracking-widest mb-1 flex items-center justify-center gap-2">
-                            <Terminal size={18} className="text-[#D4AF37]" /> INTERCEPTADOR WEB
-                        </h2>
-                        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest max-w-xl mx-auto">
-                            Analise checkouts e páginas de vendas em tempo real para extrair a infraestrutura e a escala do concorrente.
-                        </p>
+                <div className="animate-in fade-in pb-20 font-sans antialiased max-w-6xl mx-auto mt-6">
+                    {/* Header and Filters */}
+                    <div className="flex flex-col mb-8 gap-5 bg-[#0a0a0a] p-5 rounded-xl border border-white/5 font-sans antialiased">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full">
+                            <div>
+                                <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-3 font-sans antialiased">
+                                    <Radar className="text-[#D4AF37]" size={16} /> 
+                                    RADAR DE GANCHOS
+                                </h2>
+                                <p className="text-[10px] text-zinc-500 mt-1 uppercase font-semibold tracking-wider font-sans antialiased">
+                                    Monitore os ganchos e as visualizações dos vídeos orgânicos mais virais do momento.
+                                </p>
+                            </div>
+                            
+                            {/* Filter Controls Row */}
+                            <div className="flex flex-wrap items-center gap-4">
+                                <div className="flex flex-col gap-1 min-w-[150px]">
+                                    <span className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold font-sans antialiased">Plataforma</span>
+                                    <select 
+                                        value={hookFilterPlatform} 
+                                        onChange={(e) => setHookFilterPlatform(e.target.value)}
+                                        className="bg-[#050505] border border-white/10 rounded-lg py-2 px-3 text-xs text-zinc-300 outline-none focus:border-[#D4AF37]/50 font-medium cursor-pointer w-full font-sans antialiased"
+                                    >
+                                        {platforms.map(p => <option key={p} value={p}>{p}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="flex flex-col gap-1 min-w-[180px]">
+                                    <span className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold font-sans antialiased">Tipo de Gancho</span>
+                                    <select 
+                                        value={hookFilterType} 
+                                        onChange={(e) => setHookFilterType(e.target.value)}
+                                        className="bg-[#050505] border border-white/10 rounded-lg py-2 px-3 text-xs text-zinc-300 outline-none focus:border-[#D4AF37]/50 font-medium cursor-pointer w-full font-sans antialiased"
+                                    >
+                                        {hookTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    {!isScanning && !scanResult && (
-                        /* INITIAL INPUT STATE */
-                        <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-2xl shadow-2xl relative overflow-hidden group hover:border-[#D4AF37]/20 transition-all duration-300">
-                            {/* Background Tech Decors */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/2 rounded-full blur-3xl pointer-events-none"></div>
-                            
-                            <div className="flex flex-col gap-6 relative z-10">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block">URL de Destino</label>
-                                    <input 
-                                        type="text" 
-                                        value={interceptorUrl} 
-                                        onChange={(e) => setInterceptorUrl(e.target.value)} 
-                                        placeholder="Cole a URL do checkout ou página de vendas concorrente..." 
-                                        className="w-full bg-[#050505] border border-white/10 rounded-xl py-4 px-5 text-xs text-white outline-none focus:border-[#D4AF37] placeholder:text-zinc-700 font-medium transition-all" 
-                                    />
-                                </div>
-
-                                <button 
-                                    onClick={handleScan} 
-                                    disabled={!interceptorUrl.trim()} 
-                                    className="w-full bg-[#D4AF37] hover:bg-white text-black font-black uppercase tracking-widest py-4 px-8 rounded-xl transition-all disabled:opacity-40 disabled:hover:bg-[#D4AF37] flex items-center justify-center gap-2 text-xs shadow-[0_4px_20px_rgba(212,175,55,0.15)] active:scale-[0.98]"
-                                >
-                                    <Radar size={14} className="animate-spin" /> INVESTIGAR OPERAÇÃO
-                                </button>
-                                
-                                {/* Info Cards Decorativos */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-white/5 mt-2">
-                                    <div className="p-3 bg-[#050505] rounded-lg border border-white/5">
-                                        <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider font-sans">Detecção Automática</p>
-                                        <p className="text-[10px] text-zinc-400 font-bold uppercase mt-1 font-sans">Pixels de Rastreamento</p>
-                                    </div>
-                                    <div className="p-3 bg-[#050505] rounded-lg border border-white/5">
-                                        <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider font-sans">Servidor Seguro</p>
-                                        <p className="text-[10px] text-zinc-400 font-bold uppercase mt-1 font-sans">Scan de Tráfego Criptografado</p>
-                                    </div>
-                                    <div className="p-3 bg-[#050505] rounded-lg border border-white/5">
-                                        <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider font-sans">Gateway Integrado</p>
-                                        <p className="text-[10px] text-zinc-400 font-bold uppercase mt-1 font-sans">Varredura de Plataformas</p>
-                                    </div>
-                                </div>
-                            </div>
+                    {/* Grid de Cards */}
+                    {filteredHooks.length === 0 ? (
+                        <div className="py-20 text-center border border-white/5 rounded-xl bg-[#0a0a0a]/50">
+                            <p className="text-zinc-500 text-xs uppercase font-semibold tracking-wider font-sans">
+                                Nenhum gancho encontrado com os filtros selecionados.
+                            </p>
                         </div>
-                    )}
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            {filteredHooks.map(hook => {
+                                // Platform icon mapping
+                                let PlatformIcon = Smartphone;
+                                if (hook.plataforma === 'Reels') PlatformIcon = Video;
+                                if (hook.plataforma === 'Shorts') PlatformIcon = Youtube;
 
-                    {isScanning && (
-                        /* SCANNING ANIMATION STATE */
-                        <div className="bg-[#050505] border border-[#D4AF37]/20 p-8 rounded-2xl shadow-[0_0_30px_rgba(212,175,55,0.05)] relative overflow-hidden">
-                            <div className="scan-line"></div>
-                            
-                            <div className="flex flex-col items-center justify-center py-8">
-                                {/* Visual Cyber Radar Indicator */}
-                                <div className="relative w-20 h-20 mb-8 flex items-center justify-center">
-                                    <div className="absolute inset-0 rounded-full border border-[#D4AF37]/20 animate-ping"></div>
-                                    <div className="absolute inset-2 rounded-full border border-[#D4AF37]/40 animate-pulse"></div>
-                                    <Radar size={32} className="text-[#D4AF37] animate-spin" />
-                                </div>
+                                // Neon tag style for hook types
+                                let neonTagStyle = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 shadow-[0_0_8px_rgba(6,182,212,0.15)]';
+                                if (hook.gancho.includes('ANTES')) {
+                                    neonTagStyle = 'bg-purple-500/10 text-purple-400 border-purple-500/30 shadow-[0_0_8px_rgba(168,85,247,0.15)]';
+                                } else if (hook.gancho.includes('CURIOSIDADE')) {
+                                    neonTagStyle = 'bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_8px_rgba(245,158,11,0.15)]';
+                                } else if (hook.gancho.includes('PROBLEMA')) {
+                                    neonTagStyle = 'bg-rose-500/10 text-rose-400 border-rose-500/30 shadow-[0_0_8px_rgba(244,63,94,0.15)]';
+                                }
 
-                                <div className="w-full max-w-lg bg-[#000000] border border-white/5 rounded-xl p-5 font-mono text-[10px] md:text-xs text-emerald-400 space-y-2.5 shadow-inner">
-                                    <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-2">
-                                        <span className="text-zinc-500 font-bold uppercase tracking-wider">SHELL_PROCESS_ID: 007_SPY</span>
-                                        <span className="text-[#D4AF37] font-bold animate-pulse">STATUS: ACTIVE_SCAN</span>
-                                    </div>
-                                    
-                                    <div className="space-y-1.5 min-h-[100px] text-left">
-                                        {scanPhase >= 0 && (
-                                            <p className="flex items-center gap-2 animate-in fade-in duration-300">
-                                                <span className="text-zinc-500">&gt;&gt;</span> 📡 Conectando ao servidor alvo...
-                                            </p>
-                                        )}
-                                        {scanPhase >= 1 && (
-                                            <p className="flex items-center gap-2 animate-in fade-in duration-300">
-                                                <span className="text-zinc-500">&gt;&gt;</span> 🕵️‍♂️ Interceptando pacotes de tráfego...
-                                            </p>
-                                        )}
-                                        {scanPhase >= 2 && (
-                                            <p className="flex items-center gap-2 animate-in fade-in duration-300">
-                                                <span className="text-zinc-500">&gt;&gt;</span> 🔍 Varrendo pixels de rastreamento ativos...
-                                            </p>
-                                        )}
-                                        {scanPhase >= 3 && (
-                                            <p className="flex items-center gap-2 animate-in fade-in duration-300">
-                                                <span className="text-zinc-500">&gt;&gt;</span> 📊 Consolidando métricas de conversão...
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Progress Bar */}
-                                    <div className="pt-4 border-t border-white/5 mt-4">
-                                        <div className="flex justify-between text-[8px] text-zinc-500 uppercase tracking-widest font-bold mb-1.5">
-                                            <span>Mapeando Operação</span>
-                                            <span>{Math.min(100, Math.round(((scanPhase + 1) / 4) * 100))}%</span>
-                                        </div>
-                                        <div className="w-full bg-[#080808] border border-white/10 h-2 rounded overflow-hidden">
-                                            <div 
-                                                className="bg-[#D4AF37] h-full transition-all duration-700 ease-out" 
-                                                style={{ width: `${Math.min(100, ((scanPhase + 1) / 4) * 100)}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {scanResult && interceptData && (() => {
-                        const report = interceptData;
-                        return (
-                            /* THE INTELLIGENCE REPORT DASHBOARD */
-                            <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-                                {/* Main Report Summary */}
-                                <div className="bg-[#0a0a0a] border border-[#D4AF37]/30 rounded-2xl p-6 relative overflow-hidden shadow-[0_0_20px_rgba(212,175,55,0.05)]">
-                                    {/* Decorative tech background */}
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4AF37]/5 rounded-bl-full pointer-events-none"></div>
-
-                                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/5 pb-4 mb-6">
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="text-xs font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                                                <CheckCircle2 size={12} className="text-emerald-500 animate-pulse" /> RELATÓRIO DE INTELIGÊNCIA CONCLUÍDO
-                                            </h3>
-                                            <p className="text-xs font-bold text-white uppercase tracking-normal break-all mt-1">{interceptorUrl}</p>
-                                        </div>
+                                return (
+                                    <div 
+                                        key={hook.id} 
+                                        className="bg-[#0a0a0a]/90 backdrop-blur-md border border-white/5 rounded-2xl p-4 flex flex-col justify-between aspect-[9/16] hover:border-[#D4AF37]/30 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.5)] group relative overflow-hidden"
+                                    >
+                                        {/* Background Subtle Tech Line */}
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent"></div>
                                         
-                                        <div className={`flex items-center gap-2 border px-3.5 py-1.5 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.1)] shrink-0 ${report.badgeStyle}`}>
-                                            <span className="text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                                                {report.statusText}
+                                        {/* Top Header Row of the Card */}
+                                        <div className="flex items-center justify-between z-10">
+                                            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 py-1 px-2.5 rounded-full">
+                                                <PlatformIcon size={12} className="text-zinc-400" />
+                                                <span className="text-[9px] font-black text-zinc-300 uppercase tracking-widest">{hook.plataforma}</span>
+                                            </div>
+                                            <span className="text-[8px] font-black tracking-widest bg-white/5 border border-white/10 text-zinc-400 py-1 px-2.5 rounded-full uppercase">
+                                                {hook.nicho}
                                             </span>
                                         </div>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="p-4 bg-[#050505] rounded-xl border border-white/5 flex flex-col gap-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <Activity size={12} className="text-[#D4AF37]" />
-                                                <span className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Status da Operação</span>
+                                        {/* Video mockup frame area */}
+                                        <div className="flex-1 my-4 bg-zinc-950/80 border border-white/5 rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-4">
+                                            <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                                            
+                                            {/* Visual views metric in center */}
+                                            <div className="flex flex-col items-center justify-center gap-2 z-10 text-center">
+                                                <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center shadow-lg group-hover:border-[#D4AF37]/30 transition-colors duration-300">
+                                                    <Flame size={24} className="text-[#D4AF37] animate-pulse" />
+                                                </div>
+                                                <div className="mt-2">
+                                                    <span className="text-2xl font-black text-white tracking-tighter font-mono">{hook.visualizacoes}</span>
+                                                    <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-widest mt-0.5">Visualizações</p>
+                                                </div>
                                             </div>
-                                            <span className={`text-xs font-black uppercase tracking-wider ${
-                                                report.statusText.includes('BLOQUEADA') ? 'text-red-400' : report.statusText.includes('ATIVO') ? 'text-amber-400' : 'text-emerald-400'
-                                            }`}>{report.statusText}</span>
-                                        </div>
-                                        
-                                        <div className="p-4 bg-[#050505] rounded-xl border border-white/5 flex flex-col gap-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <TrendingUp size={12} className="text-[#D4AF37]" />
-                                                <span className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Tráfego Mensal Estimado</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-zinc-500 text-xs font-black uppercase tracking-tight font-mono">Radar Oculto</span>
-                                                <span className="text-[7px] font-black uppercase tracking-widest bg-red-500/10 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded group relative cursor-help">
-                                                    API REQUERIDA
-                                                    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-44 p-2 bg-zinc-950 border border-zinc-800 text-zinc-400 text-[8px] font-bold uppercase tracking-wider rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-center leading-normal whitespace-normal normal-case z-20">
-                                                        Esses dados exigem integração com ferramentas de análise de tráfego de terceiros (como SimilarWeb) no futuro.
-                                                    </span>
-                                                </span>
-                                            </div>
+                                            
+                                            {/* Glow scanner line */}
+                                            <div className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent top-0 animate-[skeleton-scan_3s_ease-in-out_infinite]"></div>
                                         </div>
 
-                                        <div className="p-4 bg-[#050505] rounded-xl border border-white/5 flex flex-col gap-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <Globe size={12} className="text-[#D4AF37]" />
-                                                <span className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Principais Fontes</span>
+                                        {/* Bottom Tag & Action buttons */}
+                                        <div className="space-y-3 z-10">
+                                            {/* Hook Type Tag */}
+                                            <div className={`w-full py-2 px-3 text-center rounded-lg border font-black text-[10px] uppercase tracking-widest ${neonTagStyle}`}>
+                                                GANCHO: {hook.gancho}
                                             </div>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-zinc-500 text-xs font-black uppercase tracking-tight font-mono">Canais Privados</span>
-                                                <span className="text-[7px] font-black uppercase tracking-widest bg-red-500/10 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded group relative cursor-help">
-                                                    RADAR BLOQUEADO
-                                                    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-44 p-2 bg-zinc-950 border border-zinc-800 text-zinc-400 text-[8px] font-bold uppercase tracking-wider rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-center leading-normal whitespace-normal normal-case z-20">
-                                                        Esses dados exigem integração com ferramentas de análise de tráfego de terceiros (como SimilarWeb) no futuro.
-                                                    </span>
-                                                </span>
-                                            </div>
-                                        </div>
 
-                                        <div className="p-4 bg-[#050505] rounded-xl border border-white/5 flex flex-col gap-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <ShieldCheck size={12} className="text-[#D4AF37]" />
-                                                <span className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Checkout Protegido</span>
-                                            </div>
-                                            <span className="text-zinc-200 text-xs font-black uppercase tracking-tight">{report.checkoutText}</span>
+                                            {/* Action button */}
+                                            <a 
+                                                href={hook.linkVideo} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="w-full bg-zinc-900 border border-white/10 hover:bg-white hover:text-black text-white hover:border-white font-black uppercase tracking-widest py-3 rounded-xl transition-all flex items-center justify-center gap-1.5 text-[9px] active:scale-[0.98] cursor-pointer"
+                                            >
+                                                <ExternalLink size={10} />
+                                                Acessar Transmissão
+                                            </a>
                                         </div>
                                     </div>
-
-                                    {/* Extra intelligence metrics */}
-                                    <div className="mt-6 pt-5 border-t border-white/5 space-y-4">
-                                        <h4 className="text-[9px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                                            <Layers size={10} className="text-[#D4AF37]" /> DETALHES TÉCNICOS ADICIONAIS
-                                        </h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                            <div className="p-3 bg-[#0d0d0d] rounded border border-white/5">
-                                                <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">Meta Pixel Actives</p>
-                                                <p className="text-[9px] text-zinc-300 font-mono mt-1">ID: {report.pixelId}</p>
-                                            </div>
-                                            <div className="p-3 bg-[#0d0d0d] rounded border border-white/5">
-                                                <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">Hospedagem / CDN</p>
-                                                <p className="text-[9px] text-zinc-300 font-mono mt-1">{report.hosting}</p>
-                                            </div>
-                                            <div className="p-3 bg-[#0d0d0d] rounded border border-white/5">
-                                                <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">Criptografia SSL</p>
-                                                <p className="text-[9px] text-zinc-300 font-mono mt-1">Ativo (SHA-256)</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end pt-2">
-                                    <button 
-                                        onClick={() => {
-                                            setInterceptorUrl('');
-                                            setScanResult(false);
-                                            setScanPhase(0);
-                                        }}
-                                        className="flex items-center gap-2 py-3 px-6 bg-[#121212] hover:bg-white hover:text-black border border-white/10 text-zinc-300 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all cursor-pointer"
-                                    >
-                                        <RefreshCw size={12} /> NOVA INVESTIGAÇÃO
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })()}
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -1396,7 +1296,7 @@ const App: React.FC = () => {
                                 </div>
                             </button>
 
-                            {/* INTERCEPTADOR WEB */}
+                            {/* RADAR DE GANCHOS */}
                             <button 
                                 onClick={() => {
                                     setCurrentModule('swiper');
@@ -1410,10 +1310,10 @@ const App: React.FC = () => {
                                     <Radar size={20} />
                                 </div>
                                 <div className="mt-4 space-y-1.5">
-                                    <h4 className="text-xs font-black text-white uppercase tracking-wider group-hover:text-[#D4AF37] transition-all">INTERCEPTADOR WEB</h4>
-                                    <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Análise de Tráfego</p>
+                                    <h4 className="text-xs font-black text-white uppercase tracking-wider group-hover:text-[#D4AF37] transition-all">RADAR DE GANCHOS</h4>
+                                    <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Espionagem Orgânica</p>
                                     <p className="text-[11px] text-zinc-400 leading-normal font-normal pt-1">
-                                        Analise checkouts e páginas de vendas em tempo real para extrair a infraestrutura e a escala do concorrente.
+                                        Rastreie ganchos e visualizações dos vídeos orgânicos virais (TikTok, Reels, Shorts) mais quentes do mercado.
                                     </p>
                                 </div>
                             </button>
@@ -1563,7 +1463,7 @@ const App: React.FC = () => {
             { id: 'home', icon: HomeIcon, label: 'HOME', page: 'dashboard', module: 'home' },
             { id: 'ofertas', icon: Briefcase, label: 'OFERTAS VALIDADAS', page: 'cofre', module: 'swiper' },
             { id: 'biblioteca', icon: Facebook, label: 'BIBLIOTECA FACEBOOK', page: 'biblioteca', module: 'swiper' },
-            { id: 'interceptador', icon: Radar, label: 'INTERCEPTADOR WEB', page: 'interceptador', module: 'swiper' },
+            { id: 'interceptador', icon: Radar, label: 'RADAR DE GANCHOS', page: 'interceptador', module: 'swiper' },
             { id: 'extensao', icon: Puzzle, label: 'EXTENSÃO', page: 'extensao', module: 'swiper' },
             { id: 'favoritos', icon: Star, label: 'FAVORITOS', page: 'favoritos', module: 'swiper' },
             { id: 'central', icon: HelpCircle, label: 'CENTRAL 007', page: 'suporte', module: 'central' },
