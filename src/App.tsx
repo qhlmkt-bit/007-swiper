@@ -9,6 +9,8 @@ import { OfferDetails } from './components/OfferDetails';
 import { LandingPage } from './components/LandingPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdLibrary } from './components/AdLibrary';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from './lib/firebase';
 
 
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6N1u2xV-Of_muP_LJY9OGC77qXDOJ254TVzwpYAb-Ew8X-6-ZL3ZurlTiAwy19w/pub?output=csv';
@@ -230,40 +232,7 @@ export interface OrganicHook {
   gancho: string;
 }
 
-const MOCK_ORGANIC_HOOKS: OrganicHook[] = [
-  {
-    id: 'hook_1',
-    plataforma: 'TikTok',
-    nicho: 'Emagrecimento',
-    linkVideo: 'https://www.tiktok.com/',
-    visualizacoes: '4.2M',
-    gancho: 'CURIOSIDADE'
-  },
-  {
-    id: 'hook_2',
-    plataforma: 'Reels',
-    nicho: 'Finanças',
-    linkVideo: 'https://www.instagram.com/',
-    visualizacoes: '850K',
-    gancho: 'ANTES E DEPOIS'
-  },
-  {
-    id: 'hook_3',
-    plataforma: 'Shorts',
-    nicho: 'Relacionamentos',
-    linkVideo: 'https://www.youtube.com/',
-    visualizacoes: '1.5M',
-    gancho: 'INFORMATIVO'
-  },
-  {
-    id: 'hook_4',
-    plataforma: 'TikTok',
-    nicho: 'Skincare',
-    linkVideo: 'https://www.tiktok.com/',
-    visualizacoes: '320K',
-    gancho: 'PROBLEMA E SOLUÇÃO'
-  }
-];
+
 
 // --- APP PRINCIPAL ---
 const App: React.FC = () => {
@@ -346,6 +315,8 @@ const App: React.FC = () => {
   // Estados do Radar de Ganchos
   const [hookFilterPlatform, setHookFilterPlatform] = useState<string>('Todos');
   const [hookFilterType, setHookFilterType] = useState<string>('Todos');
+  const [organicHooks, setOrganicHooks] = useState<OrganicHook[]>([]);
+  const [isHooksLoading, setIsHooksLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchOffers = async () => {
@@ -423,6 +394,35 @@ const App: React.FC = () => {
       }
     };
     fetchOrganicVideos();
+  }, []);
+
+  useEffect(() => {
+    const fetchOrganicHooks = async () => {
+      setIsHooksLoading(true);
+      try {
+        const hooksRef = collection(db, 'organic_hooks');
+        const querySnapshot = await getDocs(hooksRef);
+        const list: OrganicHook[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          list.push({
+            id: doc.id,
+            plataforma: (data.plataforma || data.platform || 'TikTok') as PlatformType,
+            nicho: data.nicho || data.niche || '',
+            linkVideo: data.linkVideo || data.videoUrl || data.url || '',
+            visualizacoes: data.visualizacoes || data.views || '',
+            gancho: data.gancho || data.hook || ''
+          });
+        });
+        setOrganicHooks(list);
+      } catch (error) {
+        console.error("Erro ao buscar organic_hooks do Firestore:", error);
+      } finally {
+        setIsHooksLoading(false);
+      }
+    };
+
+    fetchOrganicHooks();
   }, []);
 
   // Reset filters and selected offer when switching pages or modules
@@ -810,10 +810,10 @@ const App: React.FC = () => {
 
         // --- INTERCEPTADOR E EXTENSÃO CONTINUAM AQUI... (ocultos para poupar espaço visual, mas renderizam normalmente) ---
         if (currentPage === 'interceptador') {
-            const hookTypes = ['Todos', ...Array.from(new Set(MOCK_ORGANIC_HOOKS.map(item => item.gancho)))];
+            const hookTypes = ['Todos', ...Array.from(new Set(organicHooks.map(item => item.gancho).filter(Boolean)))];
             const platforms = ['Todos', 'TikTok', 'Reels', 'Shorts'];
 
-            const filteredHooks = MOCK_ORGANIC_HOOKS.filter(item => {
+            const filteredHooks = organicHooks.filter(item => {
                 const matchPlatform = hookFilterPlatform === 'Todos' || item.plataforma === hookFilterPlatform;
                 const matchType = hookFilterType === 'Todos' || item.gancho === hookFilterType;
                 return matchPlatform && matchType;
@@ -862,7 +862,17 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Grid de Cards */}
-                    {filteredHooks.length === 0 ? (
+                    {isHooksLoading ? (
+                        <div className="py-20 flex flex-col items-center justify-center text-center border border-white/5 rounded-xl bg-[#0a0a0a]/50 space-y-4">
+                            <div className="relative w-12 h-12 flex items-center justify-center">
+                                <div className="absolute inset-0 rounded-full border border-[#D4AF37]/20 animate-ping"></div>
+                                <Radar size={24} className="text-[#D4AF37] animate-spin" />
+                            </div>
+                            <div className="space-y-1 font-mono text-xs text-emerald-400">
+                                <p className="animate-pulse">_ INTERCEPTANDO TRANSMISSÕES DE GANCHOS ORGÂNICOS...</p>
+                            </div>
+                        </div>
+                    ) : filteredHooks.length === 0 ? (
                         <div className="py-20 text-center border border-white/5 rounded-xl bg-[#0a0a0a]/50">
                             <p className="text-zinc-500 text-xs uppercase font-semibold tracking-wider font-sans">
                                 Nenhum gancho encontrado com os filtros selecionados.
