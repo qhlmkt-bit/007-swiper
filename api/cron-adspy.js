@@ -96,6 +96,7 @@ export default async function handler(req, res) {
   const API_TOKEN = process.env.VITE_APIFY_API_TOKEN;
   const libraryId = process.env.BUNNY_LIBRARY_ID;
   const apiKey = process.env.BUNNY_API_KEY;
+  const term = req.query.term || 'truque';
 
   if (!APIFY_TASK_ID) {
     return res.status(500).json({ error: 'Erro: APIFY_TASK_ID do Actor não configurado. Execução abortada para prevenção de custos.' });
@@ -111,10 +112,11 @@ export default async function handler(req, res) {
     // FORCE SAVE TEST DOCUMENT FOR FB INTEGRATION
     await addDoc(collection(db, 'facebook_ads'), {
       id: 'test_id_' + Date.now(),
-      texto: 'anúncio de teste',
+      texto: `anúncio de teste (${term})`,
       nomeAnunciante: 'Anunciante de Teste',
       videoUrl: '',
-      dataCaptura: new Date().toISOString()
+      dataCaptura: new Date().toISOString(),
+      nicho: term
     });
 
     // Call Apify actor synchronous execution endpoint with a strict budget limit override payload
@@ -125,7 +127,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        startUrls: [{ url: "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=BR&media_type=all" }],
+        startUrls: [{ url: `https://www.facebook.com/ads/library/?q=${encodeURIComponent(term)}&active_status=all&ad_type=all&country=BR&media_type=all` }],
         maxResult: 10,
         proxyConfiguration: { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] }
       })
@@ -148,7 +150,7 @@ export default async function handler(req, res) {
       
       // TEMPORARILY DISABLED: Skip items without videos check
       // if (!videoUrl) continue;
-
+ 
       const adId = item.adArchiveId || item.id || `ad_${i}_${Date.now()}`;
       
       // TEMPORARILY DISABLED: Upload video to Bunny Stream check
@@ -162,7 +164,8 @@ export default async function handler(req, res) {
         texto: item.bodyText || item.adText || item.text || '',
         nomeAnunciante: item.pageName || item.page_name || item.advertiserName || 'Anunciante',
         paginaDestino: item.pageUrl || item.page_url || item.destinationPage || item.snapshot?.linkUrl || '',
-        dataCaptura: new Date().toISOString()
+        dataCaptura: new Date().toISOString(),
+        nicho: term
       };
 
       const docRef = await addDoc(collection(db, 'facebook_ads'), adDocument);
