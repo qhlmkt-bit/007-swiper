@@ -166,7 +166,7 @@ export const AdLibrary: React.FC = () => {
     try {
       const searchQuery = (query || '').trim();
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 35000); // 35 seconds timeout for live sync scraper run
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout for live sync scraper run
 
       const startUrl = `https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&search_type=keyword_unordered&q=${encodeURIComponent(searchQuery)}`;
 
@@ -204,7 +204,11 @@ export const AdLibrary: React.FC = () => {
       }
     } catch (e: any) {
       console.error("Erro ao buscar dados da biblioteca de anúncios:", e);
-      setError(e.message || "Ocorreu um erro ao carregar os dados ao vivo do Apify.");
+      let errorMsg = e.message || "Ocorreu um erro ao carregar os dados ao vivo do Apify.";
+      if (e.name === 'AbortError' || errorMsg.includes('aborted') || errorMsg.includes('Abort')) {
+        errorMsg = 'TEMPO DE BUSCA ESGOTADO. O robô demorou mais de 60 segundos para extrair os dados. Tente usar filtros mais restritos.';
+      }
+      setError(errorMsg);
       setAds([]);
     } finally {
       setIsLoading(false);
