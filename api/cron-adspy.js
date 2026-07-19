@@ -97,6 +97,9 @@ export default async function handler(req, res) {
   const libraryId = process.env.BUNNY_LIBRARY_ID;
   const apiKey = process.env.BUNNY_API_KEY;
 
+  if (!APIFY_TASK_ID || APIFY_TASK_ID === 'SEU_TASK_ID') {
+    return res.status(500).json({ error: 'Erro: APIFY_TASK_ID do Actor não configurado. Execução abortada para prevenção de custos.' });
+  }
   if (!API_TOKEN) {
     return res.status(500).json({ error: 'Token Apify VITE_APIFY_API_TOKEN ausente no servidor.' });
   }
@@ -116,7 +119,12 @@ export default async function handler(req, res) {
         maxResults: 10,
         maxItems: 10,
         limit: 10,
-        activeStatus: "ACTIVE"
+        activeStatus: "ACTIVE",
+        proxyConfiguration: {
+          useApifyProxy: true,
+          apifyProxyGroups: ["RESIDENTIAL"]
+        },
+        useChrome: true
       })
     });
 
