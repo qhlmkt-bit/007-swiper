@@ -16,6 +16,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Configurable Apify Task ID
+const APIFY_TASK_ID = 'SEU_TASK_ID';
+
 // Create video on Bunny Stream and upload the video buffer
 async function uploadToBunnyStream(videoUrl, libraryId, apiKey) {
   try {
@@ -80,14 +83,15 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  // Security checks: Validate Vercel standard cron header OR query param bypass
-  const authHeader = req.headers.authorization;
-  const cronSecret = process.env.CRON_SECRET;
-  const bypassParam = req.query.bypass === '007spy';
+  // Security checks: Validate Vercel standard cron header OR query param bypass (Temporarily disabled for manual testing)
+  // const authHeader = req.headers.authorization;
+  // const cronSecret = process.env.CRON_SECRET;
+  // const bypassParam = req.query.bypass === '007spy';
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}` && !bypassParam) {
-    return res.status(401).json({ error: 'Unauthorized: Invalid Cron Secret' });
-  }
+  // const expectedToken = `Bearer ${cronSecret}`;
+  // if (cronSecret && authHeader !== expectedToken && authHeader !== cronSecret && !bypassParam) {
+  //   return res.status(401).end();
+  // }
 
   const API_TOKEN = process.env.VITE_APIFY_API_TOKEN;
   const libraryId = process.env.BUNNY_LIBRARY_ID;
@@ -101,22 +105,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const startUrl = "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&search_type=keyword_unordered&q=truque";
-
-    const payload = {
-      startUrls: [{ url: startUrl }],
-      searchTerms: ["truque"],
-      country: "BR",
-      activeStatus: "active",
-      maxItems: 10 // Limit maximum items fetched to avoid 60s function timeout
-    };
-
-    // Call Apify actor synchronously
-    const apifyReq = await fetch("https://api.apify.com/v2/acts/apify~facebook-ads-scraper/run-sync-get-dataset-items?token=" + API_TOKEN, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    // Call Apify task dataset items endpoint
+    const apifyUrl = `https://api.apify.com/v2/actor-tasks/${APIFY_TASK_ID}/runs/last/dataset/items?token=${API_TOKEN}`;
+    const apifyReq = await fetch(apifyUrl);
 
     if (!apifyReq.ok) {
       const errText = await apifyReq.text();
@@ -135,14 +126,17 @@ export default async function handler(req, res) {
       
       if (!videoUrl) continue; // Skip items without videos
 
+      const adId = item.adArchiveId || item.id || `ad_${i}_${Date.now()}`;
+      
       // Upload video to Bunny Stream
       const bunnyVideoUrl = await uploadToBunnyStream(videoUrl, libraryId, apiKey);
       if (!bunnyVideoUrl) continue;
 
       const adDocument = {
+        id: adId,
+        videoUrl: bunnyVideoUrl,
+        texto: item.bodyText || item.adText || item.text || '',
         nomeAnunciante: item.pageName || item.page_name || item.advertiserName || 'Anunciante',
-        textoAnuncio: item.bodyText || item.adText || item.text || '',
-        videoUrl: bunnyVideoUrl, // Use the Bunny Stream public CDN URL
         paginaDestino: item.pageUrl || item.page_url || item.destinationPage || item.snapshot?.linkUrl || '',
         dataCaptura: new Date().toISOString()
       };
