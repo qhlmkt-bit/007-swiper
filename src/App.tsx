@@ -162,70 +162,7 @@ const getEngagementLevel = (views: string) => {
 };
 
 
-const getUrlHash = (url: string): number => {
-  let hash = 0;
-  const clean = url.trim().toLowerCase();
-  for (let i = 0; i < clean.length; i++) {
-    hash = (hash << 5) - hash + clean.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-};
 
-const generateIntelligenceReport = (url: string) => {
-  const hash = getUrlHash(url);
-  
-  let checkout = 'Kiwify';
-  const lowerUrl = url.toLowerCase();
-  if (lowerUrl.includes('kiwify')) {
-    checkout = 'Kiwify';
-  } else if (lowerUrl.includes('hotmart')) {
-    checkout = 'Hotmart';
-  } else if (lowerUrl.includes('perfectpay')) {
-    checkout = 'PerfectPay';
-  } else {
-    const fallbacks = ['Kiwify', 'Hotmart', 'CartPanda'];
-    checkout = fallbacks[hash % fallbacks.length];
-  }
-  const checkoutText = `Detectado (${checkout})`;
-
-  const trafficRanges = [
-    '15k ~ 40k acessos',
-    '60k ~ 110k acessos',
-    '150k ~ 300k acessos',
-    '5k ~ 15k acessos',
-    '80k ~ 160k acessos',
-    '350k ~ 600k acessos'
-  ];
-  const trafficIndex = hash % trafficRanges.length;
-  const trafficText = trafficRanges[trafficIndex];
-
-  let statusText = '🟢 FUNIL ESTÁVEL';
-  let badgeStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]';
-  
-  if (trafficIndex === 2 || trafficIndex === 5) {
-    statusText = '🔥 EM ALTA ESCALA';
-    badgeStyle = 'bg-[#ef4444]/10 text-[#f87171] border-[#ef4444]/20 shadow-[0_0_10px_rgba(239,68,68,0.1)]';
-  } else if (trafficIndex === 1 || trafficIndex === 4) {
-    statusText = '📈 OPERAÇÃO EM ESCALA';
-    badgeStyle = 'bg-[#f59e0b]/10 text-[#fbbf24] border-[#f59e0b]/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]';
-  }
-
-  const pixelId = String((hash * 99991) % 9000000000 + 1000000000);
-
-  const fbPercentage = 50 + (hash % 41);
-  const googlePercentage = 100 - fbPercentage;
-  const sourcesText = `Facebook Ads (${fbPercentage}%) / Google Ads (${googlePercentage}%)`;
-
-  return {
-    checkoutText,
-    trafficText,
-    statusText,
-    badgeStyle,
-    pixelId,
-    sourcesText
-  };
-};
 
 
 // --- NOVO CARD MINIMALISTA (TAGS) ---
@@ -366,6 +303,13 @@ const App: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<boolean>(false);
   const [scanPhase, setScanPhase] = useState(0);
+  const [interceptData, setInterceptData] = useState<{
+    checkoutText: string;
+    pixelId: string;
+    hosting: string;
+    statusText: string;
+    badgeStyle: string;
+  } | null>(null);
 
   useEffect(() => {
     const fetchOffers = async () => {
@@ -462,18 +406,49 @@ const App: React.FC = () => {
 
 
 
-  const handleScan = () => {
+  const handleScan = async () => {
     if(!interceptorUrl) return;
     setIsScanning(true);
     setScanResult(false);
+    setInterceptData(null);
     setScanPhase(0);
+
+    // Terminal loading simulation phases
     setTimeout(() => setScanPhase(1), 800);
     setTimeout(() => setScanPhase(2), 1600);
     setTimeout(() => setScanPhase(3), 2400);
-    setTimeout(() => {
-      setIsScanning(false);
-      setScanResult(true);
-    }, 3500);
+
+    try {
+      const response = await fetch('/api/intercept', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ url: interceptorUrl })
+      });
+
+      const data = await response.json();
+      
+      // Wait for the full tactical scan animation before rendering results
+      setTimeout(() => {
+        setInterceptData(data);
+        setIsScanning(false);
+        setScanResult(true);
+      }, 3500);
+    } catch (error) {
+      console.error("Erro no interceptador de URL:", error);
+      setTimeout(() => {
+        setInterceptData({
+          checkoutText: 'Erro ao conectar (Bloqueio de CORS/Rede)',
+          pixelId: 'Inacessível',
+          hosting: 'Desconhecido / Protegido',
+          statusText: '⚠️ CONEXÃO BLOQUEADA',
+          badgeStyle: 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.1)]'
+        });
+        setIsScanning(false);
+        setScanResult(true);
+      }, 3500);
+    }
   };
 
   const renderContent = () => {
@@ -958,8 +933,8 @@ const App: React.FC = () => {
                         </div>
                     )}
 
-                    {scanResult && (() => {
-                        const report = generateIntelligenceReport(interceptorUrl);
+                    {scanResult && interceptData && (() => {
+                        const report = interceptData;
                         return (
                             /* THE INTELLIGENCE REPORT DASHBOARD */
                             <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
@@ -990,7 +965,7 @@ const App: React.FC = () => {
                                                 <span className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Status da Operação</span>
                                             </div>
                                             <span className={`text-xs font-black uppercase tracking-wider ${
-                                                report.statusText.includes('ALTA') ? 'text-red-400' : report.statusText.includes('OPERAÇÃO') ? 'text-amber-400' : 'text-emerald-400'
+                                                report.statusText.includes('BLOQUEADA') ? 'text-red-400' : report.statusText.includes('ATIVO') ? 'text-amber-400' : 'text-emerald-400'
                                             }`}>{report.statusText}</span>
                                         </div>
                                         
@@ -999,7 +974,15 @@ const App: React.FC = () => {
                                                 <TrendingUp size={12} className="text-[#D4AF37]" />
                                                 <span className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Tráfego Mensal Estimado</span>
                                             </div>
-                                            <span className="text-zinc-200 text-xs font-black uppercase tracking-tight font-mono">{report.trafficText}</span>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-zinc-500 text-xs font-black uppercase tracking-tight font-mono">Radar Oculto</span>
+                                                <span className="text-[7px] font-black uppercase tracking-widest bg-red-500/10 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded group relative cursor-help">
+                                                    API REQUERIDA
+                                                    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-44 p-2 bg-zinc-950 border border-zinc-800 text-zinc-400 text-[8px] font-bold uppercase tracking-wider rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-center leading-normal whitespace-normal normal-case z-20">
+                                                        Esses dados exigem integração com ferramentas de análise de tráfego de terceiros (como SimilarWeb) no futuro.
+                                                    </span>
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div className="p-4 bg-[#050505] rounded-xl border border-white/5 flex flex-col gap-1.5">
@@ -1007,7 +990,15 @@ const App: React.FC = () => {
                                                 <Globe size={12} className="text-[#D4AF37]" />
                                                 <span className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Principais Fontes</span>
                                             </div>
-                                            <span className="text-zinc-200 text-xs font-black uppercase tracking-tight">{report.sourcesText}</span>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-zinc-500 text-xs font-black uppercase tracking-tight font-mono">Canais Privados</span>
+                                                <span className="text-[7px] font-black uppercase tracking-widest bg-red-500/10 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded group relative cursor-help">
+                                                    RADAR BLOQUEADO
+                                                    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-44 p-2 bg-zinc-950 border border-zinc-800 text-zinc-400 text-[8px] font-bold uppercase tracking-wider rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-center leading-normal whitespace-normal normal-case z-20">
+                                                        Esses dados exigem integração com ferramentas de análise de tráfego de terceiros (como SimilarWeb) no futuro.
+                                                    </span>
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div className="p-4 bg-[#050505] rounded-xl border border-white/5 flex flex-col gap-1.5">
@@ -1031,7 +1022,7 @@ const App: React.FC = () => {
                                             </div>
                                             <div className="p-3 bg-[#0d0d0d] rounded border border-white/5">
                                                 <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">Hospedagem / CDN</p>
-                                                <p className="text-[9px] text-zinc-300 font-mono mt-1">Cloudflare Edge</p>
+                                                <p className="text-[9px] text-zinc-300 font-mono mt-1">{report.hosting}</p>
                                             </div>
                                             <div className="p-3 bg-[#0d0d0d] rounded border border-white/5">
                                                 <p className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">Criptografia SSL</p>
