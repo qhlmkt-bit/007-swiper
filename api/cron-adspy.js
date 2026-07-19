@@ -105,9 +105,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Call Apify task dataset items endpoint
-    const apifyUrl = `https://api.apify.com/v2/actor-tasks/${APIFY_TASK_ID}/runs/last/dataset/items?token=${API_TOKEN}`;
-    const apifyReq = await fetch(apifyUrl);
+    // Call Apify task synchronous execution endpoint with a strict budget limit override payload
+    const apifyUrl = `https://api.apify.com/v2/actor-tasks/${APIFY_TASK_ID}/run-sync-get-dataset-items?token=${API_TOKEN}`;
+    const apifyReq = await fetch(apifyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        maxResults: 10,
+        maxItems: 10,
+        limit: 10,
+        activeStatus: "ACTIVE"
+      })
+    });
 
     if (!apifyReq.ok) {
       const errText = await apifyReq.text();
